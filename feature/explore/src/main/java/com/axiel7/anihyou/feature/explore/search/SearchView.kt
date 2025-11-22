@@ -1,11 +1,6 @@
 package com.axiel7.anihyou.feature.explore.search
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -45,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -174,6 +171,7 @@ fun SearchView(
     }//:Surface
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchContentView(
     query: String,
@@ -223,23 +221,21 @@ fun SearchContentView(
 
     Scaffold(
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = !isAtTop,
-                enter = fadeIn() + scaleIn(),
-                exit = scaleOut() + fadeOut(),
+            FloatingActionButton(
+                onClick = {
+                    scope.launch {
+                        listState.animateScrollToItem(0)
+                    }
+                },
+                modifier = Modifier.animateFloatingActionButton(
+                    visible = !isAtTop,
+                    alignment = Alignment.BottomEnd,
+                )
             ) {
-                FloatingActionButton(
-                    onClick = {
-                        scope.launch {
-                            listState.animateScrollToItem(0)
-                        }
-                    },
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.arrow_upward_24),
-                        contentDescription = null,
-                    )
-                }
+                Icon(
+                    painter = painterResource(R.drawable.arrow_upward_24),
+                    contentDescription = null,
+                )
             }
         },
         containerColor = Color.Transparent,

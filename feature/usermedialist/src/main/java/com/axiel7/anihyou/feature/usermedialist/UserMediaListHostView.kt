@@ -2,9 +2,6 @@ package com.axiel7.anihyou.feature.usermedialist
 
 import androidx.activity.compose.LocalActivity
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,7 +13,6 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +24,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -153,27 +150,26 @@ private fun UserMediaListHostContent(
         else stringResource(R.string.manga_list),
         modifier = modifier,
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = isFabVisible && uiState.orderedListNames.isNotEmpty(),
-                modifier = Modifier.sizeIn(minWidth = 80.dp, minHeight = 56.dp),
-                enter = slideInVertically(initialOffsetY = { it * 2 }),
-                exit = slideOutVertically(targetOffsetY = { it * 2 }),
+            ExtendedFloatingActionButton(
+                onClick = { showListsSheet = true },
+                modifier = Modifier.animateFloatingActionButton(
+                    visible = isFabVisible && uiState.orderedListNames.isNotEmpty(),
+                    alignment = Alignment.BottomEnd
+                )
             ) {
-                ExtendedFloatingActionButton(onClick = { showListsSheet = true }) {
-                    if (uiState.selectedListName == null || uiState.status != null) {
-                        Icon(
-                            painter = painterResource(
-                                id = uiState.status?.icon() ?: R.drawable.list_alt_24
-                            ),
-                            contentDescription = stringResource(R.string.list_status),
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
-                    }
-                    Text(
-                        text = uiState.status?.localized(uiState.mediaType)
-                            ?: uiState.selectedListName ?: stringResource(R.string.all)
+                if (uiState.selectedListName == null || uiState.status != null) {
+                    Icon(
+                        painter = painterResource(
+                            id = uiState.status?.icon() ?: R.drawable.list_alt_24
+                        ),
+                        contentDescription = stringResource(R.string.list_status),
+                        modifier = Modifier.padding(end = 8.dp)
                     )
                 }
+                Text(
+                    text = uiState.status?.localized(uiState.mediaType)
+                        ?: uiState.selectedListName ?: stringResource(R.string.all)
+                )
             }
         },
         navigationIcon = {
