@@ -7,8 +7,10 @@ import com.axiel7.anihyou.core.network.type.MediaSeason
 import com.axiel7.anihyou.core.model.base.Localizable
 import com.axiel7.anihyou.core.network.api.model.AnimeSeasonDto
 import com.axiel7.anihyou.core.resources.R
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
+import java.time.YearMonth
 
 @Stable
 data class AnimeSeason(
@@ -68,4 +70,36 @@ fun LocalDateTime.nextAnimeSeason(): AnimeSeason {
 
         MediaSeason.UNKNOWN__ -> current
     }
+}
+
+fun MediaSeason.startMonth(): Month = when (this) {
+    MediaSeason.WINTER -> Month.DECEMBER
+    MediaSeason.SPRING -> Month.MARCH
+    MediaSeason.SUMMER -> Month.JUNE
+    MediaSeason.FALL -> Month.SEPTEMBER
+    MediaSeason.UNKNOWN__ -> Month.JANUARY
+}
+
+fun MediaSeason.endMonth(): Month = when (this) {
+    MediaSeason.WINTER -> Month.FEBRUARY
+    MediaSeason.SPRING -> Month.MAY
+    MediaSeason.SUMMER -> Month.AUGUST
+    MediaSeason.FALL -> Month.NOVEMBER
+    MediaSeason.UNKNOWN__ -> Month.JANUARY
+}
+
+fun currentSeasonStartDate(): LocalDate {
+    val now = LocalDateTime.now()
+    val startMonth = now.season().startMonth()
+    val startYear =
+        if (now.month == Month.JANUARY || now.month == Month.FEBRUARY) now.year - 1 else now.year
+    return LocalDate.of(startYear, startMonth, 1)
+}
+
+fun currentSeasonEndDate(): LocalDate {
+    val now = LocalDateTime.now()
+    val endMonth = now.season().endMonth()
+    val endYear = if (now.month == Month.DECEMBER) now.year + 1 else now.year
+    val endDay = YearMonth.of(endYear, endMonth).lengthOfMonth()
+    return LocalDate.of(endYear, endMonth, endDay)
 }

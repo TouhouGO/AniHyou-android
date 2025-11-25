@@ -75,6 +75,8 @@ object DateUtils {
         }
     }
 
+    fun LocalDate.toFuzzyDateInt() = format(DateTimeFormatter.BASIC_ISO_DATE).toInt()
+
     fun Long.timestampToDateString(
         format: String = "EE, d MMM"
     ): String? =

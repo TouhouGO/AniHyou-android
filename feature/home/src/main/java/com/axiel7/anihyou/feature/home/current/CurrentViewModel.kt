@@ -4,15 +4,17 @@ import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.base.extensions.indexOfFirstOrNull
+import com.axiel7.anihyou.core.common.utils.DateUtils.toFuzzyDateInt
 import com.axiel7.anihyou.core.common.utils.NumberUtils.isNullOrZero
 import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.MediaListRepository
 import com.axiel7.anihyou.core.model.CurrentListType
+import com.axiel7.anihyou.core.model.media.currentSeasonEndDate
+import com.axiel7.anihyou.core.model.media.currentSeasonStartDate
 import com.axiel7.anihyou.core.model.media.duration
 import com.axiel7.anihyou.core.model.media.episodesBehind
 import com.axiel7.anihyou.core.model.media.isBehind
-import com.axiel7.anihyou.core.model.media.nextAnimeSeason
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.fragment.CommonMediaListEntry
 import com.axiel7.anihyou.core.network.type.MediaListSort
@@ -29,7 +31,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CurrentViewModel(
@@ -253,7 +254,8 @@ class CurrentViewModel(
             }
             .flatMapLatest { uiState ->
                 mediaListRepository.getMySeasonalAnime(
-                    animeSeason = LocalDateTime.now().nextAnimeSeason(),
+                    startDateGreater = currentSeasonStartDate().toFuzzyDateInt(),
+                    startDateLesser = currentSeasonEndDate().toFuzzyDateInt(),
                     fetchFromNetwork = uiState.fetchFromNetwork,
                     page = 1,
                 )

@@ -14,7 +14,6 @@ import com.axiel7.anihyou.core.network.UpdateEntryCustomListsMutation
 import com.axiel7.anihyou.core.network.UpdateEntryMutation
 import com.axiel7.anihyou.core.network.UserListCollectionQuery
 import com.axiel7.anihyou.core.network.UserMediaListQuery
-import com.axiel7.anihyou.core.network.api.model.AnimeSeasonDto
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntryImpl
 import com.axiel7.anihyou.core.network.type.FuzzyDateInput
@@ -67,7 +66,8 @@ class MediaListApi(
         .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
 
     fun mySeasonalAnimeQuery(
-        animeSeason: AnimeSeasonDto,
+        startDateGreater: Int,
+        startDateLesser: Int,
         sort: List<MediaSort>,
         fetchFromNetwork: Boolean,
         page: Int,
@@ -77,8 +77,8 @@ class MediaListApi(
             MySeasonalAnimeQuery(
                 page = Optional.present(page),
                 perPage = Optional.present(perPage),
-                season = Optional.present(animeSeason.season),
-                seasonYear = Optional.present(animeSeason.year),
+                startDate_greater = Optional.present(startDateGreater),
+                startDate_lesser = Optional.present(startDateLesser),
                 sort = Optional.present(sort)
             )
         )
