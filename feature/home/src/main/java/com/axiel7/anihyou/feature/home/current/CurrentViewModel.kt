@@ -4,17 +4,16 @@ import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.base.extensions.indexOfFirstOrNull
-import com.axiel7.anihyou.core.common.utils.DateUtils.toFuzzyDateInt
 import com.axiel7.anihyou.core.common.utils.NumberUtils.isNullOrZero
 import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.MediaListRepository
 import com.axiel7.anihyou.core.model.CurrentListType
-import com.axiel7.anihyou.core.model.media.currentSeasonEndDate
-import com.axiel7.anihyou.core.model.media.currentSeasonStartDate
+import com.axiel7.anihyou.core.model.media.currentAnimeSeason
 import com.axiel7.anihyou.core.model.media.duration
 import com.axiel7.anihyou.core.model.media.episodesBehind
 import com.axiel7.anihyou.core.model.media.isBehind
+import com.axiel7.anihyou.core.model.media.nextAnimeSeason
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.fragment.CommonMediaListEntry
 import com.axiel7.anihyou.core.network.type.MediaListSort
@@ -23,6 +22,7 @@ import com.axiel7.anihyou.core.network.type.MediaStatus
 import com.axiel7.anihyou.core.network.type.MediaType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CurrentViewModel(
@@ -253,12 +254,31 @@ class CurrentViewModel(
                 !new.fetchFromNetwork
             }
             .flatMapLatest { uiState ->
+                val now = LocalDateTime.now()
                 mediaListRepository.getMySeasonalAnime(
-                    startDateGreater = currentSeasonStartDate().toFuzzyDateInt(),
-                    startDateLesser = currentSeasonEndDate().toFuzzyDateInt(),
+                    season = now.currentAnimeSeason(),
                     fetchFromNetwork = uiState.fetchFromNetwork,
                     page = 1,
-                )
+                ).combine(
+                    mediaListRepository.getMySeasonalAnime(
+                        season = now.nextAnimeSeason(),
+                        fetchFromNetwork = uiState.fetchFromNetwork,
+                        page = 1,
+                    )
+                ) { first, second ->
+                    when (first) {
+                        is PagedResult.Success if second is PagedResult.Success -> {
+                            PagedResult.Success(
+                                list = first.list + second.list,
+                                currentPage = first.currentPage,
+                                hasNextPage = first.hasNextPage,
+                            )
+                        }
+
+                        !is PagedResult.Success -> first
+                        else -> second
+                    }
+                }
             }
             .onEach { result ->
                 mutableUiState.update { uiState ->

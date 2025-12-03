@@ -4,6 +4,7 @@ import com.apollographql.apollo.cache.normalized.FetchPolicy
 import com.apollographql.apollo.cache.normalized.fetchPolicy
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.common.utils.NumberUtils.isGreaterThanZero
+import com.axiel7.anihyou.core.model.media.AnimeSeason
 import com.axiel7.anihyou.core.model.media.advancedScoresMap
 import com.axiel7.anihyou.core.model.media.isUsingVolumeProgress
 import com.axiel7.anihyou.core.model.media.progressOrVolumes
@@ -63,14 +64,13 @@ class MediaListRepository (
         }
 
     fun getMySeasonalAnime(
-        startDateGreater: Int,
-        startDateLesser: Int,
+        season: AnimeSeason,
         sort: List<MediaSort> = listOf(MediaSort.POPULARITY_DESC),
         fetchFromNetwork: Boolean = false,
         page: Int,
         perPage: Int = 25,
     ) = api
-        .mySeasonalAnimeQuery(startDateGreater, startDateLesser, sort, fetchFromNetwork, page, perPage)
+        .mySeasonalAnimeQuery(season.season, season.year, sort, fetchFromNetwork, page, perPage)
         .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) { data ->
             data.Page?.media?.mapNotNull { media ->
