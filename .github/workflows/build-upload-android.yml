@@ -2,6 +2,8 @@ name: Android Build Release FOSS APK
 
 on:
   push:
+    branches:
+      - 'develop'
     paths:
       - 'version.properties'
   workflow_dispatch:
