@@ -4,11 +4,11 @@ import android.content.Context
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
+import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.SearchRepository
 import com.axiel7.anihyou.core.model.genre.GenresAndTagsForSearch
 import com.axiel7.anihyou.core.model.genre.SelectableGenre
 import com.axiel7.anihyou.core.model.genre.SelectableGenre.Companion.genreTagStringRes
-import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -125,16 +125,16 @@ class GenresTagsViewModel(
     }
 
     override fun resetData() {
-        mutableUiState.update {
-            val unselectedGenres = it.genres.map { it.copy(state = SelectableGenre.State.NONE) }
-            it.genres.clear()
-            it.genres.addAll(unselectedGenres)
+        mutableUiState.update { uiState ->
+            val unselectedGenres = uiState.genres.map { it.copy(state = SelectableGenre.State.NONE) }
+            uiState.genres.clear()
+            uiState.genres.addAll(unselectedGenres)
 
-            val unselectedTags = it.tags.map { it.copy(state = SelectableGenre.State.NONE) }
-            it.tags.clear()
-            it.tags.addAll(unselectedTags)
+            val unselectedTags = uiState.tags.map { it.copy(state = SelectableGenre.State.NONE) }
+            uiState.tags.clear()
+            uiState.tags.addAll(unselectedTags)
 
-            it.copy(genresAndTagsForSearch = it.genresAndTagsForSearch())
+            uiState.copy(genresAndTagsForSearch = uiState.genresAndTagsForSearch())
         }
     }
 

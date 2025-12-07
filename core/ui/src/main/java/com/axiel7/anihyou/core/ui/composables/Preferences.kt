@@ -192,8 +192,8 @@ fun SwitchPreference(
 fun <T> ListPreference(
     title: String,
     values: List<T>,
-    labelForValue: @Composable (T) -> String = { it.toString() },
     modifier: Modifier = Modifier,
+    labelForValue: @Composable (T) -> String = { it.toString() },
     preferenceValue: T?,
     @DrawableRes icon: Int? = null,
     onValueChange: (T) -> Unit

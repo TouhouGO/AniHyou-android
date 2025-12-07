@@ -4,10 +4,9 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import com.axiel7.anihyou.core.network.api.model.CountryOfOriginDto
 import com.axiel7.anihyou.core.model.base.Colorable
 import com.axiel7.anihyou.core.model.base.Localizable
-import com.axiel7.anihyou.core.model.media.CountryOfOrigin.entries
+import com.axiel7.anihyou.core.network.api.model.CountryOfOriginDto
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.resources.stat_dark_40
 import com.axiel7.anihyou.core.resources.stat_dark_50

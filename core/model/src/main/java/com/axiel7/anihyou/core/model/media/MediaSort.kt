@@ -2,9 +2,8 @@ package com.axiel7.anihyou.core.model.media
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.model.base.Localizable
-import com.axiel7.anihyou.core.model.media.MediaSortSearch.entries
+import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.resources.R
 
 @Composable
