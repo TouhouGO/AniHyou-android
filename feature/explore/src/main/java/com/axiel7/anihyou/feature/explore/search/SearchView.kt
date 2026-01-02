@@ -197,7 +197,7 @@ fun SearchContentView(
     var showMoreFilters by rememberSaveable { mutableStateOf(true) }
 
     val haptic = LocalHapticFeedback.current
-    var showEditSheet by remember { mutableStateOf(false) }
+    var showEditSheet by rememberSaveable { mutableStateOf(false) }
 
     ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 

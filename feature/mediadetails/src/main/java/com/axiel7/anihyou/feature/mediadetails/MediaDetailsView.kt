@@ -134,9 +134,9 @@ private fun MediaDetailsContent(
     val isTopAppBarScrolled by remember {
         derivedStateOf { topAppBarScrollBehavior.state.overlappedFraction == 1f }
     }
-    var showEditSheet by remember { mutableStateOf(false) }
+    var showEditSheet by rememberSaveable { mutableStateOf(false) }
 
-    var isSynopsisExpanded by remember { mutableStateOf(false) }
+    var isSynopsisExpanded by rememberSaveable { mutableStateOf(false) }
     val maxLinesSynopsis by remember {
         derivedStateOf { if (isSynopsisExpanded) Int.MAX_VALUE else 5 }
     }
