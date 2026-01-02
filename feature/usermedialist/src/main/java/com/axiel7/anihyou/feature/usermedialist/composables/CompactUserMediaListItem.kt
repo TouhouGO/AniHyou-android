@@ -1,19 +1,16 @@
 package com.axiel7.anihyou.feature.usermedialist.composables
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -46,7 +43,7 @@ import com.axiel7.anihyou.core.ui.composables.media.MediaPoster
 import com.axiel7.anihyou.core.ui.composables.scores.BadgeScoreIndicator
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CompactUserMediaListItem(
     item: CommonMediaListEntry,
@@ -61,17 +58,12 @@ fun CompactUserMediaListItem(
     onClickNotes: () -> Unit,
 ) {
     val status = listStatus ?: item.basicMediaListEntry.status
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .combinedClickable(onLongClick = onLongClick, onClick = onClick)
-            .padding(start = 16.dp, end = 0.dp, top = 4.dp, bottom = 8.dp),
-    ) {
-        Row(
-            modifier = Modifier.height(IntrinsicSize.Max)
-        ) {
+    ListItem(
+        onClick = onClick,
+        onLongClick = onLongClick,
+        leadingContent = {
             Box(
-                modifier = Modifier.align(Alignment.CenterVertically)
+                contentAlignment = Alignment.Center,
             ) {
                 MediaPoster(
                     url = item.media?.coverImage?.large,
@@ -98,81 +90,76 @@ fun CompactUserMediaListItem(
                     )
                 }
             }//: Box
+        }
+    ) {
+        Column(
+            modifier = Modifier,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 16.sp,
+                lineHeight = 19.sp,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = if (item.media?.nextAiringEpisode != null) 1 else 2
+            )
 
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceBetween
+            AiringScheduleText(
+                item = item,
+                fontSize = 16.sp,
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
             ) {
-                Text(
-                    text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 16.sp,
-                    lineHeight = 19.sp,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = if (item.media?.nextAiringEpisode != null) 1 else 2
-                )
-
-                AiringScheduleText(
-                    item = item,
-                    fontSize = 16.sp,
-                )
+                val progress = item.basicMediaListEntry.progressOrVolumes()?.format() ?: 0
+                val duration = item.duration()?.format()
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = if (duration != null) "$progress/$duration" else "$progress",
+                        fontSize = 15.sp,
+                    )
+                    if (item.basicMediaListEntry.isUsingVolumeProgress()) {
+                        Icon(
+                            painter = painterResource(R.drawable.bookmark_20),
+                            contentDescription = stringResource(R.string.volumes),
+                        )
+                    }
+                }
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    val progress = item.basicMediaListEntry.progressOrVolumes()?.format() ?: 0
-                    val duration = item.duration()?.format()
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = if (duration != null) "$progress/$duration" else "$progress",
-                            fontSize = 15.sp,
+                    if (item.basicMediaListEntry.repeat.isGreaterThanZero()) {
+                        RepeatIndicator(
+                            count = item.basicMediaListEntry.repeat ?: 0,
                         )
-                        if (item.basicMediaListEntry.isUsingVolumeProgress()) {
-                            Icon(
-                                painter = painterResource(R.drawable.bookmark_20),
-                                contentDescription = stringResource(R.string.volumes),
-                            )
-                        }
                     }
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.Bottom
+                    if (!item.basicMediaListEntry.notes.isNullOrBlank()) {
+                        NotesIndicator(
+                            modifier = Modifier.padding(bottom = 2.dp),
+                            onClick = onClickNotes
+                        )
+                    }
+                    if (isMyList && (status == MediaListStatus.CURRENT
+                                || status == MediaListStatus.REPEATING)
                     ) {
-                        if (item.basicMediaListEntry.repeat.isGreaterThanZero()) {
-                            RepeatIndicator(
-                                count = item.basicMediaListEntry.repeat ?: 0,
-                            )
-                        }
-                        if (!item.basicMediaListEntry.notes.isNullOrBlank()) {
-                            NotesIndicator(
-                                modifier = Modifier.padding(bottom = 2.dp),
-                                onClick = onClickNotes
-                            )
-                        }
-                        if (isMyList && (status == MediaListStatus.CURRENT
-                                    || status == MediaListStatus.REPEATING)
-                        ) {
-                            IncrementOneButton(
-                                onClickPlus = onClickPlus,
-                                blockPlus = blockPlus,
-                                enabled = isPlusEnabled,
-                            )
-                        }
+                        IncrementOneButton(
+                            onClickPlus = onClickPlus,
+                            blockPlus = blockPlus,
+                            enabled = isPlusEnabled,
+                        )
                     }
-                }//:Row
-            }//:Column
-        }//:Row
-        HorizontalDivider(
-            modifier = Modifier.padding(top = 12.dp)
-        )
-    }//:Column
+                }
+            }//:Row
+        }//:Column
+    }
 }
 
 @Preview

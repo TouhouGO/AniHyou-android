@@ -1,7 +1,6 @@
 package com.axiel7.anihyou.feature.explore.search
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,6 +22,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -386,13 +387,12 @@ fun SearchContentView(
                         items = uiState.studios,
                         contentType = { it }
                     ) { item ->
-                        Text(
-                            text = item.name,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { navActionManager.toStudioDetails(item.id) }
-                                .padding(16.dp)
-                        )
+                        ListItem(
+                            onClick = { navActionManager.toStudioDetails(item.id) },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        ) {
+                            Text(text = item.name)
+                        }
                     }
                 }
 

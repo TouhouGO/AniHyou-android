@@ -2,7 +2,6 @@ package com.axiel7.anihyou.core.ui.composables.media
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -31,11 +33,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.axiel7.anihyou.core.network.type.MediaFormat
-import com.axiel7.anihyou.core.network.type.MediaListStatus
 import com.axiel7.anihyou.core.model.media.icon
 import com.axiel7.anihyou.core.model.media.localized
 import com.axiel7.anihyou.core.model.stats.overview.StatusDistribution.Companion.asStat
+import com.axiel7.anihyou.core.network.type.MediaFormat
+import com.axiel7.anihyou.core.network.type.MediaListStatus
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
 import com.axiel7.anihyou.core.ui.composables.scores.SmallScoreIndicator
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
@@ -78,7 +80,7 @@ fun MediaItemHorizontal(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MediaItemHorizontal(
     title: String,
@@ -92,69 +94,68 @@ fun MediaItemHorizontal(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
 ) {
-    Row(
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth()
-            .height(MEDIA_POSTER_SMALL_HEIGHT.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-    ) {
-        val posterSizeModifier = Modifier
-            .size(
-                width = MEDIA_POSTER_SMALL_WIDTH.dp,
-                height = MEDIA_POSTER_SMALL_HEIGHT.dp
-            )
-        Box(
-            modifier = posterSizeModifier
-        ) {
-            MediaPoster(
-                url = imageUrl,
-                showShadow = false,
+    ListItem(
+        onClick = onClick,
+        onLongClick = onLongClick,
+        leadingContent = {
+            val posterSizeModifier = Modifier
+                .size(
+                    width = MEDIA_POSTER_SMALL_WIDTH.dp,
+                    height = MEDIA_POSTER_SMALL_HEIGHT.dp
+                )
+            Box(
                 modifier = posterSizeModifier
-            )
-            if (badgeContent != null) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .clip(RoundedCornerShape(topEnd = 16.dp, bottomStart = 8.dp))
-                        .background(badgeBackgroundColor)
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    content = badgeContent
+            ) {
+                MediaPoster(
+                    url = imageUrl,
+                    showShadow = false,
+                    modifier = posterSizeModifier
                 )
+                if (badgeContent != null) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .clip(RoundedCornerShape(topEnd = 16.dp, bottomStart = 8.dp))
+                            .background(badgeBackgroundColor)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        content = badgeContent
+                    )
+                }
+                if (topBadgeContent != null) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .clip(RoundedCornerShape(topStart = 8.dp, bottomEnd = 16.dp))
+                            .background(topBadgeBackgroundColor)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        content = topBadgeContent
+                    )
+                }
             }
-            if (topBadgeContent != null) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .clip(RoundedCornerShape(topStart = 8.dp, bottomEnd = 16.dp))
-                        .background(topBadgeBackgroundColor)
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    content = topBadgeContent
-                )
+        },
+        supportingContent = {
+            if (subtitle1 != null) {
+                Column(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    subtitle1()
+                    if (subtitle2 != null) subtitle2()
+                }
             }
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Text(
-                text = title,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 17.sp,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 2
-            )
-
-            if (subtitle1 != null) subtitle1()
-            if (subtitle2 != null) subtitle2()
-        }//: Column
-    }//: Row
+        },
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+    ) {
+        Text(
+            text = title,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = 17.sp,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 2
+        )
+    }
 }
 
 @Composable
@@ -179,6 +180,7 @@ fun MediaItemHorizontal(
                     append(format.localized())
                     if (year != null) append(" · $year")
                 },
+                fontSize = 15.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
@@ -193,6 +195,7 @@ fun MediaItemHorizontal(
                 Icon(
                     painter = painterResource(status.icon()),
                     contentDescription = status.localized(),
+                    modifier = Modifier.size(20.dp),
                     tint = statusStat?.onPrimaryColor()
                         ?.harmonize(MaterialTheme.colorScheme.primary)
                         ?: LocalContentColor.current
@@ -261,7 +264,10 @@ fun MediaItemHorizontalPreview() {
                     imageUrl = null,
                     status = MediaListStatus.COMPLETED,
                     topBadgeContent = {
-                        Text(text = "#1")
+                        Text(
+                            text = "#1",
+                            fontSize = 14.sp
+                        )
                     },
                     score = 76,
                     format = MediaFormat.TV,

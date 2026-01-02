@@ -2,17 +2,18 @@ package com.axiel7.anihyou.core.ui.composables.media
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,10 +29,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.axiel7.anihyou.core.network.type.MediaListStatus
 import com.axiel7.anihyou.core.model.media.icon
 import com.axiel7.anihyou.core.model.media.localized
 import com.axiel7.anihyou.core.model.stats.overview.StatusDistribution.Companion.asStat
+import com.axiel7.anihyou.core.network.type.MediaListStatus
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
 import com.axiel7.anihyou.core.ui.composables.scores.SmallScoreIndicator
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
@@ -61,6 +62,7 @@ fun MediaItemVertical(
                 Icon(
                     painter = painterResource(status.icon()),
                     contentDescription = status.localized(),
+                    modifier = Modifier.size(20.dp),
                     tint = statusStat?.onPrimaryColor()
                         ?.harmonize(MaterialTheme.colorScheme.primary)
                         ?: LocalContentColor.current
@@ -76,7 +78,7 @@ fun MediaItemVertical(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MediaItemVertical(
     title: String,
@@ -89,56 +91,55 @@ fun MediaItemVertical(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
 ) {
-    Column(
+    ListItem(
+        onClick = onClick,
         modifier = modifier
-            .width(MEDIA_POSTER_SMALL_WIDTH.dp)
             .sizeIn(
+                maxWidth = MEDIA_POSTER_SMALL_WIDTH.dp,
                 minHeight = MEDIA_ITEM_VERTICAL_HEIGHT.dp
-            )
-            .clip(RoundedCornerShape(8.dp))
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
-        horizontalAlignment = Alignment.Start
+            ),
+        onLongClick = onLongClick,
+        supportingContent = subtitle,
+        contentPadding = PaddingValues()
     ) {
-        val posterSizeModifier = Modifier
-            .size(
-                width = MEDIA_POSTER_SMALL_WIDTH.dp,
-                height = MEDIA_POSTER_SMALL_HEIGHT.dp
-            )
-        Box(
-            modifier = posterSizeModifier
-        ) {
-            MediaPoster(
-                url = imageUrl,
-                showShadow = false,
-                modifier = posterSizeModifier
-            )
-            if (badgeContent != null) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .clip(RoundedCornerShape(topEnd = 16.dp, bottomStart = 8.dp))
-                        .background(badgeBackgroundColor)
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    content = badgeContent
+        Column {
+            val posterSizeModifier = Modifier
+                .size(
+                    width = MEDIA_POSTER_SMALL_WIDTH.dp,
+                    height = MEDIA_POSTER_SMALL_HEIGHT.dp
                 )
+            Box(
+                modifier = posterSizeModifier
+            ) {
+                MediaPoster(
+                    url = imageUrl,
+                    showShadow = false,
+                    modifier = posterSizeModifier
+                )
+                if (badgeContent != null) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .clip(RoundedCornerShape(topEnd = 16.dp, bottomStart = 8.dp))
+                            .background(badgeBackgroundColor)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        content = badgeContent
+                    )
+                }
             }
-        }
 
-        Text(
-            text = title,
-            modifier = Modifier
-                .padding(top = 8.dp, bottom = 2.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 15.sp,
-            lineHeight = 18.sp,
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 2,
-            minLines = minLines
-        )
-
-        if (subtitle != null) {
-            subtitle()
+            Text(
+                text = title,
+                modifier = Modifier
+                    .padding(top = 8.dp, bottom = 2.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 15.sp,
+                lineHeight = 18.sp,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 2,
+                minLines = minLines
+            )
         }
     }
 }

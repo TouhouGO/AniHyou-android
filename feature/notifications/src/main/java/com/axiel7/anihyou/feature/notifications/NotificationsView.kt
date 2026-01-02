@@ -126,9 +126,6 @@ private fun NotificationsContent(
             ) { item ->
                 NotificationItem(
                     title = item.text,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     imageUrl = item.imageUrl,
                     subtitle = item.createdAt?.toLong()?.timestampIntervalSinceNow()
                         ?.secondsToLegibleText(

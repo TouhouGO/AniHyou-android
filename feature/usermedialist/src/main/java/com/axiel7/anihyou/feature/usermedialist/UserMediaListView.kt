@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -355,6 +356,9 @@ private fun LazyListPhone(
                         onClickNotes = { event?.onClickNotes(item) },
                         blockPlus = { event?.blockPlusOne() },
                     )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
                 }
             }
 
@@ -380,6 +384,9 @@ private fun LazyListPhone(
                         onClickNotes = { event?.onClickNotes(item) },
                         blockPlus = { event?.blockPlusOne() },
                     )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
                 }
             }
 
@@ -404,6 +411,9 @@ private fun LazyListPhone(
                         onClickPlus = { onClickPlus(it, item) },
                         onClickNotes = { event?.onClickNotes(item) },
                         blockPlus = { event?.blockPlusOne() },
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 12.dp)
                     )
                 }
             }

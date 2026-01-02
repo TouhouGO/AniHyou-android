@@ -1,21 +1,18 @@
 package com.axiel7.anihyou.feature.usermedialist.composables
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -52,7 +49,7 @@ import com.axiel7.anihyou.core.ui.composables.media.MediaPoster
 import com.axiel7.anihyou.core.ui.composables.scores.BadgeScoreIndicator
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun StandardUserMediaListItem(
     item: CommonMediaListEntry,
@@ -67,23 +64,19 @@ fun StandardUserMediaListItem(
     onClickNotes: () -> Unit,
 ) {
     val status = listStatus ?: item.basicMediaListEntry.status
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-            .padding(vertical = 6.dp, horizontal = 16.dp),
-    ) {
-        Row(
-            modifier = Modifier.height(IntrinsicSize.Max),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    ListItem(
+        onClick = onClick,
+        onLongClick = onLongClick,
+        leadingContent = {
             Box {
                 MediaPoster(
                     url = item.media?.coverImage?.large,
                     showShadow = false,
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .width(MEDIA_POSTER_SMALL_WIDTH.dp)
+                        .size(
+                            width = MEDIA_POSTER_SMALL_WIDTH.dp,
+                            height = MEDIA_POSTER_SMALL_HEIGHT.dp
+                        )
                 )
 
                 if (listStatus == null && status != null) {
@@ -100,93 +93,88 @@ fun StandardUserMediaListItem(
                         scoreFormat = scoreFormat
                     )
                 }
-            }//:Box
-
-            Column(
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .heightIn(min = MEDIA_POSTER_SMALL_HEIGHT.dp),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
-                        modifier = Modifier
-                            .padding(bottom = 8.dp),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 17.sp,
-                        lineHeight = 22.sp,
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 2
-                    )
-                    AiringScheduleText(
-                        item = item,
-                        fontSize = 16.sp
-                    )
-                }//:Column
-                Column {
+            }
+        }
+    ) {
+        Column(
+            modifier = Modifier.heightIn(min = MEDIA_POSTER_SMALL_HEIGHT.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                    modifier = Modifier
+                        .padding(bottom = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 17.sp,
+                    lineHeight = 22.sp,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 2
+                )
+                AiringScheduleText(
+                    item = item,
+                    fontSize = 16.sp
+                )
+            }//:Column
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    val progress = item.basicMediaListEntry.progressOrVolumes()?.format() ?: 0
+                    val duration = item.duration()?.format()
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = if (duration != null) "$progress/$duration" else "$progress",
+                            fontSize = 16.sp
+                        )
+                        if (item.basicMediaListEntry.isUsingVolumeProgress()) {
+                            Icon(
+                                painter = painterResource(R.drawable.bookmark_20),
+                                contentDescription = stringResource(R.string.volumes),
+                            )
+                        }
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.Bottom
                     ) {
-                        val progress = item.basicMediaListEntry.progressOrVolumes()?.format() ?: 0
-                        val duration = item.duration()?.format()
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = if (duration != null) "$progress/$duration" else "$progress",
-                                fontSize = 16.sp
+                        if (item.basicMediaListEntry.repeat.isGreaterThanZero()) {
+                            RepeatIndicator(count = item.basicMediaListEntry.repeat ?: 0)
+                        }
+                        if (!item.basicMediaListEntry.notes.isNullOrBlank()) {
+                            NotesIndicator(
+                                onClick = onClickNotes,
+                                modifier = Modifier.padding(bottom = 2.dp),
                             )
-                            if (item.basicMediaListEntry.isUsingVolumeProgress()) {
-                                Icon(
-                                    painter = painterResource(R.drawable.bookmark_20),
-                                    contentDescription = stringResource(R.string.volumes),
-                                )
-                            }
                         }
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            if (item.basicMediaListEntry.repeat.isGreaterThanZero()) {
-                                RepeatIndicator(count = item.basicMediaListEntry.repeat ?: 0)
-                            }
-                            if (!item.basicMediaListEntry.notes.isNullOrBlank()) {
-                                NotesIndicator(
-                                    onClick = onClickNotes,
-                                    modifier = Modifier.padding(bottom = 2.dp),
-                                )
-                            }
-                            if (isMyList && status?.isActive() == true) {
-                                IncrementOneButton(
-                                    onClickPlus = onClickPlus,
-                                    blockPlus = blockPlus,
-                                    enabled = isPlusEnabled,
-                                )
-                            }
+                        if (isMyList && status?.isActive() == true) {
+                            IncrementOneButton(
+                                onClickPlus = onClickPlus,
+                                blockPlus = blockPlus,
+                                enabled = isPlusEnabled,
+                            )
                         }
-                    }//:Row
-                    LinearProgressIndicator(
-                        progress = { item.calculateProgressBarValue() },
-                        modifier = Modifier
-                            .padding(vertical = 1.dp)
-                            .fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.surfaceColorAtElevation(94.dp),
-                        strokeCap = StrokeCap.Round,
-                        drawStopIndicator = { },
-                    )
-                }//:Column
-            }//:Column
-        }//:Row
-        HorizontalDivider(
-            modifier = Modifier.padding(top = 12.dp)
-        )
-    }//:Column
+                    }
+                }//:Row
+                LinearProgressIndicator(
+                    progress = { item.calculateProgressBarValue() },
+                    modifier = Modifier
+                        .padding(vertical = 1.dp)
+                        .fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceColorAtElevation(94.dp),
+                    strokeCap = StrokeCap.Round,
+                    drawStopIndicator = { },
+                )
+            }
+        }
+    }
 }
 
 @Preview

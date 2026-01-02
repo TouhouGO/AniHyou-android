@@ -2,20 +2,19 @@ package com.axiel7.anihyou.core.ui.composables.activity
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,6 +29,7 @@ import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.secondsToLegibleText
 import java.time.temporal.ChronoUnit
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ActivityFeedItem(
     modifier: Modifier = Modifier,
@@ -50,32 +50,14 @@ fun ActivityFeedItem(
     onClickDelete: () -> Unit = {},
     navigateToFullscreenImage: (String) -> Unit = {},
 ) {
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick),
-    ) {
-        if (type == ActivityType.MEDIA_LIST) {
-            MediaPoster(
-                url = mediaCoverUrl,
-                modifier = Modifier
-                    .padding(end = 16.dp)
-                    .size(
-                        width = 48.dp,
-                        height = 74.dp
-                    )
-                    .clickable(onClick = onClickMedia),
-                showShadow = false
-            )
-        }
-
-        Column(
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
+    ListItem(
+        onClick = onClick,
+        modifier = modifier,
+        overlineContent = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 8.dp),
+                    .padding(bottom = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 PersonItemSmall(
@@ -89,28 +71,29 @@ fun ActivityFeedItem(
                             maxUnit = ChronoUnit.WEEKS,
                             isFutureDate = false
                         ),
-                    color = MaterialTheme.colorScheme.outline,
-                    fontSize = 14.sp
-                )
-            }//:Row
-            if (type == ActivityType.TEXT) {
-                DefaultMarkdownText(
-                    markdown = text,
-                    modifier = Modifier.padding(bottom = 4.dp),
-                    lineHeight = 20.sp,
-                    navigateToFullscreenImage = navigateToFullscreenImage
-                )
-            } else {
-                Text(
-                    text = text,
-                    modifier = Modifier.padding(bottom = 4.dp),
-                    lineHeight = 20.sp
                 )
             }
+        },
+        leadingContent = {
+            if (type == ActivityType.MEDIA_LIST) {
+                MediaPoster(
+                    url = mediaCoverUrl,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(
+                            width = 48.dp,
+                            height = 74.dp
+                        )
+                        .clickable(onClick = onClickMedia),
+                    showShadow = false
+                )
+            }
+        },
+        supportingContent = {
             Row(
-                modifier = Modifier.align(Alignment.End),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.End
             ) {
                 CommentIconButton(
                     modifier = Modifier.width(78.dp),
@@ -133,8 +116,24 @@ fun ActivityFeedItem(
                     )
                 }
             }
-        }//:Column
-    }//Row
+        },
+        contentPadding = PaddingValues()
+    ) {
+        if (type == ActivityType.TEXT) {
+            DefaultMarkdownText(
+                markdown = text,
+                modifier = Modifier.padding(bottom = 4.dp),
+                lineHeight = 20.sp,
+                navigateToFullscreenImage = navigateToFullscreenImage
+            )
+        } else {
+            Text(
+                text = text,
+                modifier = Modifier.padding(bottom = 4.dp),
+                lineHeight = 20.sp
+            )
+        }
+    }
 }
 
 @Preview

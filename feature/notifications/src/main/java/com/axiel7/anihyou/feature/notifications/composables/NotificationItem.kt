@@ -1,6 +1,5 @@
 package com.axiel7.anihyou.feature.notifications.composables
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,12 +8,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,6 +29,7 @@ import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 
 const val NOTIFICATION_IMAGE_SIZE = 48
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NotificationItem(
     title: String,
@@ -36,34 +40,19 @@ fun NotificationItem(
     onClick: () -> Unit,
     onClickImage: () -> Unit = {},
 ) {
-    Row(
-        modifier = (if (isUnread) Modifier.background(MaterialTheme.colorScheme.surfaceVariant) else Modifier)
-            .then(modifier)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-    ) {
-        MediaPoster(
-            url = imageUrl,
-            modifier = Modifier
-                .padding(end = 16.dp)
-                .size(ACTIVITY_IMAGE_SIZE.dp)
-                .clickable(onClick = onClickImage),
-            showShadow = false
-        )
-
-        Column(
-            modifier = Modifier
-                .padding(end = 8.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = title,
-                modifier = Modifier.padding(bottom = 4.dp),
-                lineHeight = 20.sp,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 3
+    ListItem(
+        onClick = onClick,
+        modifier = modifier,
+        leadingContent = {
+            MediaPoster(
+                url = imageUrl,
+                modifier = Modifier
+                    .size(ACTIVITY_IMAGE_SIZE.dp)
+                    .clickable(onClick = onClickImage),
+                showShadow = false
             )
-
+        },
+        supportingContent = {
             subtitle?.let {
                 Text(
                     text = it,
@@ -71,7 +60,18 @@ fun NotificationItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = if (isUnread) MaterialTheme.colorScheme.surfaceVariant else Color.Unspecified
+        )
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.padding(bottom = 4.dp),
+            lineHeight = 20.sp,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 3
+        )
     }
 }
 
