@@ -2,7 +2,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.jetbrains.kotlin.compose)
     alias(libs.plugins.androidx.baselineprofile)
 }
@@ -18,10 +17,6 @@ val versionProps = Properties().also {
 android {
     namespace = appPackageName
     compileSdk = sdkVersion
-
-    base {
-        archivesName = "anihyou-${versionProps.getProperty("name")}"
-    }
 
     defaultConfig {
         applicationId = appPackageName
@@ -70,12 +65,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            resValue("string", "app_name", "AniHyou Debug")
         }
         release {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = false
+            isCrunchPngs = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -113,23 +108,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlin {
-        compilerOptions {
-            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
-        }
-    }
     buildFeatures {
         compose = true
         buildConfig = true
         aidl = false
         renderScript = false
         shaders = false
-    }
-    composeCompiler {
-        stabilityConfigurationFiles.add(rootProject.layout.projectDirectory.file("stability_config.conf"))
-    }
-    androidResources {
-        aaptOptions.cruncherEnabled = false
     }
     packaging {
         resources {
@@ -139,9 +123,24 @@ android {
     dependenciesInfo {
         includeInApk = false
     }
-    baselineProfile {
-        dexLayoutOptimization = true
+}
+
+base {
+    archivesName = "anihyou-${versionProps.getProperty("name")}"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
     }
+}
+
+composeCompiler {
+    stabilityConfigurationFiles.add(rootProject.layout.projectDirectory.file("stability_config.conf"))
+}
+
+baselineProfile {
+    dexLayoutOptimization = true
 }
 
 dependencies {
