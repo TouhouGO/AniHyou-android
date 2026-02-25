@@ -23,19 +23,6 @@ Follow the development on the official Discord server:
 ## Coming features
 - [See project](https://github.com/users/axiel7/projects/2/views/1)
 
-# Libraries used
-* [AniList GraphQL API](https://github.com/AniList/ApiV2-GraphQL-Docs)
-* [Apollo Kotlin](https://github.com/apollographql/apollo-kotlin)
-* [DataStore](https://developer.android.com/topic/libraries/architecture/datastore)
-* [WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager)
-* [compose-markdown](https://github.com/axiel7/compose-markdown) (Forked)
-* [MaterialKolor](https://github.com/jordond/MaterialKolor)
-* [Hilt](https://dagger.dev/hilt)
-* [Coil](https://github.com/coil-kt/coil)
-* [Material3 Components](https://github.com/material-components/material-components-android)
-* [Jetpack Compose](https://developer.android.com/jetpack/compose)
-* [Jetpack Glance](https://developer.android.com/jetpack/compose/glance)
-
 # Donate 💸
 Support the development of AniHyou by making a donation via:
 
