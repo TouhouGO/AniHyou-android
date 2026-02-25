@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -16,11 +17,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -33,29 +37,33 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.model.activity.text
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.activitydetails.composables.ActivityTextView
 import com.axiel7.anihyou.feature.activitydetails.composables.ActivityTextViewPlaceholder
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun ActivityDetailsView(
+    arguments: Routes.ActivityDetails,
     navActionManager: NavActionManager,
 ) {
-    val viewModel: ActivityDetailsViewModel = koinViewModel()
+    val viewModel: ActivityDetailsViewModel = koinViewModel(parameters = { parametersOf(arguments) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     ActivityDetailsContent(
-        activityId = viewModel.arguments.id,
+        activityId = arguments.id,
         uiState = uiState,
         event = viewModel,
         navActionManager = navActionManager,
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ActivityDetailsContent(
     activityId: Int,
@@ -66,12 +74,15 @@ private fun ActivityDetailsContent(
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         rememberTopAppBarState()
     )
+    val pullRefreshState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
     val expandedFab by remember {
         derivedStateOf {
             listState.firstVisibleItemIndex == 0
         }
     }
+
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
     LifecycleResumeEffect(Unit) {
         if (!uiState.isLoading) {
@@ -104,6 +115,14 @@ private fun ActivityDetailsContent(
             isRefreshing = uiState.fetchFromNetwork,
             onRefresh = { event?.refresh() },
             modifier = Modifier.fillMaxSize(),
+            state = pullRefreshState,
+            indicator = {
+                PullToRefreshDefaults.LoadingIndicator(
+                    state = pullRefreshState,
+                    isRefreshing = uiState.fetchFromNetwork,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                )
+            }
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -128,6 +147,7 @@ private fun ActivityDetailsContent(
                             createdAt = uiState.details.createdAt,
                             replyCount = uiState.details.replyCount,
                             likeCount = uiState.details.likeCount,
+                            likes = uiState.details.likes,
                             isLiked = uiState.details.isLiked,
                             onClickUser = {
                                 uiState.details.userId?.let(navActionManager::toUserDetails)
@@ -153,11 +173,12 @@ private fun ActivityDetailsContent(
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 4.dp),
                         text = item.text.orEmpty(),
-                        username = item.user?.name,
-                        avatarUrl = item.user?.avatar?.medium,
+                        username = item.username,
+                        avatarUrl = item.avatarUrl,
                         createdAt = item.createdAt,
                         replyCount = null,
                         likeCount = item.likeCount,
+                        likes = item.likes,
                         isLiked = item.isLiked,
                         onClickUser = {
                             item.userId?.let(navActionManager::toUserDetails)

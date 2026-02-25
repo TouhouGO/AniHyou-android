@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -25,9 +24,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
+import com.axiel7.anihyou.core.ui.composables.ConnectedButtonGroup
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
-import com.axiel7.anihyou.core.ui.composables.SegmentedButtons
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ShareIconButton
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
@@ -36,12 +37,14 @@ import com.axiel7.anihyou.feature.staffdetails.content.StaffCharacterView
 import com.axiel7.anihyou.feature.staffdetails.content.StaffInfoView
 import com.axiel7.anihyou.feature.staffdetails.content.StaffMediaView
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun StaffDetailsView(
+    arguments: Routes.StaffDetails,
     navActionManager: NavActionManager
 ) {
-    val viewModel: StaffDetailsViewModel = koinViewModel()
+    val viewModel: StaffDetailsViewModel = koinViewModel(parameters = { parametersOf(arguments) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     StaffDetailsContent(
@@ -64,7 +67,7 @@ private fun StaffDetailsContent(
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
 
     val haptic = LocalHapticFeedback.current
-    var showEditSheet by remember { mutableStateOf(false) }
+    var showEditSheet by rememberSaveable { mutableStateOf(false) }
 
     if (showEditSheet) {
         uiState.selectedMediaItem?.second?.value?.node?.let { node ->
@@ -78,6 +81,8 @@ private fun StaffDetailsContent(
             )
         }
     }
+
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
     DefaultScaffoldWithSmallTopAppBar(
         title = "",
@@ -102,9 +107,9 @@ private fun StaffDetailsContent(
                     end = padding.calculateEndPadding(LocalLayoutDirection.current)
                 )
         ) {
-            SegmentedButtons(
+            ConnectedButtonGroup(
                 items = StaffInfoType.tabRows,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
                 selectedIndex = selectedTabIndex,
                 onItemSelection = {
                     selectedTabIndex = it

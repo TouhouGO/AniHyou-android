@@ -1,5 +1,7 @@
 package com.axiel7.anihyou.feature.home.activity
 
+import androidx.activity.compose.LocalActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,12 +10,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -25,6 +30,7 @@ import com.axiel7.anihyou.core.ui.composables.activity.ActivityItemPlaceholder
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.core.ui.composables.activity.ActivityFeedItem
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.feature.home.activity.composables.ActivityFollowingChip
 import com.axiel7.anihyou.feature.home.activity.composables.ActivityTypeChip
 import org.koin.androidx.compose.koinViewModel
@@ -34,7 +40,9 @@ fun ActivityFeedView(
     modifier: Modifier = Modifier,
     navActionManager: NavActionManager,
 ) {
-    val viewModel: ActivityFeedViewModel = koinViewModel()
+    val viewModel: ActivityFeedViewModel = koinViewModel(
+        viewModelStoreOwner = LocalActivity.current as AppCompatActivity
+    )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     ActivityFeedContent(
@@ -45,7 +53,7 @@ fun ActivityFeedView(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ActivityFeedContent(
     modifier: Modifier = Modifier,
@@ -58,11 +66,20 @@ private fun ActivityFeedContent(
     val listState = rememberLazyListState()
     listState.OnBottomReached(buffer = 3, onLoadMore = { event?.onLoadMore() })
 
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
+
     PullToRefreshBox(
         isRefreshing = uiState.isLoading,
         onRefresh = { event?.refreshList() },
         modifier = Modifier.fillMaxSize(),
-        state = pullRefreshState
+        state = pullRefreshState,
+        indicator = {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullRefreshState,
+                isRefreshing = uiState.isLoading,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+        }
     ) {
         LazyColumn(
             modifier = modifier,
@@ -97,8 +114,8 @@ private fun ActivityFeedContent(
                     ActivityFeedItem(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         type = ActivityType.MEDIA_LIST,
-                        username = it.user?.name,
-                        avatarUrl = it.user?.avatar?.medium,
+                        username = it.user?.activityUser?.name,
+                        avatarUrl = it.user?.activityUser?.avatar?.medium,
                         createdAt = it.createdAt,
                         text = it.text(),
                         replyCount = it.replyCount,
@@ -124,8 +141,8 @@ private fun ActivityFeedContent(
                     ActivityFeedItem(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         type = ActivityType.TEXT,
-                        username = it.user?.name,
-                        avatarUrl = it.user?.avatar?.medium,
+                        username = it.user?.activityUser?.name,
+                        avatarUrl = it.user?.activityUser?.avatar?.medium,
                         createdAt = it.createdAt,
                         text = it.text.orEmpty(),
                         replyCount = it.replyCount,

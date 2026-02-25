@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,7 +15,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -30,6 +32,7 @@ import com.axiel7.anihyou.core.ui.composables.Rectangle
 import com.axiel7.anihyou.core.ui.composables.common.AssistChipWithTooltip
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.materialkolor.ktx.harmonize
 
 @Composable
 fun <T> HorizontalStatsBar(
@@ -42,8 +45,9 @@ fun <T> HorizontalStatsBar(
     val totalValue = remember(stats) {
         stats.map { it.value }.sum()
     }
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp
+    val screenWidth = with(LocalDensity.current) {
+        LocalWindowInfo.current.containerSize.width.toDp().value
+    }
 
     Column(
         modifier = Modifier.padding(vertical = verticalPadding)
@@ -55,7 +59,7 @@ fun <T> HorizontalStatsBar(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (isLoading) {
-                for (i in 1..5) {
+                repeat(5) {
                     Text(
                         text = "Loading",
                         modifier = Modifier
@@ -77,9 +81,12 @@ fun <T> HorizontalStatsBar(
                     } else null,
                     leadingIcon = { Text(text = stat.value.toInt().format().orEmpty()) },
                     colors = AssistChipDefaults.assistChipColors(
-                        containerColor = stat.type.primaryColor(),
-                        labelColor = stat.type.onPrimaryColor(),
+                        containerColor = stat.type.primaryColor()
+                            .harmonize(MaterialTheme.colorScheme.primary),
+                        labelColor = stat.type.onPrimaryColor()
+                            .harmonize(MaterialTheme.colorScheme.primary),
                         leadingIconContentColor = stat.type.onPrimaryColor()
+                            .harmonize(MaterialTheme.colorScheme.primary)
                     ),
                     border = null
                 )
@@ -91,7 +98,7 @@ fun <T> HorizontalStatsBar(
                 Rectangle(
                     width = (it.value / totalValue * screenWidth).dp,
                     height = 16.dp,
-                    color = it.type.primaryColor()
+                    color = it.type.primaryColor().harmonize(MaterialTheme.colorScheme.primary)
                 )
             }
         }

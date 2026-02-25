@@ -9,13 +9,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -24,8 +28,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.base.ANILIST_THREAD_URL
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.NotificationIconButton
 import com.axiel7.anihyou.core.ui.composables.common.OpenInBrowserIconButton
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
@@ -35,12 +41,14 @@ import com.axiel7.anihyou.feature.thread.composables.ParentThreadViewPlaceholder
 import com.axiel7.anihyou.feature.thread.composables.ThreadCommentView
 import com.axiel7.anihyou.feature.thread.composables.ThreadCommentViewPlaceholder
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun ThreadDetailsView(
+    arguments: Routes.ThreadDetails,
     navActionManager: NavActionManager
 ) {
-    val viewModel: ThreadDetailsViewModel = koinViewModel()
+    val viewModel: ThreadDetailsViewModel = koinViewModel(parameters = { parametersOf(arguments) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     ThreadDetailsContent(
@@ -50,13 +58,14 @@ fun ThreadDetailsView(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ThreadDetailsContent(
     uiState: ThreadDetailsUiState,
     event: ThreadDetailsEvent?,
     navActionManager: NavActionManager,
 ) {
+    val pullRefreshState = rememberPullToRefreshState()
     val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
         rememberTopAppBarState()
     )
@@ -64,6 +73,8 @@ private fun ThreadDetailsContent(
     if (!uiState.isLoading) {
         listState.OnBottomReached(buffer = 3, onLoadMore = { event?.onLoadMore() })
     }
+
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
     DefaultScaffoldWithSmallTopAppBar(
         title = "",
@@ -83,6 +94,14 @@ private fun ThreadDetailsContent(
             isRefreshing = uiState.fetchFromNetwork,
             onRefresh = { event?.refresh() },
             modifier = Modifier.fillMaxSize(),
+            state = pullRefreshState,
+            indicator = {
+                PullToRefreshDefaults.LoadingIndicator(
+                    state = pullRefreshState,
+                    isRefreshing = uiState.fetchFromNetwork,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                )
+            }
         ) {
             LazyColumn(
                 modifier = Modifier

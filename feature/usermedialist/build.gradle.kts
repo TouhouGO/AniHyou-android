@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.jetbrains.kotlin.compose)
 }
 
@@ -9,7 +8,7 @@ val sdkVersion: Int by rootProject.extra
 val minSdkVersion: Int by rootProject.extra
 
 android {
-    namespace = "$appPackageName.feature.editmedia"
+    namespace = "$appPackageName.feature.usermedialist"
     compileSdk = sdkVersion
 
     defaultConfig {

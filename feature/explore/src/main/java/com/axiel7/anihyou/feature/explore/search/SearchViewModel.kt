@@ -1,22 +1,21 @@
 package com.axiel7.anihyou.feature.explore.search
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.axiel7.anihyou.core.base.PagedResult
+import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.SearchRepository
 import com.axiel7.anihyou.core.model.SearchType
 import com.axiel7.anihyou.core.model.genre.GenresAndTagsForSearch
 import com.axiel7.anihyou.core.model.media.CountryOfOrigin
 import com.axiel7.anihyou.core.model.media.MediaFormatLocalizable
+import com.axiel7.anihyou.core.model.media.MediaSourceLocalizable
 import com.axiel7.anihyou.core.model.media.MediaStatusLocalizable
 import com.axiel7.anihyou.core.network.SearchMediaQuery
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.type.MediaSeason
 import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaType
-import com.axiel7.anihyou.core.ui.common.navigation.Routes.Search
-import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -27,11 +26,10 @@ import kotlinx.coroutines.flow.update
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SearchViewModel(
-    savedStateHandle: SavedStateHandle,
+    arguments: Routes.Search,
     private val searchRepository: SearchRepository,
 ) : PagedUiStateViewModel<SearchUiState>(), SearchEvent {
 
-    private val arguments = savedStateHandle.toRoute<Search>()
     private val mediaType = arguments.mediaType?.let { MediaType.safeValueOf(it) }
     private val mediaSort = arguments.mediaSort?.let { MediaSort.safeValueOf(it) }
 
@@ -101,6 +99,14 @@ class SearchViewModel(
         it.copy(season = value, page = 1, hasNextPage = true, isLoading = true)
     }
 
+    override fun setEpCh(value: IntRange?) = mutableUiState.update {
+        it.copy(minEpCh = value?.start, maxEpCh = value?.endInclusive)
+    }
+
+    override fun setDuration(value: IntRange?) = mutableUiState.update {
+        it.copy(minDuration = value?.start, maxDuration = value?.endInclusive)
+    }
+
     override fun setOnMyList(value: Boolean?) = mutableUiState.update {
         it.copy(onMyList = value, page = 1, hasNextPage = true, isLoading = true)
     }
@@ -115,6 +121,16 @@ class SearchViewModel(
 
     override fun setCountry(value: CountryOfOrigin?) = mutableUiState.update {
         it.copy(country = value, page = 1, hasNextPage = true, isLoading = true)
+    }
+
+    override fun setSources(values: List<MediaSourceLocalizable>) = mutableUiState.update {
+        it.copy(
+            selectedSources = values,
+            page = 1,
+            hasNextPage = true,
+            isLoading = true,
+            sourcesChanged = true
+        )
     }
 
     override fun onGenreTagStateChanged(genresAndTagsForSearch: GenresAndTagsForSearch) =
@@ -141,6 +157,7 @@ class SearchViewModel(
             isAdult = null,
             country = null,
             season = null,
+            selectedSources = emptyList(),
             clearedFilters = true,
             page = 1,
             hasNextPage = true,
@@ -184,6 +201,10 @@ class SearchViewModel(
                         && old.startYear == new.startYear
                         && old.endYear == new.endYear
                         && old.season == new.season
+                        && old.minEpCh == new.minEpCh
+                        && old.maxEpCh == new.maxEpCh
+                        && old.minDuration == new.minDuration
+                        && old.maxDuration == new.maxDuration
                         && old.onMyList == new.onMyList
                         && old.isDoujin == new.isDoujin
                         && old.isAdult == new.isAdult
@@ -191,6 +212,7 @@ class SearchViewModel(
                         && !new.genresOrTagsChanged
                         && !new.mediaFormatsChanged
                         && !new.mediaStatusesChanged
+                        && !new.sourcesChanged
             }
             .flatMapLatest { uiState ->
                 searchRepository.searchMedia(
@@ -201,8 +223,17 @@ class SearchViewModel(
                     genreNotIn = uiState.genresAndTagsForSearch.genreNot,
                     tagIn = uiState.genresAndTagsForSearch.tagIn,
                     tagNotIn = uiState.genresAndTagsForSearch.tagNot,
+                    minimumTagPercentage = uiState.genresAndTagsForSearch.minimumTagPercentage,
                     formatIn = uiState.selectedMediaFormats.map { it.value },
                     statusIn = uiState.selectedMediaStatuses.map { it.value },
+                    episodesLesser = uiState.maxEpCh.takeIf { uiState.isAnime },
+                    episodesGreater = uiState.minEpCh?.minus(1).takeIf { uiState.isAnime },
+                    durationLesser = uiState.maxDuration.takeIf { uiState.isAnime },
+                    durationGreater = uiState.minDuration?.minus(1).takeIf { uiState.isAnime },
+                    chaptersLesser = uiState.maxEpCh.takeIf { uiState.isManga },
+                    chaptersGreater = uiState.minEpCh?.minus(1).takeIf { uiState.isManga },
+                    volumesLesser = uiState.maxDuration.takeIf { uiState.isManga },
+                    volumesGreater = uiState.minDuration?.minus(1).takeIf { uiState.isManga },
                     startYear = uiState.startYear,
                     endYear = uiState.endYear,
                     season = uiState.season,
@@ -210,6 +241,7 @@ class SearchViewModel(
                     isLicensed = uiState.isDoujin?.not(),
                     isAdult = uiState.isAdult,
                     country = uiState.country,
+                    sourceIn = uiState.selectedSources.map { it.value },
                     page = uiState.page
                 )
             }
@@ -224,6 +256,7 @@ class SearchViewModel(
                             genresOrTagsChanged = false,
                             mediaFormatsChanged = false,
                             mediaStatusesChanged = false,
+                            sourcesChanged = false,
                             clearedFilters = false,
                         )
                     } else {

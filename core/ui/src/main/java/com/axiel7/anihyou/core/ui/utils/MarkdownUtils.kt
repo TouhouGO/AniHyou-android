@@ -18,7 +18,7 @@ object MarkdownUtils {
         .formatSpoilerTags()
 
     private fun String.formatImageTags() =
-        replace(imageRegex, "\n[View image]($ANIHYOU_IMAGE_SCHEME\$2)\n")
+        replace(imageRegex, $$"\n[View image]($$ANIHYOU_IMAGE_SCHEME$2)\n")
 
     private fun String.formatSpoilerTags() =
         replace(spoilerRegex) {
@@ -27,7 +27,7 @@ object MarkdownUtils {
         }
 
     private fun String.removeCenterMarkdown() =
-        replace(centerRegex, "\$1")
+        replace(centerRegex, $$"$1")
 
     fun String.onMarkdownLinkClicked(
         onImageClicked: (String) -> Unit,

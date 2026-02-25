@@ -13,9 +13,12 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,24 +27,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.axiel7.anihyou.core.model.ListStyle
 import com.axiel7.anihyou.core.network.fragment.CommonMediaListEntry
 import com.axiel7.anihyou.core.network.type.MediaListStatus
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.media.MEDIA_POSTER_MEDIUM_WIDTH
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemHorizontalPlaceholder
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemVerticalPlaceholder
-import com.axiel7.anihyou.core.common.utils.ContextUtils.showToast
 import com.axiel7.anihyou.feature.usermedialist.composables.CompactUserMediaListItem
 import com.axiel7.anihyou.feature.usermedialist.composables.GridUserMediaListItem
 import com.axiel7.anihyou.feature.usermedialist.composables.MinimalUserMediaListItem
 import com.axiel7.anihyou.feature.usermedialist.composables.RandomEntryButton
 import com.axiel7.anihyou.feature.usermedialist.composables.StandardUserMediaListItem
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun UserMediaListView(
     uiState: UserMediaListUiState,
@@ -51,7 +53,6 @@ fun UserMediaListView(
     navActionManager: NavActionManager,
     onShowEditSheet: (CommonMediaListEntry) -> Unit,
 ) {
-    val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val pullRefreshState = rememberPullToRefreshState()
 
@@ -62,18 +63,11 @@ fun UserMediaListView(
         }
     }
 
-    LaunchedEffect(uiState.error) {
-        if (uiState.error != null) {
-            event?.onErrorDisplayed()
-            context.showToast(uiState.error)
-        }
-    }
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
-    val onClickPlus: (CommonMediaListEntry) -> Unit = {
-        if (!uiState.isLoadingPlusOne) {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            event?.onClickPlusOne(it)
-        }
+    val onClickPlus: (Int, CommonMediaListEntry) -> Unit = { increment, item ->
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        event?.onClickPlusOne(increment, item)
     }
 
     PullToRefreshBox(
@@ -81,6 +75,13 @@ fun UserMediaListView(
         onRefresh = { event?.refreshList() },
         modifier = Modifier.fillMaxSize(),
         state = pullRefreshState,
+        indicator = {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullRefreshState,
+                isRefreshing = uiState.fetchFromNetwork,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+        }
     ) {
         val listModifier = Modifier
             .fillMaxSize()
@@ -120,6 +121,7 @@ fun UserMediaListView(
     }//: Box
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LazyListGrid(
     mediaList: List<CommonMediaListEntry>,
@@ -169,7 +171,7 @@ private fun LazyListGrid(
         item(contentType = { 0 }) {
             if (uiState.hasNextPage) {
                 Box {
-                    CircularProgressIndicator(
+                    LoadingIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -181,6 +183,7 @@ private fun LazyListGrid(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LazyListTablet(
     mediaList: List<CommonMediaListEntry>,
@@ -190,7 +193,7 @@ private fun LazyListTablet(
     contentPadding: PaddingValues,
     navActionManager: NavActionManager,
     onShowEditSheet: (CommonMediaListEntry) -> Unit,
-    onClickPlus: (CommonMediaListEntry) -> Unit,
+    onClickPlus: (Int, CommonMediaListEntry) -> Unit,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -229,8 +232,9 @@ private fun LazyListTablet(
                         isPlusEnabled = !uiState.isLoadingPlusOne,
                         onClick = { navActionManager.toMediaDetails(item.mediaId) },
                         onLongClick = { onShowEditSheet(item) },
-                        onClickPlus = { onClickPlus(item) },
-                        onClickNotes = { event?.onClickNotes(item) }
+                        onClickPlus = { onClickPlus(it, item) },
+                        onClickNotes = { event?.onClickNotes(item) },
+                        blockPlus = { event?.blockPlusOne() }
                     )
                 }
             }
@@ -253,8 +257,9 @@ private fun LazyListTablet(
                         isPlusEnabled = !uiState.isLoadingPlusOne,
                         onClick = { navActionManager.toMediaDetails(item.mediaId) },
                         onLongClick = { onShowEditSheet(item) },
-                        onClickPlus = { onClickPlus(item) },
-                        onClickNotes = { event?.onClickNotes(item) }
+                        onClickPlus = { onClickPlus(it, item) },
+                        onClickNotes = { event?.onClickNotes(item) },
+                        blockPlus = { event?.blockPlusOne() },
                     )
                 }
             }
@@ -277,8 +282,9 @@ private fun LazyListTablet(
                         isPlusEnabled = !uiState.isLoadingPlusOne,
                         onClick = { navActionManager.toMediaDetails(item.mediaId) },
                         onLongClick = { onShowEditSheet(item) },
-                        onClickPlus = { onClickPlus(item) },
-                        onClickNotes = { event?.onClickNotes(item) }
+                        onClickPlus = { onClickPlus(it, item) },
+                        onClickNotes = { event?.onClickNotes(item) },
+                        blockPlus = { event?.blockPlusOne() },
                     )
                 }
             }
@@ -289,7 +295,7 @@ private fun LazyListTablet(
         item(contentType = { 0 }) {
             if (uiState.hasNextPage) {
                 Box {
-                    CircularProgressIndicator(
+                    LoadingIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -301,6 +307,7 @@ private fun LazyListTablet(
     }//: LazyVerticalGrid
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LazyListPhone(
     mediaList: List<CommonMediaListEntry>,
@@ -310,7 +317,7 @@ private fun LazyListPhone(
     contentPadding: PaddingValues,
     navActionManager: NavActionManager,
     onShowEditSheet: (CommonMediaListEntry) -> Unit,
-    onClickPlus: (CommonMediaListEntry) -> Unit,
+    onClickPlus: (Int, CommonMediaListEntry) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier,
@@ -345,8 +352,12 @@ private fun LazyListPhone(
                         isPlusEnabled = !uiState.isLoadingPlusOne,
                         onClick = { navActionManager.toMediaDetails(item.mediaId) },
                         onLongClick = { onShowEditSheet(item) },
-                        onClickPlus = { onClickPlus(item) },
-                        onClickNotes = { event?.onClickNotes(item) }
+                        onClickPlus = { onClickPlus(it, item) },
+                        onClickNotes = { event?.onClickNotes(item) },
+                        blockPlus = { event?.blockPlusOne() },
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 12.dp)
                     )
                 }
             }
@@ -369,8 +380,12 @@ private fun LazyListPhone(
                         isPlusEnabled = !uiState.isLoadingPlusOne,
                         onClick = { navActionManager.toMediaDetails(item.mediaId) },
                         onLongClick = { onShowEditSheet(item) },
-                        onClickPlus = { onClickPlus(item) },
-                        onClickNotes = { event?.onClickNotes(item) }
+                        onClickPlus = { onClickPlus(it, item) },
+                        onClickNotes = { event?.onClickNotes(item) },
+                        blockPlus = { event?.blockPlusOne() },
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 12.dp)
                     )
                 }
             }
@@ -393,8 +408,12 @@ private fun LazyListPhone(
                         isPlusEnabled = !uiState.isLoadingPlusOne,
                         onClick = { navActionManager.toMediaDetails(item.mediaId) },
                         onLongClick = { onShowEditSheet(item) },
-                        onClickPlus = { onClickPlus(item) },
-                        onClickNotes = { event?.onClickNotes(item) }
+                        onClickPlus = { onClickPlus(it, item) },
+                        onClickNotes = { event?.onClickNotes(item) },
+                        blockPlus = { event?.blockPlusOne() },
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 12.dp)
                     )
                 }
             }
@@ -405,7 +424,7 @@ private fun LazyListPhone(
         item(contentType = { 0 }) {
             if (uiState.hasNextPage) {
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    CircularProgressIndicator(
+                    LoadingIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }

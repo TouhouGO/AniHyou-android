@@ -38,8 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -48,7 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.axiel7.anihyou.core.resources.R
+import com.axiel7.anihyou.core.common.utils.DateUtils.toEpochMillis
 import com.axiel7.anihyou.core.model.canUseAdvancedScoring
 import com.axiel7.anihyou.core.model.maxValue
 import com.axiel7.anihyou.core.model.media.duration
@@ -61,15 +59,16 @@ import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.type.MediaListStatus
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.network.type.ScoreFormat
+import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.composables.PlainPreference
 import com.axiel7.anihyou.core.ui.composables.SelectableIconToggleButton
 import com.axiel7.anihyou.core.ui.composables.SwitchPreference
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.SmallCircularProgressIndicator
+import com.axiel7.anihyou.core.ui.composables.rememberSheetState
 import com.axiel7.anihyou.core.ui.composables.scores.RatingView
 import com.axiel7.anihyou.core.ui.composables.sheet.ModalBottomSheet
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
-import com.axiel7.anihyou.core.common.utils.ContextUtils.showToast
-import com.axiel7.anihyou.core.common.utils.DateUtils.toEpochMillis
 import com.axiel7.anihyou.feature.editmedia.composables.CustomListsDialog
 import com.axiel7.anihyou.feature.editmedia.composables.DeleteMediaEntryDialog
 import com.axiel7.anihyou.feature.editmedia.composables.EditMediaDateField
@@ -124,11 +123,11 @@ private fun EditMediaSheetContent(
     onEntryUpdated: (updatedListEntry: BasicMediaListEntry?) -> Unit,
     onDismissed: () -> Unit,
 ) {
-    val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val datePickerState = rememberDatePickerState()
     val isKeyboardVisible = WindowInsets.isImeVisible
     val keyboardController = LocalSoftwareKeyboardController.current
+    val scrollState = rememberScrollState()
 
     if (uiState.openDatePicker) {
         EditMediaDatePicker(
@@ -165,12 +164,7 @@ private fun EditMediaSheetContent(
         )
     }
 
-    LaunchedEffect(uiState.error) {
-        if (uiState.error != null) {
-            event?.onErrorDisplayed()
-            context.showToast(uiState.error)
-        }
-    }
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
     LaunchedEffect(uiState.updateSuccess) {
         if (uiState.updateSuccess) {
@@ -184,6 +178,7 @@ private fun EditMediaSheetContent(
         onDismissed = onDismissed,
         scope = scope,
         sheetState = sheetState,
+        sheetGesturesEnabled = !scrollState.canScrollBackward,
         windowInsets = WindowInsets(0, 0, 0, 0),
         properties = ModalBottomSheetProperties(shouldDismissOnBackPress = false),
     ) { dismiss ->
@@ -215,7 +210,7 @@ private fun EditMediaSheetContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .imePadding()
                 .padding(bottom = 32.dp + bottomPadding),
             horizontalAlignment = Alignment.Start
@@ -445,9 +440,8 @@ fun EditMediaSheetPreview() {
             EditMediaSheetContent(
                 uiState = EditMediaUiState(),
                 event = null,
-                sheetState = SheetState(
+                sheetState = rememberSheetState(
                     skipPartiallyExpanded = true,
-                    density = LocalDensity.current,
                     initialValue = SheetValue.Expanded
                 ),
                 onEntryUpdated = {},

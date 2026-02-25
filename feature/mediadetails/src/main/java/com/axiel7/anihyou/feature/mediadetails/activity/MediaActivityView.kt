@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -29,18 +31,22 @@ import com.axiel7.anihyou.core.model.activity.text
 import com.axiel7.anihyou.core.network.type.ActivityType
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.activity.ActivityFeedItem
 import com.axiel7.anihyou.core.ui.composables.activity.ActivityItemPlaceholder
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun MediaActivityView(
+    arguments: Routes.MediaActivity,
     navActionManager: NavActionManager
 ) {
-    val viewModel: MediaActivityViewModel = koinViewModel()
+    val viewModel: MediaActivityViewModel = koinViewModel(parameters = { parametersOf(arguments) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     MediaActivityContent(
@@ -50,7 +56,7 @@ fun MediaActivityView(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun MediaActivityContent(
     uiState: MediaActivityUiState,
@@ -60,6 +66,9 @@ private fun MediaActivityContent(
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         rememberTopAppBarState()
     )
+
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
+
     DefaultScaffoldWithSmallTopAppBar(
         title = stringResource(R.string.activity),
         navigationIcon = {
@@ -68,7 +77,10 @@ private fun MediaActivityContent(
             )
         },
         actions = {
-            IconButton(onClick = { event?.setIsMine(!uiState.isMine) }) {
+            IconButton(
+                onClick = { event?.setIsMine(!uiState.isMine) },
+                shapes = IconButtonDefaults.shapes()
+            ) {
                 Icon(
                     painter = painterResource(
                         id = if (uiState.isMine) R.drawable.person_filled_24
@@ -100,8 +112,8 @@ private fun MediaActivityContent(
                 ActivityFeedItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     type = ActivityType.MEDIA_LIST,
-                    username = item.user?.name,
-                    avatarUrl = item.user?.avatar?.medium,
+                    username = item.user?.activityUser?.name,
+                    avatarUrl = item.user?.activityUser?.avatar?.medium,
                     createdAt = item.createdAt,
                     text = item.text(),
                     replyCount = item.replyCount,
@@ -127,7 +139,7 @@ private fun MediaActivityContent(
             item(contentType = { 0 }) {
                 if (uiState.hasNextPage) {
                     Box(modifier = Modifier.fillMaxWidth()) {
-                        CircularProgressIndicator(
+                        LoadingIndicator(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }

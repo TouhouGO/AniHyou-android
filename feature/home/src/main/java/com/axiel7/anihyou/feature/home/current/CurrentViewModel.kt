@@ -5,21 +5,24 @@ import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.base.extensions.indexOfFirstOrNull
 import com.axiel7.anihyou.core.common.utils.NumberUtils.isNullOrZero
+import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.MediaListRepository
 import com.axiel7.anihyou.core.model.CurrentListType
+import com.axiel7.anihyou.core.model.media.currentAnimeSeason
 import com.axiel7.anihyou.core.model.media.duration
 import com.axiel7.anihyou.core.model.media.episodesBehind
 import com.axiel7.anihyou.core.model.media.isBehind
+import com.axiel7.anihyou.core.model.media.nextAnimeSeason
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.fragment.CommonMediaListEntry
 import com.axiel7.anihyou.core.network.type.MediaListSort
 import com.axiel7.anihyou.core.network.type.MediaListStatus
 import com.axiel7.anihyou.core.network.type.MediaStatus
 import com.axiel7.anihyou.core.network.type.MediaType
-import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -28,6 +31,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CurrentViewModel(
@@ -44,6 +48,7 @@ class CurrentViewModel(
     }
 
     override fun onClickPlusOne(
+        increment: Int,
         item: CommonMediaListEntry,
         type: CurrentListType
     ) {
@@ -55,8 +60,9 @@ class CurrentViewModel(
                     isLoadingPlusOne = true
                 )
             }
-            mediaListRepository.incrementOneProgress(
+            mediaListRepository.incrementProgress(
                 entry = item.basicMediaListEntry,
+                increment = increment,
                 total = item.duration()
             ).collectLatest { result ->
                 mutableUiState.update {
@@ -69,6 +75,10 @@ class CurrentViewModel(
         }
     }
 
+    override fun blockPlusOne() {
+        mutableUiState.update { it.copy(isLoadingPlusOne = true) }
+    }
+
     override fun onUpdateListEntry(
         newListEntry: BasicMediaListEntry?,
         type: CurrentListType
@@ -76,12 +86,7 @@ class CurrentViewModel(
         mutableUiState.value.run {
             selectedItem?.let { selectedItem ->
                 if (selectedItem.basicMediaListEntry != newListEntry) {
-                    val list = when (type) {
-                        CurrentListType.AIRING -> airingList
-                        CurrentListType.BEHIND -> behindList
-                        CurrentListType.ANIME -> animeList
-                        CurrentListType.MANGA -> mangaList
-                    }
+                    val list = getListFromType(type)
                     if (newListEntry != null) {
                         list.indexOfFirstOrNull { it.mediaId == selectedItem.mediaId }
                             ?.let { index ->
@@ -123,6 +128,7 @@ class CurrentViewModel(
         viewModelScope.launch {
             mutableUiState.value.selectedItem?.let { item ->
                 mediaListRepository.updateEntry(
+                    oldEntry = item.basicMediaListEntry,
                     mediaId = item.mediaId,
                     score = score,
                 ).collectLatest {
@@ -221,6 +227,65 @@ class CurrentViewModel(
                         is PagedResult.Success -> {
                             uiState.mangaList.clear()
                             uiState.mangaList.addAll(result.list)
+                            uiState.copy(
+                                fetchFromNetwork = false,
+                                isLoading = false
+                            )
+                        }
+
+                        is PagedResult.Loading -> {
+                            uiState.copy(isLoading = true)
+                        }
+
+                        is PagedResult.Error -> {
+                            uiState.copy(
+                                error = result.message,
+                                isLoading = false,
+                            )
+                        }
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+
+        // next season on list
+        mutableUiState
+            .distinctUntilChanged { _, new ->
+                !new.fetchFromNetwork
+            }
+            .flatMapLatest { uiState ->
+                val now = LocalDateTime.now()
+                mediaListRepository.getMySeasonalAnime(
+                    season = now.currentAnimeSeason(),
+                    fetchFromNetwork = uiState.fetchFromNetwork,
+                    page = 1,
+                ).combine(
+                    mediaListRepository.getMySeasonalAnime(
+                        season = now.nextAnimeSeason(),
+                        fetchFromNetwork = uiState.fetchFromNetwork,
+                        page = 1,
+                    )
+                ) { first, second ->
+                    when (first) {
+                        is PagedResult.Success if second is PagedResult.Success -> {
+                            PagedResult.Success(
+                                list = first.list + second.list,
+                                currentPage = first.currentPage,
+                                hasNextPage = first.hasNextPage,
+                            )
+                        }
+
+                        !is PagedResult.Success -> first
+                        else -> second
+                    }
+                }
+            }
+            .onEach { result ->
+                mutableUiState.update { uiState ->
+                    when (result) {
+                        is PagedResult.Success -> {
+                            uiState.nextSeasonAnimeList.clear()
+                            uiState.nextSeasonAnimeList.addAll(result.list)
                             uiState.copy(
                                 fetchFromNetwork = false,
                                 isLoading = false

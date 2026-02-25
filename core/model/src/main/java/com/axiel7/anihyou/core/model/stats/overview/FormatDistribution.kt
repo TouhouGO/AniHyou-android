@@ -4,11 +4,10 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import com.axiel7.anihyou.core.network.type.MediaFormat
 import com.axiel7.anihyou.core.model.base.Colorable
 import com.axiel7.anihyou.core.model.base.Localizable
 import com.axiel7.anihyou.core.model.media.localized
-import com.axiel7.anihyou.core.model.stats.overview.FormatDistribution.entries
+import com.axiel7.anihyou.core.network.type.MediaFormat
 import com.axiel7.anihyou.core.resources.stat_dark_10
 import com.axiel7.anihyou.core.resources.stat_dark_20
 import com.axiel7.anihyou.core.resources.stat_dark_40

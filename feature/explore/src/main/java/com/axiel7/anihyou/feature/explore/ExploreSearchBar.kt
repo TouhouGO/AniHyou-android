@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
@@ -28,18 +30,20 @@ import com.axiel7.anihyou.core.model.SearchType
 import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.explore.search.SearchContentView
 import com.axiel7.anihyou.feature.explore.search.SearchEvent
 import com.axiel7.anihyou.feature.explore.search.SearchUiState
 import com.axiel7.anihyou.feature.explore.search.SearchViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun ExploreSearchBar(
     navActionManager: NavActionManager
 ) {
-    val viewModel: SearchViewModel = koinViewModel()
+    val viewModel: SearchViewModel = koinViewModel(parameters = { parametersOf(Routes.Search()) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     ExploreSearchBarContent(
@@ -49,7 +53,7 @@ fun ExploreSearchBar(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ExploreSearchBarContent(
     uiState: SearchUiState,
@@ -94,7 +98,8 @@ private fun ExploreSearchBarContent(
                                 onClick = {
                                     isSearchActive = false
                                     query = ""
-                                }
+                                },
+                                shapes = IconButtonDefaults.shapes()
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.arrow_back_24),
@@ -114,7 +119,8 @@ private fun ExploreSearchBarContent(
                                 onClick = {
                                     query = ""
                                     performSearch.value = true
-                                }
+                                },
+                                shapes = IconButtonDefaults.shapes()
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.close_24),

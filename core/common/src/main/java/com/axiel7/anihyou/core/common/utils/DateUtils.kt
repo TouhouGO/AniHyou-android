@@ -51,7 +51,7 @@ object DateUtils {
         GregorianCalendar.from(this.atZone(ZoneId.systemDefault()))
 
     val currentYear = Calendar.getInstance()[Calendar.YEAR]
-    private const val BASE_YEAR = 1917
+    const val BASE_YEAR = 1917
     val seasonYears = ((currentYear + 1) downTo BASE_YEAR).toList()
 
     fun currentTimeSeconds() = System.currentTimeMillis() / 1000
@@ -74,6 +74,8 @@ object DateUtils {
             weekdayDate.atStartOfDay().minusNanos(1).toEpochSecond(defaultZoneOffset)
         }
     }
+
+    fun LocalDate.toFuzzyDateInt() = format(DateTimeFormatter.BASIC_ISO_DATE).toInt()
 
     fun Long.timestampToDateString(
         format: String = "EE, d MMM"

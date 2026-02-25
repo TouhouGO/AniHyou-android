@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.jetbrains.kotlin.compose)
     alias(libs.plugins.jetbrains.kotlin.serialization)
 }
@@ -52,14 +51,17 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    implementation(libs.material.kolor)
+    api(libs.material.kolor)
     implementation(libs.placeholder.material3)
 
-    api(libs.androidx.navigation.compose)
+    api(libs.androidx.navigation3.runtime)
+    api(libs.androidx.navigation3.ui)
 
     implementation(libs.coil.compose)
 
     implementation(libs.compose.markdown)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
+
+    debugImplementation(libs.ui.tooling)
 }

@@ -14,13 +14,15 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
@@ -30,6 +32,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -46,10 +49,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.axiel7.anihyou.core.model.genre.SelectableGenre.Companion.genreTagLocalized
 import com.axiel7.anihyou.core.resources.R
-import com.axiel7.anihyou.core.ui.composables.SegmentedButtons
+import com.axiel7.anihyou.core.ui.composables.ConnectedButtonGroup
 import com.axiel7.anihyou.core.ui.composables.common.ErrorTextButton
 import com.axiel7.anihyou.core.ui.composables.common.TextTriCheckbox
+import com.axiel7.anihyou.core.ui.composables.sheet.ModalBottomSheet
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.feature.explore.search.composables.PercentageSlider
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,7 +81,9 @@ fun GenresTagsSheet(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
+)
 @Composable
 private fun GenresTagsSheetContent(
     uiState: GenresTagsUiState,
@@ -91,14 +98,22 @@ private fun GenresTagsSheetContent(
     val isKeyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
 
+    val listState = rememberLazyListState()
+    val isAtTop by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
+        }
+    }
+
     SideEffect {
         scope.launch { if (isKeyboardVisible) sheetState.expand() }
     }
 
     ModalBottomSheet(
-        onDismissRequest = onDismiss,
+        onDismissed = onDismiss,
         sheetState = sheetState,
-        contentWindowInsets = { WindowInsets(0, 0, 0, 0) }
+        sheetGesturesEnabled = isAtTop,
+        windowInsets = WindowInsets(0, 0, 0, 0)
     ) {
         Column(
             modifier = Modifier
@@ -124,10 +139,10 @@ private fun GenresTagsSheetContent(
                 }
             }
 
-            SegmentedButtons(
+            ConnectedButtonGroup(
                 items = GenresTagsSheetTab.tabRows,
                 modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
                 selectedIndex = selectedTabIndex,
                 onItemSelection = {
                     selectedTabIndex = it
@@ -151,7 +166,10 @@ private fun GenresTagsSheetContent(
                 },
                 trailingIcon = {
                     if (uiState.filter.isNotEmpty()) {
-                        IconButton(onClick = { event?.onFilterChanged("") }) {
+                        IconButton(
+                            onClick = { event?.onFilterChanged("") },
+                            shapes = IconButtonDefaults.shapes()
+                        ) {
                             Icon(
                                 painter = painterResource(R.drawable.cancel_24),
                                 contentDescription = stringResource(R.string.clear)
@@ -169,10 +187,11 @@ private fun GenresTagsSheetContent(
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    LoadingIndicator()
                 }
             }
             LazyColumn(
+                state = listState,
                 contentPadding = PaddingValues(bottom = bottomPadding)
             ) {
                 when (GenresTagsSheetTab.tabRows[selectedTabIndex].value) {
@@ -188,7 +207,14 @@ private fun GenresTagsSheetContent(
                             )
                         }
 
-                    GenresTagsSheetTab.TAGS ->
+                    GenresTagsSheetTab.TAGS -> {
+                        item {
+                            PercentageSlider(
+                                label = stringResource(R.string.minimum_tag_percentage),
+                                value = uiState.minimumTagPercentage,
+                                onValueChange = { event?.onMinTagPercentageUpdated(it) }
+                            )
+                        }
                         items(uiState.displayTags) { item ->
                             TextTriCheckbox(
                                 text = item.name,
@@ -199,6 +225,7 @@ private fun GenresTagsSheetContent(
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
+                    }
                 }
             }
         }//: Column

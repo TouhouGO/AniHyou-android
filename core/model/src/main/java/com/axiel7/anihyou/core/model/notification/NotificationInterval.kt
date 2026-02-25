@@ -3,7 +3,6 @@ package com.axiel7.anihyou.core.model.notification
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.axiel7.anihyou.core.model.base.Localizable
-import com.axiel7.anihyou.core.model.notification.NotificationInterval.entries
 import com.axiel7.anihyou.core.resources.R
 import java.util.concurrent.TimeUnit
 

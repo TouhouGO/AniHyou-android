@@ -52,12 +52,14 @@ import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openByDefaultSettings
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openLink
 import com.axiel7.anihyou.core.common.utils.ContextUtils.showToast
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.feature.settings.composables.CustomColorPreference
 import com.axiel7.anihyou.feature.settings.composables.LanguagePreference
 import com.axiel7.anihyou.feature.worker.NotificationWorker.Companion.createDefaultNotificationChannels
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.rememberPermissionState
+import com.materialkolor.PaletteStyle
 import org.koin.androidx.compose.koinViewModel
 
 private const val versionString = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
@@ -96,6 +98,8 @@ private fun SettingsContent(
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         rememberTopAppBarState()
     )
+
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
     LaunchedEffect(isDarkTheme) {
         if (!isDarkTheme && uiState.useBlackColors) {
@@ -152,6 +156,16 @@ private fun SettingsContent(
                 CustomColorPreference(
                     color = uiState.appColor,
                     onColorChanged = { event?.setCustomAppColor(it) }
+                )
+            }
+
+            if (!uiState.useBlackColors) {
+                ListPreference(
+                    title = stringResource(R.string.color_palette),
+                    values = PaletteStyle.entries.map { it.name },
+                    preferenceValue = uiState.colorPaletteStyle,
+                    icon = R.drawable.format_paint_24,
+                    onValueChange = { event?.setColorPalette(it) }
                 )
             }
 

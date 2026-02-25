@@ -29,8 +29,10 @@ import com.axiel7.anihyou.core.model.notification.NotificationTypeGroup
 import com.axiel7.anihyou.core.network.type.NotificationType
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.FilterSelectionChip
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
@@ -38,13 +40,15 @@ import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.secondsToLegibleText
 import com.axiel7.anihyou.feature.notifications.composables.NotificationItem
 import com.axiel7.anihyou.feature.notifications.composables.NotificationItemPlaceholder
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 import java.time.temporal.ChronoUnit
 
 @Composable
 fun NotificationsView(
+    arguments: Routes.Notifications,
     navActionManager: NavActionManager,
 ) {
-    val viewModel: NotificationsViewModel = koinViewModel()
+    val viewModel: NotificationsViewModel = koinViewModel(parameters = { parametersOf(arguments) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     NotificationsContent(
@@ -68,6 +72,8 @@ private fun NotificationsContent(
     if (!uiState.isLoading) {
         listState.OnBottomReached(buffer = 3, onLoadMore = { event?.onLoadMore() })
     }
+
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
     DefaultScaffoldWithSmallTopAppBar(
         title = stringResource(R.string.notifications),
@@ -120,9 +126,6 @@ private fun NotificationsContent(
             ) { item ->
                 NotificationItem(
                     title = item.text,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     imageUrl = item.imageUrl,
                     subtitle = item.createdAt?.toLong()?.timestampIntervalSinceNow()
                         ?.secondsToLegibleText(
