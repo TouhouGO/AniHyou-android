@@ -1,8 +1,7 @@
 package com.axiel7.anihyou.feature.usermedialist
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.activity.compose.LocalActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,24 +13,26 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,11 +44,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.axiel7.anihyou.core.model.media.icon
 import com.axiel7.anihyou.core.model.media.localized
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
@@ -61,17 +64,17 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 fun UserMediaListHostView(
-    mediaType: MediaType,
-    isCompactScreen: Boolean,
+    arguments: Routes.UserMediaList,
     modifier: Modifier = Modifier,
     navActionManager: NavActionManager,
 ) {
-    val viewModel: UserMediaListViewModel = koinViewModel(parameters = { parametersOf(mediaType) })
+    val viewModel: UserMediaListViewModel = koinViewModel(
+        key = "${arguments.mediaType}${arguments.userId}",
+        parameters = { parametersOf(arguments) },
+        viewModelStoreOwner = if (arguments.userId == 0) LocalActivity.current as AppCompatActivity
+        else LocalViewModelStoreOwner.current!!
+    )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(isCompactScreen) {
-        viewModel.setIsCompactScreen(isCompactScreen)
-    }
 
     UserMediaListHostContent(
         uiState = uiState,
@@ -81,7 +84,7 @@ fun UserMediaListHostView(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun UserMediaListHostContent(
     uiState: UserMediaListUiState,
@@ -92,8 +95,8 @@ private fun UserMediaListHostContent(
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
 
-    var showListsSheet by remember { mutableStateOf(false) }
-    var showEditSheet by remember { mutableStateOf(false) }
+    var showListsSheet by rememberSaveable { mutableStateOf(false) }
+    var showEditSheet by rememberSaveable { mutableStateOf(false) }
 
     val topAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
         rememberTopAppBarState()
@@ -148,27 +151,26 @@ private fun UserMediaListHostContent(
         else stringResource(R.string.manga_list),
         modifier = modifier,
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = isFabVisible && uiState.orderedListNames.isNotEmpty(),
-                modifier = Modifier.sizeIn(minWidth = 80.dp, minHeight = 56.dp),
-                enter = slideInVertically(initialOffsetY = { it * 2 }),
-                exit = slideOutVertically(targetOffsetY = { it * 2 }),
+            ExtendedFloatingActionButton(
+                onClick = { showListsSheet = true },
+                modifier = Modifier.animateFloatingActionButton(
+                    visible = isFabVisible && uiState.orderedListNames.isNotEmpty(),
+                    alignment = Alignment.BottomEnd
+                )
             ) {
-                ExtendedFloatingActionButton(onClick = { showListsSheet = true }) {
-                    if (uiState.selectedListName == null || uiState.status != null) {
-                        Icon(
-                            painter = painterResource(
-                                id = uiState.status?.icon() ?: R.drawable.list_alt_24
-                            ),
-                            contentDescription = stringResource(R.string.list_status),
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
-                    }
-                    Text(
-                        text = uiState.status?.localized(uiState.mediaType)
-                            ?: uiState.selectedListName ?: stringResource(R.string.all)
+                if (uiState.selectedListName == null || uiState.status != null) {
+                    Icon(
+                        painter = painterResource(
+                            id = uiState.status?.icon() ?: R.drawable.list_alt_24
+                        ),
+                        contentDescription = stringResource(R.string.list_status),
+                        modifier = Modifier.padding(end = 8.dp)
                     )
                 }
+                Text(
+                    text = uiState.status?.localized(uiState.mediaType)
+                        ?: uiState.selectedListName ?: stringResource(R.string.all)
+                )
             }
         },
         navigationIcon = {
@@ -179,7 +181,8 @@ private fun UserMediaListHostContent(
         actions = {
             if (uiState.isMyList) {
                 IconButton(
-                    onClick = { navActionManager.toSearchOnMyList(uiState.mediaType) }
+                    onClick = { navActionManager.toSearchOnMyList(uiState.mediaType) },
+                    shapes = IconButtonDefaults.shapes()
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.search_24),
@@ -190,7 +193,10 @@ private fun UserMediaListHostContent(
             Box(
                 modifier = Modifier.wrapContentSize(Alignment.TopStart)
             ) {
-                IconButton(onClick = { event?.toggleSortMenu(true) }) {
+                IconButton(
+                    onClick = { event?.toggleSortMenu(true) },
+                    shapes = IconButtonDefaults.shapes()
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.sort_24),
                         contentDescription = stringResource(R.string.sort)

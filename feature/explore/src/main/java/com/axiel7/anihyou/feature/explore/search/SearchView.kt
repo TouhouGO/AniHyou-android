@@ -1,12 +1,6 @@
 package com.axiel7.anihyou.feature.explore.search
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,9 +17,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -33,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -43,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -65,6 +65,7 @@ import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.ErrorTextButton
 import com.axiel7.anihyou.core.ui.composables.common.FilterSelectionChip
 import com.axiel7.anihyou.core.ui.composables.common.TriFilterChip
@@ -78,20 +79,24 @@ import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.editmedia.EditMediaSheet
 import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchCountryChip
 import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchDateChip
+import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchDurationChip
 import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchFormatChip
 import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchGenresChips
 import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchSortChip
+import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchSourcesChip
 import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchStatusChip
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchView(
     arguments: Routes.Search,
     modifier: Modifier = Modifier,
     navActionManager: NavActionManager,
 ) {
-    val viewModel: SearchViewModel = koinViewModel()
+    val viewModel: SearchViewModel = koinViewModel(parameters = { parametersOf(arguments) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var query by rememberSaveable { mutableStateOf("") }
@@ -116,7 +121,13 @@ fun SearchView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
-                placeholder = { Text(text = stringResource(R.string.anime_manga_and_more)) },
+                placeholder = {
+                    if (arguments.onList == true && uiState.onMyList == true) {
+                        Text(text = stringResource(R.string.search_my_list))
+                    } else {
+                        Text(text = stringResource(R.string.anime_manga_and_more))
+                    }
+                },
                 leadingIcon = {
                     BackIconButton(onClick = navActionManager::goBack)
                 },
@@ -126,7 +137,8 @@ fun SearchView(
                             onClick = {
                                 query = ""
                                 performSearch.value = true
-                            }
+                            },
+                            shapes = IconButtonDefaults.shapes()
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.close_24),
@@ -160,6 +172,7 @@ fun SearchView(
     }//:Surface
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchContentView(
     query: String,
@@ -181,10 +194,12 @@ fun SearchContentView(
         }
     }
 
-    var showMoreFilters by rememberSaveable { mutableStateOf(false) }
+    var showMoreFilters by rememberSaveable { mutableStateOf(true) }
 
     val haptic = LocalHapticFeedback.current
-    var showEditSheet by remember { mutableStateOf(false) }
+    var showEditSheet by rememberSaveable { mutableStateOf(false) }
+
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
     LaunchedEffect(performSearch.value) {
         if (performSearch.value) {
@@ -207,23 +222,21 @@ fun SearchContentView(
 
     Scaffold(
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = !isAtTop,
-                enter = fadeIn() + scaleIn(),
-                exit = scaleOut() + fadeOut(),
+            FloatingActionButton(
+                onClick = {
+                    scope.launch {
+                        listState.animateScrollToItem(0)
+                    }
+                },
+                modifier = Modifier.animateFloatingActionButton(
+                    visible = !isAtTop,
+                    alignment = Alignment.BottomEnd,
+                )
             ) {
-                FloatingActionButton(
-                    onClick = {
-                        scope.launch {
-                            listState.animateScrollToItem(0)
-                        }
-                    },
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.arrow_upward_24),
-                        contentDescription = null,
-                    )
-                }
+                Icon(
+                    painter = painterResource(R.drawable.arrow_upward_24),
+                    contentDescription = null,
+                )
             }
         },
         containerColor = Color.Transparent,
@@ -265,63 +278,7 @@ fun SearchContentView(
                             }
                         )
                         if (showMoreFilters) {
-                            Row(
-                                modifier = Modifier
-                                    .horizontalScroll(rememberScrollState())
-                                    .padding(horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                MediaSearchFormatChip(
-                                    mediaType = uiState.mediaType ?: MediaType.ANIME,
-                                    selectedMediaFormats = uiState.selectedMediaFormats,
-                                    onMediaFormatsChanged = { event?.setMediaFormats(it) }
-                                )
-
-                                MediaSearchStatusChip(
-                                    selectedMediaStatuses = uiState.selectedMediaStatuses,
-                                    onMediaStatusesChanged = { event?.setMediaStatuses(it) }
-                                )
-
-                                TriFilterChip(
-                                    text = stringResource(R.string.on_my_list),
-                                    value = uiState.onMyList,
-                                    onValueChanged = { event?.setOnMyList(it) },
-                                )
-
-                                MediaSearchCountryChip(
-                                    value = uiState.country,
-                                    onValueChanged = { event?.setCountry(it) }
-                                )
-                            }
-                            MediaSearchDateChip(
-                                startYear = uiState.startYear,
-                                endYear = uiState.endYear,
-                                season = uiState.season,
-                                onStartYearChanged = { event?.setStartYear(it) },
-                                onEndYearChanged = { event?.setEndYear(it) },
-                                onSeasonChanged = { event?.setSeason(it) },
-                            )
-                            MediaSearchGenresChips(
-                                externalGenre = initialGenre?.let { SelectableGenre(name = it) },
-                                externalTag = initialTag?.let { SelectableGenre(name = it) },
-                                clearedFilters = uiState.clearedFilters,
-                                onGenreTagStateChanged = { event?.onGenreTagStateChanged(it) },
-                            )
-                            Row(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                TriFilterChip(
-                                    text = stringResource(R.string.doujinshi),
-                                    value = uiState.isDoujin,
-                                    onValueChanged = { event?.setIsDoujin(it) }
-                                )
-                                TriFilterChip(
-                                    text = stringResource(R.string.is_adult),
-                                    value = uiState.isAdult,
-                                    onValueChanged = { event?.setIsAdult(it) }
-                                )
-                            }
+                            MoreFilters(uiState, event, initialGenre, initialTag)
                         }
                         Row(
                             modifier = Modifier.padding(horizontal = 8.dp),
@@ -430,13 +387,12 @@ fun SearchContentView(
                         items = uiState.studios,
                         contentType = { it }
                     ) { item ->
-                        Text(
-                            text = item.name,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { navActionManager.toStudioDetails(item.id) }
-                                .padding(16.dp)
-                        )
+                        ListItem(
+                            onClick = { navActionManager.toStudioDetails(item.id) },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        ) {
+                            Text(text = item.name)
+                        }
                     }
                 }
 
@@ -462,6 +418,86 @@ fun SearchContentView(
                 }
             }
         }//: LazyColumn
+    }
+}
+
+@Composable
+private fun MoreFilters(
+    uiState: SearchUiState,
+    event: SearchEvent?,
+    initialGenre: String?,
+    initialTag: String?,
+) {
+    Row(
+        modifier = Modifier
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        MediaSearchFormatChip(
+            mediaType = uiState.mediaType ?: MediaType.ANIME,
+            selectedMediaFormats = uiState.selectedMediaFormats,
+            onMediaFormatsChanged = { event?.setMediaFormats(it) }
+        )
+
+        MediaSearchStatusChip(
+            selectedMediaStatuses = uiState.selectedMediaStatuses,
+            onMediaStatusesChanged = { event?.setMediaStatuses(it) }
+        )
+
+        TriFilterChip(
+            text = stringResource(R.string.on_my_list),
+            value = uiState.onMyList,
+            onValueChanged = { event?.setOnMyList(it) },
+        )
+
+        MediaSearchCountryChip(
+            value = uiState.country,
+            onValueChanged = { event?.setCountry(it) }
+        )
+
+        MediaSearchSourcesChip(
+            selectedSources = uiState.selectedSources,
+            onSourcesChanged = { event?.setSources(it) }
+        )
+    }
+    MediaSearchDateChip(
+        startYear = uiState.startYear,
+        endYear = uiState.endYear,
+        season = uiState.season,
+        onStartYearChanged = { event?.setStartYear(it) },
+        onEndYearChanged = { event?.setEndYear(it) },
+        onSeasonChanged = { event?.setSeason(it) },
+    )
+    MediaSearchDurationChip(
+        mediaType = uiState.mediaType ?: MediaType.UNKNOWN__,
+        minEpCh = uiState.minEpCh,
+        maxEpCh = uiState.maxEpCh,
+        minDuration = uiState.minDuration,
+        maxDuration = uiState.maxDuration,
+        setEpCh = { event?.setEpCh(it) },
+        setDuration = { event?.setDuration(it) },
+    )
+    MediaSearchGenresChips(
+        externalGenre = initialGenre?.let { SelectableGenre(name = it) },
+        externalTag = initialTag?.let { SelectableGenre(name = it) },
+        clearedFilters = uiState.clearedFilters,
+        onGenreTagStateChanged = { event?.onGenreTagStateChanged(it) },
+    )
+    Row(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        TriFilterChip(
+            text = stringResource(R.string.doujinshi),
+            value = uiState.isDoujin,
+            onValueChanged = { event?.setIsDoujin(it) }
+        )
+        TriFilterChip(
+            text = stringResource(R.string.is_adult),
+            value = uiState.isAdult,
+            onValueChanged = { event?.setIsAdult(it) }
+        )
     }
 }
 

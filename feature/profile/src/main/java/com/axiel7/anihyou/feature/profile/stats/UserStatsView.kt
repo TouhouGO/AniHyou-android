@@ -8,10 +8,16 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Surface
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -20,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.FilterSelectionChip
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.profile.stats.genres.GenresStatsView
@@ -53,6 +60,7 @@ fun UserStatsView(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun UserStatsContent(
     uiState: UserStatsUiState,
@@ -61,82 +69,99 @@ private fun UserStatsContent(
     modifier: Modifier = Modifier,
     nestedScrollConnection: NestedScrollConnection,
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            UserStatType.entries.forEach {
-                FilterSelectionChip(
-                    selected = uiState.type == it,
-                    text = it.localized(),
-                    onClick = {
-                        event?.setType(it)
-                    },
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-            }
-        }//: Row
+    val pullRefreshState = rememberPullToRefreshState()
 
-        when (uiState.type) {
-            UserStatType.OVERVIEW -> {
-                OverviewStatsView(
-                    uiState = uiState,
-                    event = event,
-                    modifier = Modifier
-                        .nestedScroll(nestedScrollConnection)
-                        .verticalScroll(rememberScrollState())
-                        .navigationBarsPadding()
-                )
-            }
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
-            UserStatType.GENRES -> {
-                GenresStatsView(
-                    uiState = uiState,
-                    event = event,
-                    navActionManager = navActionManager,
-                    modifier = Modifier.nestedScroll(nestedScrollConnection)
-                )
-            }
-
-            UserStatType.TAGS -> {
-                TagsStatsView(
-                    uiState = uiState,
-                    event = event,
-                    navActionManager = navActionManager,
-                    modifier = Modifier.nestedScroll(nestedScrollConnection)
-                )
-            }
-
-            UserStatType.STAFF -> {
-                StaffStatsView(
-                    uiState = uiState,
-                    event = event,
-                    navActionManager = navActionManager,
-                    modifier = Modifier.nestedScroll(nestedScrollConnection)
-                )
-            }
-
-            UserStatType.VOICE_ACTORS -> {
-                VoiceActorsStatsView(
-                    uiState = uiState,
-                    event = event,
-                    navActionManager = navActionManager,
-                )
-            }
-
-            UserStatType.STUDIOS -> {
-                StudiosStatsView(
-                    uiState = uiState,
-                    event = event,
-                    navActionManager = navActionManager,
-                )
-            }
+    PullToRefreshBox(
+        isRefreshing = uiState.isLoading,
+        onRefresh = { event?.onRefresh() },
+        state = pullRefreshState,
+        indicator = {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullRefreshState,
+                isRefreshing = uiState.isLoading,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
         }
-    }//: Column
+    ) {
+        Column(
+            modifier = modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                UserStatType.entries.forEach {
+                    FilterSelectionChip(
+                        selected = uiState.type == it,
+                        text = it.localized(),
+                        onClick = {
+                            event?.setType(it)
+                        },
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+            }//: Row
+
+            when (uiState.type) {
+                UserStatType.OVERVIEW -> {
+                    OverviewStatsView(
+                        uiState = uiState,
+                        event = event,
+                        modifier = Modifier
+                            .nestedScroll(nestedScrollConnection)
+                            .verticalScroll(rememberScrollState())
+                            .navigationBarsPadding()
+                    )
+                }
+
+                UserStatType.GENRES -> {
+                    GenresStatsView(
+                        uiState = uiState,
+                        event = event,
+                        navActionManager = navActionManager,
+                        modifier = Modifier.nestedScroll(nestedScrollConnection)
+                    )
+                }
+
+                UserStatType.TAGS -> {
+                    TagsStatsView(
+                        uiState = uiState,
+                        event = event,
+                        navActionManager = navActionManager,
+                        modifier = Modifier.nestedScroll(nestedScrollConnection)
+                    )
+                }
+
+                UserStatType.STAFF -> {
+                    StaffStatsView(
+                        uiState = uiState,
+                        event = event,
+                        navActionManager = navActionManager,
+                        modifier = Modifier.nestedScroll(nestedScrollConnection)
+                    )
+                }
+
+                UserStatType.VOICE_ACTORS -> {
+                    VoiceActorsStatsView(
+                        uiState = uiState,
+                        event = event,
+                        navActionManager = navActionManager,
+                    )
+                }
+
+                UserStatType.STUDIOS -> {
+                    StudiosStatsView(
+                        uiState = uiState,
+                        event = event,
+                        navActionManager = navActionManager,
+                    )
+                }
+            }
+        }//: Column
+    }
 }
 
 @Preview

@@ -31,8 +31,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
 import com.axiel7.anihyou.core.ui.composables.media.MEDIA_POSTER_SMALL_WIDTH
@@ -40,12 +42,14 @@ import com.axiel7.anihyou.core.ui.composables.media.MediaItemVertical
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemVerticalPlaceholder
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun StudioDetailsView(
+    arguments: Routes.StudioDetails,
     navActionManager: NavActionManager
 ) {
-    val viewModel: StudioDetailsViewModel = koinViewModel()
+    val viewModel: StudioDetailsViewModel = koinViewModel(parameters = { parametersOf(arguments) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     StudioDetailsContent(
@@ -69,6 +73,8 @@ private fun StudioDetailsContent(
     if (!uiState.isLoading) {
         listState.OnBottomReached(buffer = 3, onLoadMore = { event?.onLoadMore() })
     }
+
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
     DefaultScaffoldWithSmallTopAppBar(
         title = uiState.details?.name ?: stringResource(R.string.loading),

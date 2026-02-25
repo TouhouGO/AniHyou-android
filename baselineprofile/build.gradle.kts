@@ -1,12 +1,10 @@
 plugins {
     alias(libs.plugins.android.test)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.androidx.baselineprofile)
 }
 
 val appPackageName: String by rootProject.extra
 val sdkVersion: Int by rootProject.extra
-val minSdkVersion: Int by rootProject.extra
 
 android {
     namespace = "$appPackageName.baselineprofile"
@@ -17,15 +15,27 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+        }
     }
 
     defaultConfig {
-        minSdk = minSdkVersion
+        minSdk = 28
         targetSdk = sdkVersion
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    flavorDimensions += "version"
+    productFlavors {
+        create("foss") {
+            dimension = "version"
+        }
+        create("gms") {
+            dimension = "version"
+        }
     }
 
     targetProjectPath = ":app"

@@ -2,7 +2,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.jetbrains.kotlin.compose)
     alias(libs.plugins.androidx.baselineprofile)
 }
@@ -25,10 +24,6 @@ android {
         targetSdk = sdkVersion
         versionCode = versionProps.getProperty("code").toInt()
         versionName = versionProps.getProperty("name")
-
-        base {
-            archivesName = "anihyou-$versionName"
-        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -54,7 +49,8 @@ android {
             "zh-rCN",
             "zh-rTW",
             "fr-rFR",
-            "th-rTH"
+            "th-rTH",
+            "ro-rRO"
         )
     }
 
@@ -69,16 +65,22 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            resValue("string", "app_name", "AniHyou Debug")
         }
         release {
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = false
+            isCrunchPngs = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        create("benchmarkRelease") {
+            matchingFallbacks += listOf("release")
+        }
+        create("nonMinifiedRelease") {
+            matchingFallbacks += listOf("debug")
         }
     }
 
@@ -106,18 +108,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
     buildFeatures {
         compose = true
         buildConfig = true
         aidl = false
         renderScript = false
         shaders = false
-    }
-    androidResources {
-        aaptOptions.cruncherEnabled = false
     }
     packaging {
         resources {
@@ -127,9 +123,24 @@ android {
     dependenciesInfo {
         includeInApk = false
     }
-    baselineProfile {
-        dexLayoutOptimization = true
+}
+
+base {
+    archivesName = "anihyou-${versionProps.getProperty("name")}"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
     }
+}
+
+composeCompiler {
+    stabilityConfigurationFiles.add(rootProject.layout.projectDirectory.file("stability_config.conf"))
+}
+
+baselineProfile {
+    dexLayoutOptimization = true
 }
 
 dependencies {
@@ -168,7 +179,10 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material3.window.sizeclass)
 
-    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
     "gmsImplementation"(libs.androidx.wear.remote.interactions)
 

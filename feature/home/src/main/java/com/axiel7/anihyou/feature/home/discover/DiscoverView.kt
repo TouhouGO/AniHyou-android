@@ -1,20 +1,27 @@
 package com.axiel7.anihyou.feature.home.discover
 
+import androidx.activity.compose.LocalActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Surface
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -27,6 +34,7 @@ import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.editmedia.EditMediaSheet
@@ -52,7 +60,9 @@ fun DiscoverView(
     contentPadding: PaddingValues = PaddingValues(),
     navActionManager: NavActionManager
 ) {
-    val viewModel: DiscoverViewModel = koinViewModel()
+    val viewModel: DiscoverViewModel = koinViewModel(
+        viewModelStoreOwner = LocalActivity.current as AppCompatActivity
+    )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     DiscoverContent(
@@ -64,7 +74,7 @@ fun DiscoverView(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun DiscoverContent(
     uiState: DiscoverUiState,
@@ -73,11 +83,12 @@ private fun DiscoverContent(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
+    val pullRefreshState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
     listState.OnBottomReached(buffer = 0, onLoadMore = { event?.addNextInfo() })
 
     val haptic = LocalHapticFeedback.current
-    var showEditSheet by remember { mutableStateOf(false) }
+    var showEditSheet by rememberSaveable { mutableStateOf(false) }
 
     fun showEditSheetAction() {
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -96,10 +107,20 @@ private fun DiscoverContent(
         )
     }
 
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
+
     PullToRefreshBox(
         isRefreshing = uiState.isLoading,
         onRefresh = { event?.refresh() },
         modifier = Modifier.fillMaxSize(),
+        state = pullRefreshState,
+        indicator = {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullRefreshState,
+                isRefreshing = uiState.isLoading,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+        }
     ) {
         LazyColumn(
             modifier = modifier,

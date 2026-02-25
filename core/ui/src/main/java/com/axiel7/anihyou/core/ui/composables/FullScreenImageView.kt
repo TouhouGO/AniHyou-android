@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,12 +22,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.Routes.FullScreenImage
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openShareSheet
+import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun FullScreenImageView(
     arguments: FullScreenImage,
@@ -46,7 +51,7 @@ fun FullScreenImageView(
             modifier = Modifier.fillMaxWidth(),
             loading = {
                 Box(contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(
+                    LoadingIndicator(
                         modifier = Modifier.size(48.dp)
                     )
                 }
@@ -63,18 +68,35 @@ fun FullScreenImageView(
                 .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            FilledTonalIconButton(onClick = { context.openShareSheet(arguments.imageUrl.orEmpty()) }) {
+            FilledTonalIconButton(
+                onClick = { context.openShareSheet(arguments.imageUrl.orEmpty()) },
+                shapes = IconButtonDefaults.shapes()
+            ) {
                 Icon(
                     painter = painterResource(R.drawable.share_24),
                     contentDescription = stringResource(R.string.share)
                 )
             }
-            FilledTonalIconButton(onClick = onDismiss) {
+            FilledTonalIconButton(
+                onClick = onDismiss,
+                shapes = IconButtonDefaults.shapes()
+            ) {
                 Icon(
                     painter = painterResource(R.drawable.close_24),
                     contentDescription = stringResource(R.string.close)
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun FullScreenImageViewPreview() {
+    AniHyouTheme {
+        FullScreenImageView(
+            arguments = FullScreenImage(imageUrl = ""),
+            onDismiss = {},
+        )
     }
 }

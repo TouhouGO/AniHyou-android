@@ -73,9 +73,9 @@ class LikeRepository(
             it.ToggleLikeV2?.onThread?.basicThreadDetails
         }
 
-    fun toggleThreadCommentLike(id: Int) = api
+    suspend fun toggleThreadCommentLike(id: Int) = api
         .toggleLikeMutation(id, LikeableType.THREAD_COMMENT)
-        .toFlow()
+        .execute()
         .asDataResult {
             it.ToggleLikeV2?.onThreadComment?.isLiked
         }

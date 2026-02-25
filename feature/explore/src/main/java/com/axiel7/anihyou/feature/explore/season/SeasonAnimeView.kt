@@ -1,5 +1,9 @@
 package com.axiel7.anihyou.feature.explore.season
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -28,8 +32,8 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,8 +50,10 @@ import com.axiel7.anihyou.core.model.genre.SelectableGenre.Companion.genreTagLoc
 import com.axiel7.anihyou.core.network.SeasonalAnimeQuery
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithMediumTopAppBar
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
 import com.axiel7.anihyou.core.ui.composables.media.MEDIA_POSTER_SMALL_WIDTH
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemHorizontal
@@ -60,12 +66,14 @@ import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.secondsToLegibleText
 import com.axiel7.anihyou.feature.editmedia.EditMediaSheet
 import com.axiel7.anihyou.feature.explore.season.composables.SeasonChartFilterSheet
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun SeasonAnimeView(
+    arguments: Routes.SeasonAnime,
     navActionManager: NavActionManager
 ) {
-    val viewModel: SeasonAnimeViewModel = koinViewModel()
+    val viewModel: SeasonAnimeViewModel = koinViewModel(parameters = { parametersOf(arguments) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     SeasonAnimeContent(
@@ -88,8 +96,10 @@ private fun SeasonAnimeContent(
 
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
-    var showFilterSheet by remember { mutableStateOf(false) }
-    var showEditSheet by remember { mutableStateOf(false) }
+    var showFilterSheet by rememberSaveable { mutableStateOf(false) }
+    var showEditSheet by rememberSaveable { mutableStateOf(false) }
+
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
     if (showFilterSheet && uiState.season != null) {
         SeasonChartFilterSheet(
@@ -151,7 +161,11 @@ private fun SeasonAnimeContent(
         contentWindowInsets = WindowInsets.systemBars
             .only(WindowInsetsSides.Horizontal)
     ) { padding ->
-        if (uiState.listStyle == ListStyle.STANDARD) {
+        AnimatedVisibility(
+            visible = uiState.listStyle == ListStyle.STANDARD,
+            enter = fadeIn(animationSpec = tween()),
+            exit = fadeOut(animationSpec = tween()),
+        ) {
             SeasonalList(
                 uiState = uiState,
                 event = event,
@@ -167,7 +181,12 @@ private fun SeasonAnimeContent(
                     showEditSheet = true
                 }
             )
-        } else {
+        }
+        AnimatedVisibility(
+            visible = uiState.listStyle != ListStyle.STANDARD,
+            enter = fadeIn(animationSpec = tween()),
+            exit = fadeOut(animationSpec = tween()),
+        ) {
             SeasonalGrid(
                 uiState = uiState,
                 event = event,

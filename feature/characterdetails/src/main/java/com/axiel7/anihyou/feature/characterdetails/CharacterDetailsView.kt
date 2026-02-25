@@ -14,7 +14,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -27,23 +26,27 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
+import com.axiel7.anihyou.core.ui.composables.ConnectedButtonGroup
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
-import com.axiel7.anihyou.core.ui.composables.SegmentedButtons
+import com.axiel7.anihyou.core.ui.composables.character.CharacterVoiceActorsSheet
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ShareIconButton
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
-import com.axiel7.anihyou.core.ui.composables.character.CharacterVoiceActorsSheet
 import com.axiel7.anihyou.feature.characterdetails.content.CharacterInfoView
 import com.axiel7.anihyou.feature.characterdetails.content.CharacterMediaView
 import com.axiel7.anihyou.feature.editmedia.EditMediaSheet
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun CharacterDetailsView(
+    arguments: Routes.CharacterDetails,
     navActionManager: NavActionManager
 ) {
-    val viewModel: CharacterDetailsViewModel = koinViewModel()
+    val viewModel: CharacterDetailsViewModel = koinViewModel(parameters = { parametersOf(arguments) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     CharacterDetailsContent(
@@ -68,8 +71,10 @@ private fun CharacterDetailsContent(
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
 
     val haptic = LocalHapticFeedback.current
-    var showEditSheet by remember { mutableStateOf(false) }
-    var showVaSheet by remember { mutableStateOf(false) }
+    var showEditSheet by rememberSaveable { mutableStateOf(false) }
+    var showVaSheet by rememberSaveable { mutableStateOf(false) }
+
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
     if (showVaSheet) {
         CharacterVoiceActorsSheet(
@@ -117,9 +122,9 @@ private fun CharacterDetailsContent(
                     end = padding.calculateEndPadding(LocalLayoutDirection.current)
                 )
         ) {
-            SegmentedButtons(
+            ConnectedButtonGroup(
                 items = CharacterDetailsTab.tabRows,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
                 selectedIndex = selectedTabIndex,
                 onItemSelection = {
                     selectedTabIndex = it

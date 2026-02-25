@@ -1,13 +1,18 @@
 package com.axiel7.anihyou.feature.home.current
 
+import androidx.compose.runtime.Immutable
+import com.axiel7.anihyou.core.base.event.UiEvent
 import com.axiel7.anihyou.core.model.CurrentListType
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.fragment.CommonMediaListEntry
 
-interface CurrentEvent {
+@Immutable
+interface CurrentEvent : UiEvent {
     fun refresh()
 
-    fun onClickPlusOne(item: CommonMediaListEntry, type: CurrentListType)
+    fun onClickPlusOne(increment: Int, item: CommonMediaListEntry, type: CurrentListType)
+
+    fun blockPlusOne()
 
     fun onUpdateListEntry(
         newListEntry: BasicMediaListEntry?,

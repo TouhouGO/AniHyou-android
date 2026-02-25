@@ -26,6 +26,7 @@ import com.axiel7.anihyou.core.network.type.AiringSort
 import com.axiel7.anihyou.core.network.type.MediaFormat
 import com.axiel7.anihyou.core.network.type.MediaSeason
 import com.axiel7.anihyou.core.network.type.MediaSort
+import com.axiel7.anihyou.core.network.type.MediaSource
 import com.axiel7.anihyou.core.network.type.MediaStatus
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.network.type.ThreadSort
@@ -41,8 +42,19 @@ class MediaApi(
         genreNotIn: List<String>?,
         tagIn: List<String>?,
         tagNotIn: List<String>?,
+        minimumTagPercentage: Int?,
         formatIn: List<MediaFormat>?,
         statusIn: List<MediaStatus>?,
+        episodesLesser: Int?,
+        episodesGreater: Int?,
+        durationLesser: Int?,
+        durationGreater: Int?,
+        chaptersLesser: Int?,
+        chaptersGreater: Int?,
+        volumesLesser: Int?,
+        volumesGreater: Int?,
+        averageScoreLesser: Int?,
+        averageScoreGreater: Int?,
         startYear: Int?,
         endYear: Int?,
         season: MediaSeason?,
@@ -50,6 +62,7 @@ class MediaApi(
         isLicensed: Boolean?,
         isAdult: Boolean?,
         country: CountryOfOriginDto?,
+        sourceIn: List<MediaSource>?,
         page: Int,
         perPage: Int,
     ) = client
@@ -68,10 +81,21 @@ class MediaApi(
                 else Optional.present(tagIn),
                 tag_not_in = if (tagNotIn.isNullOrEmpty()) Optional.absent()
                 else Optional.present(tagNotIn),
+                minimumTagRank = Optional.presentIfNotNull(minimumTagPercentage),
                 format_in = if (formatIn.isNullOrEmpty()) Optional.absent()
                 else Optional.present(formatIn),
                 status_in = if (statusIn.isNullOrEmpty()) Optional.absent()
                 else Optional.present(statusIn),
+                episodes_lesser = Optional.presentIfNotNull(episodesLesser),
+                episodes_greater = Optional.presentIfNotNull(episodesGreater),
+                duration_lesser = Optional.presentIfNotNull(durationLesser),
+                duration_greater = Optional.presentIfNotNull(durationGreater),
+                chapters_lesser = Optional.presentIfNotNull(chaptersLesser),
+                chapters_greater = Optional.presentIfNotNull(chaptersGreater),
+                volumes_lesser = Optional.presentIfNotNull(volumesLesser),
+                volumes_greater = Optional.presentIfNotNull(volumesGreater),
+                averageScore_lesser = Optional.presentIfNotNull(averageScoreLesser),
+                averageScore_greater = Optional.presentIfNotNull(averageScoreGreater),
                 startDateGreater = if (startYear != null)
                 // Unknown dates represented by 0. E.g. 2016: 20160000
                     Optional.present(startYear * 10000)
@@ -85,6 +109,8 @@ class MediaApi(
                 isLicensed = Optional.presentIfNotNull(isLicensed),
                 isAdult = Optional.presentIfNotNull(isAdult),
                 country = Optional.presentIfNotNull(country),
+                source_in = if (sourceIn.isNullOrEmpty()) Optional.absent()
+                else Optional.present(sourceIn),
             )
         )
 

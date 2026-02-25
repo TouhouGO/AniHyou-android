@@ -15,8 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.drawable.toDrawable
-import com.axiel7.anihyou.core.resources.ColorUtils.hexToString
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
+import com.axiel7.anihyou.core.resources.ColorUtils.hexToString
 
 @Composable
 fun HtmlWebView(
@@ -49,6 +49,8 @@ fun HtmlWebView(
             webView.background = Color.TRANSPARENT.toDrawable()
             webView.isScrollContainer = false
             webView.isVerticalScrollBarEnabled = false
+            webView.settings.useWideViewPort = true
+            webView.settings.loadWithOverviewMode = true
         },
         client = webClient
     )
@@ -60,7 +62,7 @@ fun generateHtml(
 ) = """
     <HTML>
     <head>
-        <meta name='viewport' content='width=device-width, shrink-to-fit=YES, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no'>
+        <meta name='viewport' content='width=device-width, shrink-to-fit=YES'>
     </head>
     ${generateCSS(colorScheme)}
     <BODY>
@@ -72,9 +74,9 @@ fun generateHtml(
 fun formatCompatibleHtml(html: String): String {
     return html
         // replace AniList markdown [text](link) with html <a>
-        .replace(Regex("\\[([^]]+)]\\(([^)]+)\\)"), "<a href=\"\$2\">\$1</a>")
+        .replace(Regex("\\[([^]]+)]\\(([^)]+)\\)"), $$"<a href=\"$2\">$1</a>")
         // replace AniList markdown __bold__ with html <b>
-        .replace(Regex("__(.+)__"), "<b>\$1</b>")
+        .replace(Regex("__(.+)__"), $$"<b>$1</b>")
         // escaped chars
         .replace("&lt;", "<")
         .replace("&gt;", ">")

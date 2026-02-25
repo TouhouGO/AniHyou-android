@@ -3,7 +3,6 @@ package com.axiel7.anihyou.core.model.user
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.axiel7.anihyou.core.network.type.MediaListSort
-import com.axiel7.anihyou.core.model.user.UserMediaListSort.entries
 import com.axiel7.anihyou.core.resources.R
 
 enum class UserMediaListSort(

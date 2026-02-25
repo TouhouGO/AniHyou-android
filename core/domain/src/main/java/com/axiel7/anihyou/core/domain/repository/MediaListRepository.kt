@@ -4,6 +4,7 @@ import com.apollographql.apollo.cache.normalized.FetchPolicy
 import com.apollographql.apollo.cache.normalized.fetchPolicy
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.common.utils.NumberUtils.isGreaterThanZero
+import com.axiel7.anihyou.core.model.media.AnimeSeason
 import com.axiel7.anihyou.core.model.media.advancedScoresMap
 import com.axiel7.anihyou.core.model.media.isUsingVolumeProgress
 import com.axiel7.anihyou.core.model.media.progressOrVolumes
@@ -17,6 +18,7 @@ import com.axiel7.anihyou.core.network.fragment.CommonPage
 import com.axiel7.anihyou.core.network.fragment.FuzzyDate
 import com.axiel7.anihyou.core.network.type.MediaListSort
 import com.axiel7.anihyou.core.network.type.MediaListStatus
+import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,11 +63,28 @@ class MediaListRepository (
             data.Page?.mediaList?.mapNotNull { it?.commonMediaListEntry }.orEmpty()
         }
 
-    fun incrementOneProgress(
+    fun getMySeasonalAnime(
+        season: AnimeSeason,
+        sort: List<MediaSort> = listOf(MediaSort.POPULARITY_DESC),
+        fetchFromNetwork: Boolean = false,
+        page: Int,
+        perPage: Int = 25,
+    ) = api
+        .mySeasonalAnimeQuery(season.season, season.year, sort, fetchFromNetwork, page, perPage)
+        .toFlow()
+        .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) { data ->
+            data.Page?.media?.mapNotNull { media ->
+                media?.mediaListEntry?.commonMediaListEntry
+                    ?.takeIf { it.basicMediaListEntry.status == MediaListStatus.PLANNING }
+            }.orEmpty()
+        }
+
+    fun incrementProgress(
         entry: BasicMediaListEntry,
+        increment: Int = 1,
         total: Int?
     ): Flow<DataResult<UpdateEntryMutation.SaveMediaListEntry?>> {
-        val newProgress = (entry.progressOrVolumes() ?: 0) + 1
+        val newProgress = (entry.progressOrVolumes() ?: 0) + increment
         val totalDuration = total.takeIf { it != 0 }
         val isMaxProgress = totalDuration != null && newProgress >= totalDuration
         val isPlanning = entry.status == MediaListStatus.PLANNING
@@ -77,6 +96,7 @@ class MediaListRepository (
             else -> null
         }
         return updateEntry(
+            oldEntry = entry,
             mediaId = entry.mediaId,
             progress = newProgress.takeIf { !entry.isUsingVolumeProgress() },
             progressVolumes = newProgress.takeIf { entry.isUsingVolumeProgress() },

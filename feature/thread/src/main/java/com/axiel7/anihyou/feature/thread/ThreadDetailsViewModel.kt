@@ -1,14 +1,12 @@
 package com.axiel7.anihyou.feature.thread
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
+import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.LikeRepository
 import com.axiel7.anihyou.core.domain.repository.ThreadRepository
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
-import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -16,16 +14,13 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ThreadDetailsViewModel(
-    savedStateHandle: SavedStateHandle,
+    private val arguments: Routes.ThreadDetails,
     private val threadRepository: ThreadRepository,
     private val likeRepository: LikeRepository,
 ) : PagedUiStateViewModel<ThreadDetailsUiState>(), ThreadDetailsEvent {
-
-    private val arguments = savedStateHandle.toRoute<Routes.ThreadDetails>()
 
     override val initialState = ThreadDetailsUiState()
 
@@ -50,20 +45,15 @@ class ThreadDetailsViewModel(
     }
 
     override suspend fun toggleLikeComment(id: Int): Boolean {
-        var liked = false
-        runBlocking {
-            likeRepository.toggleThreadCommentLike(
-                id = id
-            ).onEach { result ->
-                if (result is DataResult.Success && result.data != null) {
-                    //TODO: update child comment
-                    //mutableUiState.update { it.copy(isLiked = result.data) }
-                }
-            }.collect { result ->
-                liked = result is DataResult.Success && result.data == true
+        likeRepository.toggleThreadCommentLike(
+            id = id
+        ).let { result ->
+            if (result is DataResult.Success && result.data != null) {
+                //TODO: update child comment
+                //mutableUiState.update { it.copy(isLiked = result.data) }
             }
+            return result is DataResult.Success && result.data == true
         }
-        return liked
     }
 
     override fun refresh() {

@@ -1,5 +1,7 @@
 package com.axiel7.anihyou.feature.home.current
 
+import androidx.activity.compose.LocalActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Column
@@ -18,15 +20,18 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +47,7 @@ import com.axiel7.anihyou.core.network.fragment.CommonMediaListEntry
 import com.axiel7.anihyou.core.network.type.ScoreFormat
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.list.HorizontalListHeader
 import com.axiel7.anihyou.core.ui.composables.media.MEDIA_POSTER_COMPACT_HEIGHT
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
@@ -56,7 +62,9 @@ fun CurrentView(
     navActionManager: NavActionManager,
     modifier: Modifier = Modifier,
 ) {
-    val viewModel: CurrentViewModel = koinViewModel()
+    val viewModel: CurrentViewModel = koinViewModel(
+        viewModelStoreOwner = LocalActivity.current as AppCompatActivity
+    )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     CurrentContent(
@@ -67,7 +75,7 @@ fun CurrentView(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CurrentContent(
     uiState: CurrentUiState,
@@ -79,7 +87,7 @@ private fun CurrentContent(
     val pullRefreshState = rememberPullToRefreshState()
     val bottomBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    var showEditSheet by remember { mutableStateOf(false) }
+    var showEditSheet by rememberSaveable { mutableStateOf(false) }
 
     if (showEditSheet && uiState.selectedItem?.media != null && uiState.selectedType != null) {
         EditMediaSheet(
@@ -101,11 +109,20 @@ private fun CurrentContent(
         )
     }
 
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
+
     PullToRefreshBox(
         isRefreshing = uiState.fetchFromNetwork,
         onRefresh = { event?.refresh() },
         modifier = Modifier.fillMaxSize(),
         state = pullRefreshState,
+        indicator = {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullRefreshState,
+                isRefreshing = uiState.fetchFromNetwork,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+        }
     ) {
         Column(
             modifier = modifier
@@ -113,12 +130,7 @@ private fun CurrentContent(
                 .padding(bottom = 16.dp)
         ) {
             CurrentListType.entries.forEach { type ->
-                val list = when (type) {
-                    CurrentListType.AIRING -> uiState.airingList
-                    CurrentListType.BEHIND -> uiState.behindList
-                    CurrentListType.ANIME -> uiState.animeList
-                    CurrentListType.MANGA -> uiState.mangaList
-                }
+                val list = uiState.getListFromType(type)
                 if (list.isNotEmpty()) {
                     HorizontalListHeader(
                         text = type.localized(),
@@ -131,17 +143,16 @@ private fun CurrentContent(
                         isLoading = uiState.isLoading,
                         isPlusEnabled = !uiState.isLoadingPlusOne,
                         onClick = { navActionManager.toMediaDetails(it.mediaId) },
-                        onClickPlus = {
-                            if (!uiState.isLoadingPlusOne) {
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                event?.onClickPlusOne(it, type)
-                            }
+                        onClickPlus = { increment, item ->
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            event?.onClickPlusOne(increment, item, type)
                         },
                         onLongClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             event?.selectItem(it, type)
                             showEditSheet = true
-                        }
+                        },
+                        blockPlus = { event?.blockPlusOne() }
                     )
                 }
             }
@@ -165,7 +176,8 @@ private fun CurrentLazyGrid(
     isPlusEnabled: Boolean,
     onClick: (CommonMediaListEntry) -> Unit,
     onLongClick: (CommonMediaListEntry) -> Unit,
-    onClickPlus: (CommonMediaListEntry) -> Unit,
+    onClickPlus: (Int, CommonMediaListEntry) -> Unit,
+    blockPlus: () -> Unit,
 ) {
     val state = rememberLazyGridState()
     val rows = if (items.size == 1) 1 else 2
@@ -193,7 +205,8 @@ private fun CurrentLazyGrid(
                 isPlusEnabled = isPlusEnabled,
                 onClick = { onClick(item) },
                 onLongClick = { onLongClick(item) },
-                onClickPlus = { onClickPlus(item) },
+                onClickPlus = { onClickPlus(it, item) },
+                blockPlus = blockPlus,
             )
         }
         if (items.isEmpty() && isLoading) {
