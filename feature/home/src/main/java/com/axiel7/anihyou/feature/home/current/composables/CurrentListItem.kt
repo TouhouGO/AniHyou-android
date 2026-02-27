@@ -80,7 +80,7 @@ fun CurrentListItem(
     ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
+                .padding(end = 16.dp)
                 .height(MEDIA_POSTER_COMPACT_HEIGHT.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
