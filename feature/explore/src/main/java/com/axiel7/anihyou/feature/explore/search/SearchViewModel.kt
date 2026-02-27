@@ -60,7 +60,12 @@ class SearchViewModel(
     }
 
     override fun setSearchType(value: SearchType) = mutableUiState.update {
-        it.copy(searchType = value, page = 1, hasNextPage = true)
+        it.copy(
+            searchType = value,
+            selectedMediaFormats = emptyList(),
+            page = 1,
+            hasNextPage = true
+        )
     }
 
     override fun setMediaSort(value: MediaSort) = mutableUiState.update {
