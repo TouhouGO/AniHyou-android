@@ -1,5 +1,8 @@
 package com.axiel7.anihyou.core.model
 
+import androidx.compose.runtime.Stable
+
+@Stable
 data class DeepLink(
     val type: Type,
     val id: String,
