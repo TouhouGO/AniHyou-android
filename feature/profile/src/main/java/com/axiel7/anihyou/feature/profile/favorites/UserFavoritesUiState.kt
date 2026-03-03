@@ -19,6 +19,7 @@ data class UserFavoritesUiState(
     val characters: SnapshotStateList<UserFavoritesCharacterQuery.Node> = mutableStateListOf(),
     val staff: SnapshotStateList<UserFavoritesStaffQuery.Node> = mutableStateListOf(),
     val studios: SnapshotStateList<UserFavoritesStudioQuery.Node> = mutableStateListOf(),
+    val fetchFromNetwork: Boolean = false,
     override val page: Int = 1,
     override val hasNextPage: Boolean = true,
     override val error: String? = null,

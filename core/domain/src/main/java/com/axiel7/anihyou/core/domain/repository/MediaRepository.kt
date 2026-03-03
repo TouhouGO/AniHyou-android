@@ -2,10 +2,13 @@ package com.axiel7.anihyou.core.domain.repository
 
 import com.apollographql.apollo.cache.normalized.FetchPolicy
 import com.apollographql.apollo.cache.normalized.fetchPolicy
-import com.apollographql.apollo.cache.normalized.watch
 import com.axiel7.anihyou.core.model.media.AnimeSeason
 import com.axiel7.anihyou.core.model.media.AnimeThemes
 import com.axiel7.anihyou.core.model.media.AnimeThemes.Companion.toBo
+import com.axiel7.anihyou.core.model.media.ChartType
+import com.axiel7.anihyou.core.model.media.MediaCharactersAndStaff
+import com.axiel7.anihyou.core.model.media.MediaRelationsAndRecommendations
+import com.axiel7.anihyou.core.model.media.isActive
 import com.axiel7.anihyou.core.network.AiringAnimesQuery
 import com.axiel7.anihyou.core.network.MediaDetailsQuery
 import com.axiel7.anihyou.core.network.api.MalApi
@@ -13,10 +16,6 @@ import com.axiel7.anihyou.core.network.api.MediaApi
 import com.axiel7.anihyou.core.network.type.AiringSort
 import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaType
-import com.axiel7.anihyou.core.model.media.ChartType
-import com.axiel7.anihyou.core.model.media.MediaCharactersAndStaff
-import com.axiel7.anihyou.core.model.media.MediaRelationsAndRecommendations
-import com.axiel7.anihyou.core.model.media.isActive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -73,10 +72,11 @@ class MediaRepository (
     fun getSeasonalAnimePage(
         animeSeason: AnimeSeason,
         sort: List<MediaSort> = listOf(MediaSort.POPULARITY_DESC),
+        displayAdult: Boolean? = null,
         page: Int,
         perPage: Int = 25,
     ) = api
-        .seasonalAnimeQuery(animeSeason.toDto(), sort, page, perPage)
+        .seasonalAnimeQuery(animeSeason.toDto(), sort, displayAdult, page, perPage)
         .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) {
             it.Page?.media?.filterNotNull().orEmpty()
@@ -85,10 +85,11 @@ class MediaRepository (
     fun getMediaSortedPage(
         mediaType: MediaType,
         sort: List<MediaSort>,
+        displayAdult: Boolean? = null,
         page: Int,
         perPage: Int = 25,
     ) = api
-        .mediaSortedQuery(mediaType, sort, page, perPage)
+        .mediaSortedQuery(mediaType, sort, displayAdult, page, perPage)
         .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) {
             it.Page?.media?.filterNotNull().orEmpty()
@@ -96,6 +97,7 @@ class MediaRepository (
 
     fun getMediaChartPage(
         type: ChartType,
+        displayAdult: Boolean? = null,
         page: Int,
         perPage: Int = 25,
     ) = api
@@ -104,6 +106,7 @@ class MediaRepository (
             sort = listOf(type.mediaSort),
             status = type.mediaStatus,
             format = type.mediaFormat,
+            displayAdult = displayAdult,
             page = page,
             perPage = perPage
         )
@@ -114,7 +117,7 @@ class MediaRepository (
 
     fun getMediaDetails(mediaId: Int) = api
         .mediaDetailsQuery(mediaId)
-        .watch()
+        .toFlow()
         .asDataResult { it.Media }
 
     suspend fun updateMediaDetailsCache(media: MediaDetailsQuery.Media) {

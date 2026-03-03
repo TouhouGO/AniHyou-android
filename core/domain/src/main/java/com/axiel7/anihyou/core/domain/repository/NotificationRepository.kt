@@ -2,10 +2,9 @@ package com.axiel7.anihyou.core.domain.repository
 
 import com.apollographql.apollo.cache.normalized.FetchPolicy
 import com.apollographql.apollo.cache.normalized.fetchPolicy
-import com.apollographql.apollo.cache.normalized.watch
-import com.axiel7.anihyou.core.network.api.NotificationsApi
 import com.axiel7.anihyou.core.model.notification.GenericNotification.Companion.toGenericNotifications
 import com.axiel7.anihyou.core.model.notification.NotificationTypeGroup
+import com.axiel7.anihyou.core.network.api.NotificationsApi
 
 class NotificationRepository(
     private val api: NotificationsApi,
@@ -24,7 +23,7 @@ class NotificationRepository(
             page = page,
             perPage = perPage
         )
-        .watch()
+        .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) { data ->
             var notifications = data.Page?.notifications?.filterNotNull().orEmpty()
                 .toGenericNotifications()

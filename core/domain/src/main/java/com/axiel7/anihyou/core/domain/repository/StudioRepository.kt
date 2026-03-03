@@ -1,6 +1,5 @@
 package com.axiel7.anihyou.core.domain.repository
 
-import com.apollographql.apollo.cache.normalized.watch
 import com.axiel7.anihyou.core.network.StudioDetailsQuery
 import com.axiel7.anihyou.core.network.api.StudioApi
 
@@ -14,7 +13,7 @@ class StudioRepository(
         perPage: Int = 25,
     ) = api
         .studioDetailsQuery(studioId, perPage)
-        .watch()
+        .toFlow()
         .asDataResult {
             it.Studio
         }

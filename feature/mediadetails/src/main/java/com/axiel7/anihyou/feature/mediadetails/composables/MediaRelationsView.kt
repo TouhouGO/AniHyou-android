@@ -107,7 +107,9 @@ fun MediaRelationsView(
                             ?.basicMediaListEntry?.status,
                         minLines = 2,
                         onClick = {
-                            navigateToDetails(item.mediaRecommended.mediaRecommendation?.id!!)
+                            val id = item.mediaRecommended.mediaRecommendation?.id
+                                ?: item.mediaRecommended.mediaRecommendation?.basicMediaDetails?.id
+                            id?.let(navigateToDetails)
                         }
                     )
                 }

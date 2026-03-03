@@ -4,7 +4,6 @@ import com.apollographql.apollo.api.Optional
 import com.apollographql.apollo.cache.normalized.FetchPolicy
 import com.apollographql.apollo.cache.normalized.fetchPolicy
 import com.apollographql.apollo.cache.normalized.refetchPolicy
-import com.apollographql.apollo.cache.normalized.watch
 import com.axiel7.anihyou.core.model.stats.overview.toOverviewStats
 import com.axiel7.anihyou.core.network.api.UserApi
 import com.axiel7.anihyou.core.network.type.ActivitySort
@@ -26,14 +25,14 @@ class UserRepository(
         .unreadNotificationCountQuery()
         .fetchPolicy(FetchPolicy.NetworkOnly)
         .refetchPolicy(FetchPolicy.NetworkFirst)
-        .watch()
+        .toFlow()
         .map {
             it.data?.Viewer?.unreadNotificationCount
         }
 
     fun getViewerSettings() = api
         .viewerSettingsQuery()
-        .watch()
+        .toFlow()
         .asDataResult {
             it.Viewer?.userSettings
         }
@@ -113,7 +112,7 @@ class UserRepository(
     ) = api
         .userActivityQuery(userId, sort, page, perPage)
         .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
-        .watch()
+        .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) {
             it.Page?.activities?.filterNotNull().orEmpty()
         }
@@ -121,10 +120,12 @@ class UserRepository(
     fun getOverviewStats(
         userId: Int,
         mediaType: MediaType,
+        fetchFromNetwork: Boolean,
     ) = when (mediaType) {
         MediaType.ANIME -> api
             .userStatsAnimeOverviewQuery(userId)
-            .watch()
+            .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+            .toFlow()
             .asDataResult {
                 it.User?.statistics?.anime?.toOverviewStats(
                     scoreFormat = it.User?.mediaListOptions?.scoreFormat ?: ScoreFormat.UNKNOWN__
@@ -133,7 +134,7 @@ class UserRepository(
 
         MediaType.MANGA -> api
             .userStatsMangaOverviewQuery(userId)
-            .watch()
+            .toFlow()
             .asDataResult {
                 it.User?.statistics?.manga?.toOverviewStats(
                     scoreFormat = it.User?.mediaListOptions?.scoreFormat ?: ScoreFormat.UNKNOWN__
@@ -147,17 +148,20 @@ class UserRepository(
         userId: Int,
         mediaType: MediaType,
         sort: UserStatisticsSort,
+        fetchFromNetwork: Boolean,
     ) = when (mediaType) {
         MediaType.ANIME -> api
             .userStatsAnimeGenresQuery(userId, listOf(sort))
-            .watch()
+            .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+            .toFlow()
             .asDataResult { data ->
                 data.User?.statistics?.anime?.genres?.filterNotNull()?.map { it.genreStat }
             }
 
         MediaType.MANGA -> api
             .userStatsMangaGenresQuery(userId, listOf(sort))
-            .watch()
+            .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+            .toFlow()
             .asDataResult { data ->
                 data.User?.statistics?.manga?.genres?.filterNotNull()?.map { it.genreStat }
             }
@@ -169,17 +173,20 @@ class UserRepository(
         userId: Int,
         mediaType: MediaType,
         sort: UserStatisticsSort,
+        fetchFromNetwork: Boolean,
     ) = when (mediaType) {
         MediaType.ANIME -> api
             .userStatsAnimeTagsQuery(userId, listOf(sort))
-            .watch()
+            .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+            .toFlow()
             .asDataResult { data ->
                 data.User?.statistics?.anime?.tags?.filterNotNull()?.map { it.tagStat }
             }
 
         MediaType.MANGA -> api
             .userStatsMangaTagsQuery(userId, listOf(sort))
-            .watch()
+            .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+            .toFlow()
             .asDataResult { data ->
                 data.User?.statistics?.manga?.tags?.filterNotNull()?.map { it.tagStat }
             }
@@ -191,17 +198,20 @@ class UserRepository(
         userId: Int,
         mediaType: MediaType,
         sort: UserStatisticsSort,
+        fetchFromNetwork: Boolean,
     ) = when (mediaType) {
         MediaType.ANIME -> api
             .userStatsAnimeStaffQuery(userId, listOf(sort))
-            .watch()
+            .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+            .toFlow()
             .asDataResult { data ->
                 data.User?.statistics?.anime?.staff?.filterNotNull()?.map { it.staffStat }
             }
 
         MediaType.MANGA -> api
             .userStatsMangaStaffQuery(userId, listOf(sort))
-            .watch()
+            .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+            .toFlow()
             .asDataResult { data ->
                 data.User?.statistics?.manga?.staff?.filterNotNull()?.map { it.staffStat }
             }
@@ -211,20 +221,24 @@ class UserRepository(
 
     fun getVoiceActorsStats(
         userId: Int,
-        sort: UserStatisticsSort
+        sort: UserStatisticsSort,
+        fetchFromNetwork: Boolean,
     ) = api
         .userStatsVoiceActorsQuery(userId, listOf(sort))
-        .watch()
+        .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+        .toFlow()
         .asDataResult { data ->
             data.User?.statistics?.anime?.voiceActors?.filterNotNull()?.map { it.voiceActorStat }
         }
 
     fun getStudiosStats(
         userId: Int,
-        sort: UserStatisticsSort
+        sort: UserStatisticsSort,
+        fetchFromNetwork: Boolean,
     ) = api
         .userStatsStudiosQuery(userId, listOf(sort))
-        .watch()
+        .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+        .toFlow()
         .asDataResult { data ->
             data.User?.statistics?.anime?.studios?.filterNotNull()?.map { it.studioStat }
         }
@@ -233,9 +247,11 @@ class UserRepository(
         userId: Int,
         page: Int,
         perPage: Int = 25,
+        fetchFromNetwork: Boolean,
     ) = api
         .followersQuery(userId, page, perPage)
-        .watch()
+        .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+        .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) {
             it.Page?.followers?.filterNotNull().orEmpty()
         }
@@ -244,9 +260,11 @@ class UserRepository(
         userId: Int,
         page: Int,
         perPage: Int = 25,
+        fetchFromNetwork: Boolean,
     ) = api
         .followingsQuery(userId, page, perPage)
-        .watch()
+        .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
+        .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) {
             it.Page?.following?.filterNotNull().orEmpty()
         }

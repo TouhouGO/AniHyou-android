@@ -3,6 +3,7 @@ package com.axiel7.anihyou.feature.explore.season
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
+import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.ListPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.MediaRepository
 import com.axiel7.anihyou.core.model.ListStyle
@@ -24,6 +25,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class SeasonAnimeViewModel(
     arguments: SeasonAnime,
+    defaultPreferencesRepository: DefaultPreferencesRepository,
     private val mediaRepository: MediaRepository,
     private val listPreferencesRepository: ListPreferencesRepository,
 ) : PagedUiStateViewModel<SeasonAnimeUiState>(), SeasonAnimeEvent {
@@ -79,6 +81,12 @@ class SeasonAnimeViewModel(
     }
 
     init {
+        defaultPreferencesRepository.displayAdult
+            .onEach { value ->
+                mutableUiState.update { it.copy(displayAdult = value ?: false) }
+            }
+            .launchIn(viewModelScope)
+
         listPreferencesRepository.seasonalListStyle
             .distinctUntilChanged()
             .onEach { value ->
@@ -97,6 +105,7 @@ class SeasonAnimeViewModel(
                 mediaRepository.getSeasonalAnimePage(
                     animeSeason = it.season!!,
                     sort = listOf(it.sort),
+                    displayAdult = it.displayAdult,
                     page = it.page
                 )
             }

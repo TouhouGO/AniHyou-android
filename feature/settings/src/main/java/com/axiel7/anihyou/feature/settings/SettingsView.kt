@@ -159,15 +159,13 @@ private fun SettingsContent(
                 )
             }
 
-            if (!uiState.useBlackColors) {
-                ListPreference(
-                    title = stringResource(R.string.color_palette),
-                    values = PaletteStyle.entries.map { it.name },
-                    preferenceValue = uiState.colorPaletteStyle,
-                    icon = R.drawable.format_paint_24,
-                    onValueChange = { event?.setColorPalette(it) }
-                )
-            }
+            ListPreference(
+                title = stringResource(R.string.color_palette),
+                values = PaletteStyle.entries.map { it.name },
+                preferenceValue = uiState.colorPaletteStyle,
+                icon = R.drawable.format_paint_24,
+                onValueChange = { event?.setColorPalette(it) }
+            )
 
             LanguagePreference()
 

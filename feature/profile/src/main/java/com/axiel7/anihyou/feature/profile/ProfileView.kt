@@ -160,7 +160,11 @@ private fun ProfileContent(
                         }
                     )
                 },
-                modifier = Modifier.padding(top = statusBarPadding.calculateTopPadding() + 24.dp),
+                modifier = Modifier
+                    .padding(
+                        top = statusBarPadding.calculateTopPadding() + 24.dp,
+                        bottom = 8.dp
+                    ),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
                     scrolledContainerColor = Color.Transparent,
@@ -253,7 +257,7 @@ private fun MainProfileInfo(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    Column(modifier = modifier) {
+    Row(modifier = modifier) {
         PersonImage(
             url = uiState.userInfo?.avatar?.large,
             modifier = Modifier
@@ -268,7 +272,8 @@ private fun MainProfileInfo(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .padding(vertical = 16.dp)
+                .align(Alignment.Bottom),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Top
         ) {

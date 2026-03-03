@@ -26,6 +26,7 @@ data class DiscoverUiState(
     val nowAnimeSeason: AnimeSeason,
     val nextAnimeSeason: AnimeSeason,
     val airingOnMyList: Boolean? = null,
+    val displayAdult: Boolean = false,
     val selectedMediaDetails: BasicMediaDetails? = null,
     val selectedMediaListEntry: BasicMediaListEntry? = null,
     val isLoadingAiring: Boolean = true,

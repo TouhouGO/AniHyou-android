@@ -1,9 +1,7 @@
 package com.axiel7.anihyou.core.domain.repository
 
-import com.apollographql.apollo.cache.normalized.watch
 import com.axiel7.anihyou.core.network.CharacterDetailsQuery
 import com.axiel7.anihyou.core.network.api.CharacterApi
-import kotlin.collections.orEmpty
 
 class CharacterRepository(
     private val api: CharacterApi,
@@ -12,7 +10,7 @@ class CharacterRepository(
 
     fun getCharacterDetails(characterId: Int) = api
         .characterDetailsQuery(characterId)
-        .watch()
+        .toFlow()
         .asDataResult {
             it.Character
         }

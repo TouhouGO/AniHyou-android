@@ -25,12 +25,14 @@ import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 
 @Composable
 fun ExploreView(
+    isLoggedIn: Boolean,
     modifier: Modifier = Modifier,
     navActionManager: NavActionManager
 ) {
     ExploreContent(
         topBar = {
             ExploreSearchBar(
+                isLoggedIn = isLoggedIn,
                 navActionManager = navActionManager
             )
         },
@@ -244,7 +246,7 @@ private fun ExploreContent(
 
 @Preview
 @Composable
-fun ExploreViewPreview() {
+private fun ExploreViewPreview() {
     AniHyouTheme {
         Surface {
             ExploreContent(

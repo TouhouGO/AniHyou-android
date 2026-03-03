@@ -12,6 +12,7 @@ data class MediaChartUiState(
     val chartType: ChartType? = null,
     val media: SnapshotStateList<MediaChartQuery.Medium> = mutableStateListOf(),
     val selectedItem: MediaChartQuery.Medium? = null,
+    val displayAdult: Boolean = false,
     override val page: Int = 1,
     override val hasNextPage: Boolean = true,
     override val isLoading: Boolean = true,

@@ -57,9 +57,7 @@ class UserStatsViewModel(
         mutableUiState.update { it.copy(studiosType = value) }
 
     override fun onRefresh() {
-        val userId = uiState.value.userId
-        mutableUiState.update { it.copy(userId = null, isLoading = true) }
-        mutableUiState.update { it.copy(userId = userId) }
+        mutableUiState.update { it.copy(fetchFromNetwork = true, isLoading = true) }
     }
 
     init {
@@ -72,11 +70,13 @@ class UserStatsViewModel(
             .distinctUntilChanged { old, new ->
                 old.mediaType == new.mediaType
                         && old.userId == new.userId
+                        && !new.fetchFromNetwork
             }
             .flatMapLatest { uiState ->
                 userRepository.getOverviewStats(
                     userId = uiState.userId!!,
-                    mediaType = uiState.mediaType
+                    mediaType = uiState.mediaType,
+                    fetchFromNetwork = uiState.fetchFromNetwork,
                 )
             }
             .onEach { result ->
@@ -86,16 +86,18 @@ class UserStatsViewModel(
                             MediaType.ANIME ->
                                 it.copy(
                                     animeOverview = result.data,
-                                    isLoading = false
+                                    isLoading = false,
+                                    fetchFromNetwork = false,
                                 )
 
                             MediaType.MANGA ->
                                 it.copy(
                                     mangaOverview = result.data,
-                                    isLoading = false
+                                    isLoading = false,
+                                    fetchFromNetwork = false,
                                 )
 
-                            else -> it.copy(isLoading = false)
+                            else -> it.copy(isLoading = false, fetchFromNetwork = false)
                         }
                     } else {
                         result.toUiState()
@@ -114,12 +116,14 @@ class UserStatsViewModel(
                 old.genresType == new.genresType
                         && old.mediaType == new.mediaType
                         && old.userId == new.userId
+                        && !new.fetchFromNetwork
             }
             .flatMapLatest { uiState ->
                 userRepository.getGenresStats(
                     userId = uiState.userId!!,
                     mediaType = uiState.mediaType,
-                    sort = uiState.genresType.userStatisticsSort(ascending = false)
+                    sort = uiState.genresType.userStatisticsSort(ascending = false),
+                    fetchFromNetwork = uiState.fetchFromNetwork,
                 )
             }
             .onEach { result ->
@@ -129,16 +133,18 @@ class UserStatsViewModel(
                             MediaType.ANIME ->
                                 it.copy(
                                     animeGenres = result.data,
-                                    isLoading = false
+                                    isLoading = false,
+                                    fetchFromNetwork = false,
                                 )
 
                             MediaType.MANGA ->
                                 it.copy(
                                     mangaGenres = result.data,
-                                    isLoading = false
+                                    isLoading = false,
+                                    fetchFromNetwork = false,
                                 )
 
-                            else -> it.copy(isLoading = false)
+                            else -> it.copy(isLoading = false, fetchFromNetwork = false)
                         }
                     } else {
                         result.toUiState()
@@ -157,12 +163,14 @@ class UserStatsViewModel(
                 old.tagsType == new.tagsType
                         && old.mediaType == new.mediaType
                         && old.userId == new.userId
+                        && !new.fetchFromNetwork
             }
             .flatMapLatest { uiState ->
                 userRepository.getTagsStats(
                     userId = uiState.userId!!,
                     mediaType = uiState.mediaType,
-                    sort = uiState.tagsType.userStatisticsSort(ascending = false)
+                    sort = uiState.tagsType.userStatisticsSort(ascending = false),
+                    fetchFromNetwork = uiState.fetchFromNetwork,
                 )
             }
             .onEach { result ->
@@ -172,16 +180,18 @@ class UserStatsViewModel(
                             MediaType.ANIME ->
                                 it.copy(
                                     animeTags = result.data,
-                                    isLoading = false
+                                    isLoading = false,
+                                    fetchFromNetwork = false,
                                 )
 
                             MediaType.MANGA ->
                                 it.copy(
                                     mangaTags = result.data,
-                                    isLoading = false
+                                    isLoading = false,
+                                    fetchFromNetwork = false
                                 )
 
-                            else -> it.copy(isLoading = false)
+                            else -> it.copy(isLoading = false, fetchFromNetwork = false)
                         }
                     } else {
                         result.toUiState()
@@ -200,12 +210,14 @@ class UserStatsViewModel(
                 old.staffType == new.staffType
                         && old.mediaType == new.mediaType
                         && old.userId == new.userId
+                        && !new.fetchFromNetwork
             }
             .flatMapLatest { uiState ->
                 userRepository.getStaffStats(
                     userId = uiState.userId!!,
                     mediaType = uiState.mediaType,
-                    sort = uiState.staffType.userStatisticsSort(ascending = false)
+                    sort = uiState.staffType.userStatisticsSort(ascending = false),
+                    fetchFromNetwork = uiState.fetchFromNetwork,
                 )
             }
             .onEach { result ->
@@ -215,16 +227,18 @@ class UserStatsViewModel(
                             MediaType.ANIME ->
                                 it.copy(
                                     animeStaff = result.data,
-                                    isLoading = false
+                                    isLoading = false,
+                                    fetchFromNetwork = false,
                                 )
 
                             MediaType.MANGA ->
                                 it.copy(
                                     mangaStaff = result.data,
-                                    isLoading = false
+                                    isLoading = false,
+                                    fetchFromNetwork = false,
                                 )
 
-                            else -> it.copy(isLoading = false)
+                            else -> it.copy(isLoading = false, fetchFromNetwork = false)
                         }
                     } else {
                         result.toUiState()
@@ -242,11 +256,13 @@ class UserStatsViewModel(
             .distinctUntilChanged { old, new ->
                 old.voiceActorsType == new.voiceActorsType
                         && old.userId == new.userId
+                        && !new.fetchFromNetwork
             }
             .flatMapLatest { uiState ->
                 userRepository.getVoiceActorsStats(
                     userId = uiState.userId!!,
-                    sort = uiState.voiceActorsType.userStatisticsSort(ascending = false)
+                    sort = uiState.voiceActorsType.userStatisticsSort(ascending = false),
+                    fetchFromNetwork = uiState.fetchFromNetwork,
                 )
             }
             .onEach { result ->
@@ -254,7 +270,8 @@ class UserStatsViewModel(
                     if (result is DataResult.Success) {
                         it.copy(
                             voiceActors = result.data,
-                            isLoading = false
+                            isLoading = false,
+                            fetchFromNetwork = false,
                         )
                     } else {
                         result.toUiState()
@@ -272,11 +289,13 @@ class UserStatsViewModel(
             .distinctUntilChanged { old, new ->
                 old.studiosType == new.studiosType
                         && old.userId == new.userId
+                        && !new.fetchFromNetwork
             }
             .flatMapLatest { uiState ->
                 userRepository.getStudiosStats(
                     userId = uiState.userId!!,
-                    sort = uiState.studiosType.userStatisticsSort(ascending = false)
+                    sort = uiState.studiosType.userStatisticsSort(ascending = false),
+                    fetchFromNetwork = uiState.fetchFromNetwork,
                 )
             }
             .onEach { result ->
@@ -284,7 +303,8 @@ class UserStatsViewModel(
                     if (result is DataResult.Success) {
                         it.copy(
                             studios = result.data,
-                            isLoading = false
+                            isLoading = false,
+                            fetchFromNetwork = false,
                         )
                     } else {
                         result.toUiState()

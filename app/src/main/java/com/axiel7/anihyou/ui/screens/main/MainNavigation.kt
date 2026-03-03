@@ -226,6 +226,7 @@ fun MainNavigation(
                 metadata = topNavigationTransitionSpec
             ) {
                 ExploreView(
+                    isLoggedIn = isLoggedIn,
                     modifier = if (isCompactScreen) Modifier.padding(bottom = bottomPadding) else Modifier,
                     navActionManager = navActionManager,
                 )
@@ -249,6 +250,7 @@ fun MainNavigation(
             entry<Routes.Search> {
                 SearchView(
                     arguments = it,
+                    isLoggedIn = isLoggedIn,
                     modifier = Modifier.padding(bottom = bottomPadding),
                     navActionManager = navActionManager,
                 )
