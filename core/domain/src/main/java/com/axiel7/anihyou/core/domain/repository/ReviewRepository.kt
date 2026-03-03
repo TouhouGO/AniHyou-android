@@ -1,6 +1,5 @@
 package com.axiel7.anihyou.core.domain.repository
 
-import com.apollographql.apollo.cache.normalized.watch
 import com.axiel7.anihyou.core.network.api.ReviewApi
 import com.axiel7.anihyou.core.network.type.ReviewRating
 
@@ -11,7 +10,7 @@ class ReviewRepository (
 
     fun getReviewDetails(reviewId: Int) = api
         .reviewDetailsQuery(reviewId)
-        .watch()
+        .toFlow()
         .asDataResult {
             it.Review
         }

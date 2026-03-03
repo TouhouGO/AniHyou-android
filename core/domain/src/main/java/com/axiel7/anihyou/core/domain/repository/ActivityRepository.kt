@@ -2,11 +2,9 @@ package com.axiel7.anihyou.core.domain.repository
 
 import com.apollographql.apollo.cache.normalized.FetchPolicy
 import com.apollographql.apollo.cache.normalized.fetchPolicy
-import com.apollographql.apollo.cache.normalized.watch
 import com.axiel7.anihyou.core.network.ActivityDetailsQuery
 import com.axiel7.anihyou.core.network.api.ActivityApi
 import com.axiel7.anihyou.core.network.type.ActivityType
-import kotlin.collections.orEmpty
 
 class ActivityRepository(
     private val api: ActivityApi,
@@ -27,7 +25,7 @@ class ActivityRepository(
             page = page,
             perPage = perPage
         )
-        .watch()
+        .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) {
             it.Page?.activities?.filterNotNull().orEmpty()
         }
@@ -38,7 +36,7 @@ class ActivityRepository(
     ) = api
         .activityDetailsQuery(activityId)
         .fetchPolicy(if (fetchFromNetwork) FetchPolicy.NetworkFirst else FetchPolicy.CacheFirst)
-        .watch()
+        .toFlow()
         .asDataResult {
             it.Activity
         }

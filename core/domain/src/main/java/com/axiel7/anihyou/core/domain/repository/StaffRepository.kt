@@ -1,6 +1,5 @@
 package com.axiel7.anihyou.core.domain.repository
 
-import com.apollographql.apollo.cache.normalized.watch
 import com.axiel7.anihyou.core.model.staff.StaffMediaGrouped
 import com.axiel7.anihyou.core.network.StaffDetailsQuery
 import com.axiel7.anihyou.core.network.api.StaffApi
@@ -12,7 +11,7 @@ class StaffRepository(
 
     fun getStaffDetails(staffId: Int) = api
         .staffDetailsQuery(staffId)
-        .watch()
+        .toFlow()
         .asDataResult {
             it.Staff
         }

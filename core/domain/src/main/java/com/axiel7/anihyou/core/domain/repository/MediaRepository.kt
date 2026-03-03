@@ -2,10 +2,13 @@ package com.axiel7.anihyou.core.domain.repository
 
 import com.apollographql.apollo.cache.normalized.FetchPolicy
 import com.apollographql.apollo.cache.normalized.fetchPolicy
-import com.apollographql.apollo.cache.normalized.watch
 import com.axiel7.anihyou.core.model.media.AnimeSeason
 import com.axiel7.anihyou.core.model.media.AnimeThemes
 import com.axiel7.anihyou.core.model.media.AnimeThemes.Companion.toBo
+import com.axiel7.anihyou.core.model.media.ChartType
+import com.axiel7.anihyou.core.model.media.MediaCharactersAndStaff
+import com.axiel7.anihyou.core.model.media.MediaRelationsAndRecommendations
+import com.axiel7.anihyou.core.model.media.isActive
 import com.axiel7.anihyou.core.network.AiringAnimesQuery
 import com.axiel7.anihyou.core.network.MediaDetailsQuery
 import com.axiel7.anihyou.core.network.api.MalApi
@@ -13,10 +16,6 @@ import com.axiel7.anihyou.core.network.api.MediaApi
 import com.axiel7.anihyou.core.network.type.AiringSort
 import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaType
-import com.axiel7.anihyou.core.model.media.ChartType
-import com.axiel7.anihyou.core.model.media.MediaCharactersAndStaff
-import com.axiel7.anihyou.core.model.media.MediaRelationsAndRecommendations
-import com.axiel7.anihyou.core.model.media.isActive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -114,7 +113,7 @@ class MediaRepository (
 
     fun getMediaDetails(mediaId: Int) = api
         .mediaDetailsQuery(mediaId)
-        .watch()
+        .toFlow()
         .asDataResult { it.Media }
 
     suspend fun updateMediaDetailsCache(media: MediaDetailsQuery.Media) {
