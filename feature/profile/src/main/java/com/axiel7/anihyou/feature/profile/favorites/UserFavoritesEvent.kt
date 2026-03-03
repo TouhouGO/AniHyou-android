@@ -7,4 +7,6 @@ import com.axiel7.anihyou.core.base.event.UiEvent
 @Immutable
 interface UserFavoritesEvent : UiEvent, PagedEvent {
     fun setType(value: FavoritesType)
+
+    fun onRefresh()
 }

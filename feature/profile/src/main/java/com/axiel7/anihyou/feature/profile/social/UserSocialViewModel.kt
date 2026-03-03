@@ -2,9 +2,10 @@ package com.axiel7.anihyou.feature.profile.social
 
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.PagedResult
-import com.axiel7.anihyou.core.domain.repository.UserRepository
 import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
+import com.axiel7.anihyou.core.domain.repository.UserRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
@@ -27,6 +28,10 @@ class UserSocialViewModel(
         }
     }
 
+    override fun onRefresh() {
+        mutableUiState.update { it.copy(page = 1, hasNextPage = true, fetchFromNetwork = true) }
+    }
+
     init {
         // followers
         mutableUiState
@@ -35,11 +40,13 @@ class UserSocialViewModel(
                         && it.hasNextPage
                         && it.userId != null
             }
+            .distinctUntilChanged { _, new -> !new.fetchFromNetwork }
             .flatMapLatest { uiState ->
                 if (uiState.userId != null)
                     userRepository.getFollowers(
                         userId = uiState.userId,
-                        page = uiState.page
+                        page = uiState.page,
+                        fetchFromNetwork = uiState.fetchFromNetwork,
                     )
                 else emptyFlow()
             }
@@ -50,7 +57,8 @@ class UserSocialViewModel(
                         it.followers.addAll(result.list)
                         it.copy(
                             isLoading = false,
-                            hasNextPage = result.hasNextPage
+                            hasNextPage = result.hasNextPage,
+                            fetchFromNetwork = false,
                         )
                     } else {
                         result.toUiState(loadingWhen = it.page == 1)
@@ -66,11 +74,13 @@ class UserSocialViewModel(
                         && it.hasNextPage
                         && it.userId != null
             }
+            .distinctUntilChanged { _, new -> !new.fetchFromNetwork }
             .flatMapLatest { uiState ->
                 if (uiState.userId != null)
                     userRepository.getFollowing(
                         userId = uiState.userId,
-                        page = uiState.page
+                        page = uiState.page,
+                        fetchFromNetwork = uiState.fetchFromNetwork,
                     )
                 else emptyFlow()
             }
@@ -81,7 +91,8 @@ class UserSocialViewModel(
                         it.following.addAll(result.list)
                         it.copy(
                             isLoading = false,
-                            hasNextPage = result.hasNextPage
+                            hasNextPage = result.hasNextPage,
+                            fetchFromNetwork = false,
                         )
                     } else {
                         result.toUiState(loadingWhen = it.page == 1)

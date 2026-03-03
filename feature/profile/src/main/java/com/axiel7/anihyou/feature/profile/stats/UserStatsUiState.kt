@@ -35,6 +35,7 @@ data class UserStatsUiState(
     val voiceActors: List<VoiceActorStat>? = null,
     val studiosType: StatDistributionType = StatDistributionType.TITLES,
     val studios: List<StudioStat>? = null,
+    val fetchFromNetwork: Boolean = false,
     override val error: String? = null,
     override val isLoading: Boolean = true,
 ) : UiState() {

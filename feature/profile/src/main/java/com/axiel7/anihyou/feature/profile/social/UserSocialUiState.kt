@@ -13,6 +13,7 @@ data class UserSocialUiState(
     val type: UserSocialType = UserSocialType.FOLLOWERS,
     val followers: SnapshotStateList<FollowersQuery.Follower> = mutableStateListOf(),
     val following: SnapshotStateList<FollowingsQuery.Following> = mutableStateListOf(),
+    val fetchFromNetwork: Boolean = false,
     override val page: Int = 1,
     override val hasNextPage: Boolean = true,
     override val error: String? = null,

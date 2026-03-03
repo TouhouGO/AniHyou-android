@@ -13,8 +13,12 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,6 +62,7 @@ fun UserFavoritesView(
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun UserFavoritesContent(
     uiState: UserFavoritesUiState,
@@ -65,6 +70,7 @@ private fun UserFavoritesContent(
     modifier: Modifier = Modifier,
     navActionManager: NavActionManager,
 ) {
+    val pullRefreshState = rememberPullToRefreshState()
     val listState = rememberLazyGridState()
     if (!uiState.isLoading) {
         listState.OnBottomReached(buffer = 3, onLoadMore = { event?.onLoadMore() })
@@ -72,145 +78,142 @@ private fun UserFavoritesContent(
 
     ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
-    Column(
-        modifier = Modifier.fillMaxWidth()
+    PullToRefreshBox(
+        isRefreshing = uiState.isLoading,
+        onRefresh = { event?.onRefresh() },
+        state = pullRefreshState,
+        indicator = {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullRefreshState,
+                isRefreshing = uiState.isLoading,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+        }
     ) {
-        Row(
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+        Column(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            FavoritesType.entries.forEach {
-                FilterSelectionChip(
-                    selected = uiState.type == it,
-                    text = it.localized(),
-                    onClick = { event?.setType(it) },
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-            }
-        }//: Row
-
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = (MEDIA_POSTER_SMALL_WIDTH + 8).dp),
-            modifier = modifier.padding(horizontal = 8.dp),
-            state = listState,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-        ) {
-            when (uiState.type) {
-                FavoritesType.ANIME -> {
-                    items(
-                        items = uiState.anime,
-                        key = { it.id },
-                        contentType = { it }
-                    ) { item ->
-                        MediaItemVertical(
-                            title = item.title?.userPreferred.orEmpty(),
-                            imageUrl = item.coverImage?.large,
-                            modifier = Modifier.wrapContentWidth(),
-                            onClick = {
-                                navActionManager.toMediaDetails(item.id)
-                            }
-                        )
-                    }
-                    if (uiState.isLoading) {
-                        items(14) {
-                            MediaItemVerticalPlaceholder()
-                        }
-                    }
+            Row(
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                FavoritesType.entries.forEach {
+                    FilterSelectionChip(
+                        selected = uiState.type == it,
+                        text = it.localized(),
+                        onClick = { event?.setType(it) },
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
                 }
+            }//: Row
 
-                FavoritesType.MANGA -> {
-                    items(
-                        items = uiState.manga,
-                        key = { it.id },
-                        contentType = { it }
-                    ) { item ->
-                        MediaItemVertical(
-                            title = item.title?.userPreferred.orEmpty(),
-                            imageUrl = item.coverImage?.large,
-                            modifier = Modifier.wrapContentWidth(),
-                            onClick = {
-                                navActionManager.toMediaDetails(item.id)
-                            }
-                        )
-                    }
-                    if (uiState.isLoading) {
-                        items(14) {
-                            MediaItemVerticalPlaceholder()
-                        }
-                    }
-                }
-
-                FavoritesType.CHARACTERS -> {
-                    items(
-                        items = uiState.characters,
-                        key = { it.id },
-                        contentType = { it }
-                    ) { item ->
-                        PersonItemVertical(
-                            title = item.name?.userPreferred.orEmpty(),
-                            imageUrl = item.image?.large,
-                            onClick = {
-                                navActionManager.toCharacterDetails(item.id)
-                            }
-                        )
-                    }
-                    if (uiState.isLoading) {
-                        items(14) {
-                            PersonItemVerticalPlaceholder()
-                        }
-                    }
-                }
-
-                FavoritesType.STAFF -> {
-                    items(
-                        items = uiState.staff,
-                        key = { it.id },
-                        contentType = { it }
-                    ) { item ->
-                        PersonItemVertical(
-                            title = item.name?.userPreferred.orEmpty(),
-                            imageUrl = item.image?.large,
-                            onClick = {
-                                navActionManager.toStaffDetails(item.id)
-                            }
-                        )
-                    }
-                    if (uiState.isLoading) {
-                        items(14) {
-                            PersonItemVerticalPlaceholder()
-                        }
-                    }
-                }
-
-                FavoritesType.STUDIOS -> {
-                    items(
-                        items = uiState.studios,
-                        key = { it.id },
-                        contentType = { it }
-                    ) { item ->
-                        Card(
-                            modifier = Modifier.padding(horizontal = 4.dp),
-                            onClick = { navActionManager.toStudioDetails(item.id) }
-                        ) {
-                            Text(
-                                text = item.name,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                fontSize = 16.sp,
-                                lineHeight = 18.sp
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = (MEDIA_POSTER_SMALL_WIDTH + 8).dp),
+                modifier = modifier.padding(horizontal = 8.dp),
+                state = listState,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+            ) {
+                when (uiState.type) {
+                    FavoritesType.ANIME -> {
+                        items(
+                            items = uiState.anime,
+                            key = { it.id },
+                            contentType = { it }
+                        ) { item ->
+                            MediaItemVertical(
+                                title = item.title?.userPreferred.orEmpty(),
+                                imageUrl = item.coverImage?.large,
+                                modifier = Modifier.wrapContentWidth(),
+                                onClick = {
+                                    navActionManager.toMediaDetails(item.id)
+                                }
                             )
                         }
+                        if (uiState.isLoading) {
+                            items(14) {
+                                MediaItemVerticalPlaceholder()
+                            }
+                        }
                     }
-                    if (uiState.isLoading) {
-                        items(14) {
+
+                    FavoritesType.MANGA -> {
+                        items(
+                            items = uiState.manga,
+                            key = { it.id },
+                            contentType = { it }
+                        ) { item ->
+                            MediaItemVertical(
+                                title = item.title?.userPreferred.orEmpty(),
+                                imageUrl = item.coverImage?.large,
+                                modifier = Modifier.wrapContentWidth(),
+                                onClick = {
+                                    navActionManager.toMediaDetails(item.id)
+                                }
+                            )
+                        }
+                        if (uiState.isLoading) {
+                            items(14) {
+                                MediaItemVerticalPlaceholder()
+                            }
+                        }
+                    }
+
+                    FavoritesType.CHARACTERS -> {
+                        items(
+                            items = uiState.characters,
+                            key = { it.id },
+                            contentType = { it }
+                        ) { item ->
+                            PersonItemVertical(
+                                title = item.name?.userPreferred.orEmpty(),
+                                imageUrl = item.image?.large,
+                                onClick = {
+                                    navActionManager.toCharacterDetails(item.id)
+                                }
+                            )
+                        }
+                        if (uiState.isLoading) {
+                            items(14) {
+                                PersonItemVerticalPlaceholder()
+                            }
+                        }
+                    }
+
+                    FavoritesType.STAFF -> {
+                        items(
+                            items = uiState.staff,
+                            key = { it.id },
+                            contentType = { it }
+                        ) { item ->
+                            PersonItemVertical(
+                                title = item.name?.userPreferred.orEmpty(),
+                                imageUrl = item.image?.large,
+                                onClick = {
+                                    navActionManager.toStaffDetails(item.id)
+                                }
+                            )
+                        }
+                        if (uiState.isLoading) {
+                            items(14) {
+                                PersonItemVerticalPlaceholder()
+                            }
+                        }
+                    }
+
+                    FavoritesType.STUDIOS -> {
+                        items(
+                            items = uiState.studios,
+                            key = { it.id },
+                            contentType = { it }
+                        ) { item ->
                             Card(
-                                modifier = Modifier
-                                    .padding(horizontal = 4.dp)
-                                    .defaultPlaceholder(visible = true),
+                                modifier = Modifier.padding(horizontal = 4.dp),
+                                onClick = { navActionManager.toStudioDetails(item.id) }
                             ) {
                                 Text(
-                                    text = "Loading",
+                                    text = item.name,
                                     modifier = Modifier.padding(
                                         horizontal = 16.dp,
                                         vertical = 8.dp
@@ -220,11 +223,30 @@ private fun UserFavoritesContent(
                                 )
                             }
                         }
+                        if (uiState.isLoading) {
+                            items(14) {
+                                Card(
+                                    modifier = Modifier
+                                        .padding(horizontal = 4.dp)
+                                        .defaultPlaceholder(visible = true),
+                                ) {
+                                    Text(
+                                        text = "Loading",
+                                        modifier = Modifier.padding(
+                                            horizontal = 16.dp,
+                                            vertical = 8.dp
+                                        ),
+                                        fontSize = 16.sp,
+                                        lineHeight = 18.sp
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
-            }
-        }//: LazyVerticalGrid
-    }//: Column
+            }//: LazyVerticalGrid
+        }//: Column
+    }
 }
 
 @Preview

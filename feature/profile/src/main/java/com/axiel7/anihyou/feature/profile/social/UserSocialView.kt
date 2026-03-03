@@ -11,7 +11,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Surface
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,6 +55,7 @@ fun UserSocialView(
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun UserSocialContent(
     uiState: UserSocialUiState,
@@ -58,6 +63,7 @@ private fun UserSocialContent(
     modifier: Modifier = Modifier,
     navActionManager: NavActionManager,
 ) {
+    val pullRefreshState = rememberPullToRefreshState()
     val listState = rememberLazyGridState()
     if (!uiState.isLoading) {
         listState.OnBottomReached(buffer = 3, onLoadMore = { event?.onLoadMore() })
@@ -65,74 +71,87 @@ private fun UserSocialContent(
 
     ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
 
-    Column(
-        modifier = Modifier.fillMaxWidth()
+    PullToRefreshBox(
+        isRefreshing = uiState.isLoading,
+        onRefresh = { event?.onRefresh() },
+        state = pullRefreshState,
+        indicator = {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullRefreshState,
+                isRefreshing = uiState.isLoading,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+        }
     ) {
-        Row(
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+        Column(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            UserSocialType.entries.forEach {
-                FilterSelectionChip(
-                    selected = uiState.type == it,
-                    text = it.localized(),
-                    onClick = { event?.setType(it) },
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-            }
-        }//: Row
+            Row(
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                UserSocialType.entries.forEach {
+                    FilterSelectionChip(
+                        selected = uiState.type == it,
+                        text = it.localized(),
+                        onClick = { event?.setType(it) },
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+            }//: Row
 
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = (MEDIA_POSTER_SMALL_WIDTH + 8).dp),
-            modifier = modifier.padding(horizontal = 8.dp),
-            state = listState,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-        ) {
-            when (uiState.type) {
-                UserSocialType.FOLLOWERS -> {
-                    items(
-                        items = uiState.followers,
-                        contentType = { it }
-                    ) { item ->
-                        PersonItemVertical(
-                            title = item.userFollow.name,
-                            imageUrl = item.userFollow.avatar?.large,
-                            onClick = {
-                                navActionManager.toUserDetails(item.userFollow.id)
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = (MEDIA_POSTER_SMALL_WIDTH + 8).dp),
+                modifier = modifier.padding(horizontal = 8.dp),
+                state = listState,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+            ) {
+                when (uiState.type) {
+                    UserSocialType.FOLLOWERS -> {
+                        items(
+                            items = uiState.followers,
+                            contentType = { it }
+                        ) { item ->
+                            PersonItemVertical(
+                                title = item.userFollow.name,
+                                imageUrl = item.userFollow.avatar?.large,
+                                onClick = {
+                                    navActionManager.toUserDetails(item.userFollow.id)
+                                }
+                            )
+                        }
+                        if (uiState.isLoading) {
+                            items(14) {
+                                PersonItemVerticalPlaceholder()
                             }
-                        )
+                        }
                     }
-                    if (uiState.isLoading) {
-                        items(14) {
-                            PersonItemVerticalPlaceholder()
+
+                    UserSocialType.FOLLOWING -> {
+                        items(
+                            items = uiState.following,
+                            contentType = { it }
+                        ) { item ->
+                            PersonItemVertical(
+                                title = item.userFollow.name,
+                                imageUrl = item.userFollow.avatar?.large,
+                                onClick = {
+                                    navActionManager.toUserDetails(item.userFollow.id)
+                                }
+                            )
+                        }
+                        if (uiState.isLoading) {
+                            items(14) {
+                                PersonItemVerticalPlaceholder()
+                            }
                         }
                     }
                 }
-
-                UserSocialType.FOLLOWING -> {
-                    items(
-                        items = uiState.following,
-                        contentType = { it }
-                    ) { item ->
-                        PersonItemVertical(
-                            title = item.userFollow.name,
-                            imageUrl = item.userFollow.avatar?.large,
-                            onClick = {
-                                navActionManager.toUserDetails(item.userFollow.id)
-                            }
-                        )
-                    }
-                    if (uiState.isLoading) {
-                        items(14) {
-                            PersonItemVerticalPlaceholder()
-                        }
-                    }
-                }
-            }
-        }//: LazyVerticalGrid
-    }//: Column
+            }//: LazyVerticalGrid
+        }//: Column
+    }
 }
 
 @Preview
