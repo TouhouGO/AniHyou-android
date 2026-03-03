@@ -50,6 +50,7 @@ data class SearchUiState(
     val sourcesChanged: Boolean = false,
     val selectedMediaItem: SearchMediaQuery.Medium? = null,
     val clearedFilters: Boolean = false,
+    val isLoggedIn: Boolean,
     override val page: Int = 0,
     override val hasNextPage: Boolean = false,
     override val error: String? = null,

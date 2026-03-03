@@ -60,6 +60,7 @@ fun TriFilterChip(
     value: Boolean?,
     onValueChanged: (Boolean?) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     FilterChip(
         selected = value != null,
@@ -74,6 +75,7 @@ fun TriFilterChip(
         },
         label = { Text(text = text) },
         modifier = modifier,
+        enabled = enabled,
         leadingIcon = {
             if (value == true) {
                 Icon(painter = painterResource(R.drawable.check_24), contentDescription = "check")

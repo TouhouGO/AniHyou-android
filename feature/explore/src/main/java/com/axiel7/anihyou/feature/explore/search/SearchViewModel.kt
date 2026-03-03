@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.update
 @OptIn(ExperimentalCoroutinesApi::class)
 class SearchViewModel(
     arguments: Routes.Search,
+    isLoggedIn: Boolean,
     private val searchRepository: SearchRepository,
 ) : PagedUiStateViewModel<SearchUiState>(), SearchEvent {
 
@@ -42,6 +43,8 @@ class SearchViewModel(
                 tagIn = arguments.tag?.let { listOf(it) } ?: emptyList()
             ),
             onMyList = arguments.onList,
+            isLoggedIn = isLoggedIn,
+            isAdult = if (isLoggedIn) null else false,
             hasNextPage = arguments.genre != null
                     || arguments.tag != null
                     || arguments.mediaSort != null

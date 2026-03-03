@@ -41,9 +41,10 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 fun ExploreSearchBar(
+    isLoggedIn: Boolean,
     navActionManager: NavActionManager
 ) {
-    val viewModel: SearchViewModel = koinViewModel(parameters = { parametersOf(Routes.Search()) })
+    val viewModel: SearchViewModel = koinViewModel(parameters = { parametersOf(Routes.Search(), isLoggedIn) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     ExploreSearchBarContent(
@@ -159,7 +160,8 @@ fun ExploreSearchBarPreview() {
             ExploreSearchBarContent(
                 uiState = SearchUiState(
                     searchType = SearchType.ANIME,
-                    mediaSort = MediaSort.SEARCH_MATCH
+                    mediaSort = MediaSort.SEARCH_MATCH,
+                    isLoggedIn = false,
                 ),
                 event = null,
                 navActionManager = NavActionManager.rememberNavActionManager(),

@@ -8,6 +8,7 @@ import com.axiel7.anihyou.core.network.MediaChartQuery
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
+import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.update
 @OptIn(ExperimentalCoroutinesApi::class)
 class MediaChartViewModel(
     arguments: Routes.MediaChartList,
+    defaultPreferencesRepository: DefaultPreferencesRepository,
     private val mediaRepository: MediaRepository,
 ) : PagedUiStateViewModel<MediaChartUiState>(), MediaChartEvent {
 
@@ -56,6 +58,12 @@ class MediaChartViewModel(
     }
 
     init {
+        defaultPreferencesRepository.displayAdult
+            .onEach { value ->
+                mutableUiState.update { it.copy(displayAdult = value ?: false) }
+            }
+            .launchIn(viewModelScope)
+
         mutableUiState
             .filter { it.hasNextPage && it.chartType != null }
             .distinctUntilChanged { old, new ->
@@ -65,6 +73,7 @@ class MediaChartViewModel(
             .flatMapLatest { uiState ->
                 mediaRepository.getMediaChartPage(
                     type = uiState.chartType!!,
+                    displayAdult = uiState.displayAdult,
                     page = uiState.page,
                     perPage = MediaChartUiState.PER_PAGE
                 )

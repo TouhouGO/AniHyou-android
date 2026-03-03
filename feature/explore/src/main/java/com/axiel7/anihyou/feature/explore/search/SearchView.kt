@@ -93,10 +93,11 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun SearchView(
     arguments: Routes.Search,
+    isLoggedIn: Boolean,
     modifier: Modifier = Modifier,
     navActionManager: NavActionManager,
 ) {
-    val viewModel: SearchViewModel = koinViewModel(parameters = { parametersOf(arguments) })
+    val viewModel: SearchViewModel = koinViewModel(parameters = { parametersOf(arguments, isLoggedIn) })
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var query by rememberSaveable { mutableStateOf("") }
@@ -496,7 +497,8 @@ private fun MoreFilters(
         TriFilterChip(
             text = stringResource(R.string.is_adult),
             value = uiState.isAdult,
-            onValueChanged = { event?.setIsAdult(it) }
+            onValueChanged = { event?.setIsAdult(it) },
+            enabled = uiState.isLoggedIn,
         )
     }
 }
@@ -513,7 +515,8 @@ fun SearchPreview() {
                 initialTag = null,
                 uiState = SearchUiState(
                     searchType = SearchType.ANIME,
-                    mediaSort = MediaSort.SEARCH_MATCH
+                    mediaSort = MediaSort.SEARCH_MATCH,
+                    isLoggedIn = false
                 ),
                 event = null,
                 navActionManager = NavActionManager.rememberNavActionManager()

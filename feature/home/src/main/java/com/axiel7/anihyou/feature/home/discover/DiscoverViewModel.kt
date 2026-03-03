@@ -3,15 +3,15 @@ package com.axiel7.anihyou.feature.home.discover
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.PagedResult
+import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.MediaRepository
+import com.axiel7.anihyou.core.model.media.currentAnimeSeason
+import com.axiel7.anihyou.core.model.media.nextAnimeSeason
 import com.axiel7.anihyou.core.network.fragment.BasicMediaDetails
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaType
-import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
-import com.axiel7.anihyou.core.model.media.currentAnimeSeason
-import com.axiel7.anihyou.core.model.media.nextAnimeSeason
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
@@ -49,6 +49,7 @@ class DiscoverViewModel(
         if (mutableUiState.value.airingAnime.isEmpty()) {
             mediaRepository.getAiringAnimesPage(
                 airingAtGreater = System.currentTimeMillis() / 1000,
+                displayAdult = uiState.value.displayAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -86,6 +87,7 @@ class DiscoverViewModel(
         if (mutableUiState.value.thisSeasonAnime.isEmpty()) {
             mediaRepository.getSeasonalAnimePage(
                 animeSeason = uiState.value.nowAnimeSeason,
+                displayAdult = uiState.value.displayAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -106,6 +108,7 @@ class DiscoverViewModel(
             mediaRepository.getMediaSortedPage(
                 mediaType = MediaType.ANIME,
                 sort = listOf(MediaSort.TRENDING_DESC),
+                displayAdult = uiState.value.displayAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -125,6 +128,7 @@ class DiscoverViewModel(
         if (mutableUiState.value.nextSeasonAnime.isEmpty()) {
             mediaRepository.getSeasonalAnimePage(
                 animeSeason = uiState.value.nextAnimeSeason,
+                displayAdult = uiState.value.displayAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -145,6 +149,7 @@ class DiscoverViewModel(
             mediaRepository.getMediaSortedPage(
                 mediaType = MediaType.MANGA,
                 sort = listOf(MediaSort.TRENDING_DESC),
+                displayAdult = uiState.value.displayAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -165,6 +170,7 @@ class DiscoverViewModel(
             mediaRepository.getMediaSortedPage(
                 mediaType = MediaType.ANIME,
                 sort = listOf(MediaSort.ID_DESC),
+                displayAdult = uiState.value.displayAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -185,6 +191,7 @@ class DiscoverViewModel(
             mediaRepository.getMediaSortedPage(
                 mediaType = MediaType.MANGA,
                 sort = listOf(MediaSort.ID_DESC),
+                displayAdult = uiState.value.displayAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -237,6 +244,12 @@ class DiscoverViewModel(
             .filterNotNull()
             .onEach { value ->
                 mutableUiState.update { it.copy(airingOnMyList = value) }
+            }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.displayAdult
+            .onEach { value ->
+                mutableUiState.update { it.copy(displayAdult = value ?: false) }
             }
             .launchIn(viewModelScope)
     }

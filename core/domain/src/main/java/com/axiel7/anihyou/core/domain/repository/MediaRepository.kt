@@ -72,10 +72,11 @@ class MediaRepository (
     fun getSeasonalAnimePage(
         animeSeason: AnimeSeason,
         sort: List<MediaSort> = listOf(MediaSort.POPULARITY_DESC),
+        displayAdult: Boolean? = null,
         page: Int,
         perPage: Int = 25,
     ) = api
-        .seasonalAnimeQuery(animeSeason.toDto(), sort, page, perPage)
+        .seasonalAnimeQuery(animeSeason.toDto(), sort, displayAdult, page, perPage)
         .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) {
             it.Page?.media?.filterNotNull().orEmpty()
@@ -84,10 +85,11 @@ class MediaRepository (
     fun getMediaSortedPage(
         mediaType: MediaType,
         sort: List<MediaSort>,
+        displayAdult: Boolean? = null,
         page: Int,
         perPage: Int = 25,
     ) = api
-        .mediaSortedQuery(mediaType, sort, page, perPage)
+        .mediaSortedQuery(mediaType, sort, displayAdult, page, perPage)
         .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) {
             it.Page?.media?.filterNotNull().orEmpty()
@@ -95,6 +97,7 @@ class MediaRepository (
 
     fun getMediaChartPage(
         type: ChartType,
+        displayAdult: Boolean? = null,
         page: Int,
         perPage: Int = 25,
     ) = api
@@ -103,6 +106,7 @@ class MediaRepository (
             sort = listOf(type.mediaSort),
             status = type.mediaStatus,
             format = type.mediaFormat,
+            displayAdult = displayAdult,
             page = page,
             perPage = perPage
         )

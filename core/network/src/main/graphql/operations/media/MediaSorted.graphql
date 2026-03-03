@@ -1,6 +1,6 @@
-query MediaSorted($page: Int, $perPage: Int, $type: MediaType, $sort: [MediaSort]) {
+query MediaSorted($page: Int, $perPage: Int, $type: MediaType, $sort: [MediaSort], $isAdult: Boolean) {
     Page(page: $page, perPage: $perPage) {
-        media(type: $type, sort: $sort) {
+        media(type: $type, sort: $sort, isAdult: $isAdult) {
             ...BasicMediaDetails
             coverImage {
                 large
