@@ -164,7 +164,7 @@ fun AiringAnimeHorizontalItemPlaceholder() {
 
 @Preview(showBackground = true)
 @Composable
-fun AiringAnimeHorizontalItemPreview() {
+private fun AiringAnimeHorizontalItemPreview() {
     AniHyouTheme {
         Surface {
             AiringAnimeHorizontalItem(

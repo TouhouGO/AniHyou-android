@@ -164,7 +164,7 @@ fun CompactUserMediaListItem(
 
 @Preview
 @Composable
-fun CompactUserMediaListItemPreview() {
+private fun CompactUserMediaListItemPreview() {
     AniHyouTheme {
         Surface {
             Column {

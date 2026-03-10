@@ -68,7 +68,7 @@ fun VideoThumbnailItem(
 
 @Preview
 @Composable
-fun VideoThumbnailItemPreview() {
+private fun VideoThumbnailItemPreview() {
     AniHyouTheme {
         Surface {
             VideoThumbnailItem(

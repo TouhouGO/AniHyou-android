@@ -63,7 +63,7 @@ fun SpoilerDialog(
 
 @Preview
 @Composable
-fun DefaultMarkdownTextPreview() {
+private fun DefaultMarkdownTextPreview() {
     AniHyouTheme {
         Surface {
             DefaultMarkdownText(

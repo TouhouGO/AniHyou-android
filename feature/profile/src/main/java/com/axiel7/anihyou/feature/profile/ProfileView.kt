@@ -348,7 +348,7 @@ private fun MainProfileInfo(
 
 @Preview
 @Composable
-fun ProfileViewPreview() {
+private fun ProfileViewPreview() {
     AniHyouTheme {
         Surface {
             ProfileContent(

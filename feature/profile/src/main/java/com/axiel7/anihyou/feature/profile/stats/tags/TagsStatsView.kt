@@ -89,7 +89,7 @@ fun TagsStatsView(
 
 @Preview
 @Composable
-fun GenresTagsStatsViewPreview() {
+private fun GenresTagsStatsViewPreview() {
     AniHyouTheme {
         Surface {
             TagsStatsView(

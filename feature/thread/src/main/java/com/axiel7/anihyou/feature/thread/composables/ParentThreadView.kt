@@ -138,7 +138,7 @@ fun ParentThreadViewPlaceholder() {
 
 @Preview
 @Composable
-fun ParentThreadViewPreview() {
+private fun ParentThreadViewPreview() {
     val thread = BasicThreadDetails(
         id = 1,
         title = "[Spoilers] Oshi no Ko - Episode 8 Discussion",

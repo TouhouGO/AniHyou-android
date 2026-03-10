@@ -190,7 +190,7 @@ private fun NotificationsContent(
 
 @Preview
 @Composable
-fun NotificationsViewPreview() {
+private fun NotificationsViewPreview() {
     AniHyouTheme {
         Surface {
             NotificationsContent(

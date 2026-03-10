@@ -140,7 +140,7 @@ fun ChildCommentView(
 
 @Preview
 @Composable
-fun ChildCommentViewPreview() {
+private fun ChildCommentViewPreview() {
     AniHyouTheme {
         Surface {
             ChildCommentView(

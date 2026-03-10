@@ -46,7 +46,7 @@ fun IconCard(
 
 @Preview
 @Composable
-fun CardIconPreview() {
+private fun CardIconPreview() {
     AniHyouTheme {
         Surface {
             IconCard(

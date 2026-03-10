@@ -505,7 +505,7 @@ private fun MoreFilters(
 
 @Preview
 @Composable
-fun SearchPreview() {
+private fun SearchPreview() {
     AniHyouTheme {
         Surface {
             SearchContentView(

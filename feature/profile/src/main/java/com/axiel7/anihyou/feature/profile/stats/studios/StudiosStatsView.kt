@@ -78,7 +78,7 @@ fun StudiosStatsView(
 
 @Preview
 @Composable
-fun GenresTagsStatsViewPreview() {
+private fun GenresTagsStatsViewPreview() {
     AniHyouTheme {
         Surface {
             StudiosStatsView(

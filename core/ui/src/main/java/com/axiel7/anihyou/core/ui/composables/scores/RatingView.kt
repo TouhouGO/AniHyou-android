@@ -154,7 +154,7 @@ fun RatingView(
 
 @Preview
 @Composable
-fun SliderRatingViewPreview() {
+private fun SliderRatingViewPreview() {
     AniHyouTheme {
         Surface {
             RatingView(

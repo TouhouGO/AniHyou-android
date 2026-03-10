@@ -89,7 +89,7 @@ fun PublishMarkdownView(
 
 @Preview
 @Composable
-fun PublishMarkdownViewPreview() {
+private fun PublishMarkdownViewPreview() {
     AniHyouTheme {
         Surface {
             PublishMarkdownView(

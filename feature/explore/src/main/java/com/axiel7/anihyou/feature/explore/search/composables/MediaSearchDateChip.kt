@@ -69,7 +69,7 @@ fun MediaSearchDateChip(
 
 @Preview
 @Composable
-fun MediaSearchYearChipPreview() {
+private fun MediaSearchYearChipPreview() {
     AniHyouTheme {
         Surface {
             MediaSearchDateChip(

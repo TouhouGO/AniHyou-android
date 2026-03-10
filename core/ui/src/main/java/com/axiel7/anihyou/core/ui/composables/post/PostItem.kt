@@ -132,7 +132,7 @@ fun PostItemPlaceholder(
 
 @Preview
 @Composable
-fun PostItemPreview() {
+private fun PostItemPreview() {
     AniHyouTheme {
         Surface {
             Column {

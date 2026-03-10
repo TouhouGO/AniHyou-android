@@ -143,7 +143,7 @@ fun MediaStatsView(
 
 @Preview
 @Composable
-fun MediaStatsViewPreview() {
+private fun MediaStatsViewPreview() {
     AniHyouTheme {
         Surface {
             MediaStatsView(

@@ -16,13 +16,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.axiel7.anihyou.core.base.CROWDIN_URL
+import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.PlainPreference
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
-import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import java.util.Locale
 
 private val translations = mapOf(
@@ -88,7 +88,7 @@ fun TranslationsView(
 
 @Preview
 @Composable
-fun TranslationsViewPreview() {
+private fun TranslationsViewPreview() {
     AniHyouTheme {
         Surface {
             TranslationsView(

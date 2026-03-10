@@ -121,7 +121,7 @@ fun <T> VerticalStatsBar(
 
 @Preview
 @Composable
-fun VerticalStatsBarPreview() {
+private fun VerticalStatsBarPreview() {
     val stats by remember {
         mutableStateOf(
             listOf(

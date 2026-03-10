@@ -139,7 +139,7 @@ fun ActivityFeedItem(
 
 @Preview
 @Composable
-fun MediaActivityItemPreview() {
+private fun MediaActivityItemPreview() {
     AniHyouTheme {
         Surface {
             ActivityFeedItem(

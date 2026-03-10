@@ -145,7 +145,7 @@ private fun MediaChartListContent(
 
 @Preview
 @Composable
-fun MediaChartListViewPreview() {
+private fun MediaChartListViewPreview() {
     AniHyouTheme {
         Surface {
             MediaChartListContent(

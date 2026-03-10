@@ -58,7 +58,7 @@ private fun PublishActivityContent(
 
 @Preview
 @Composable
-fun PublishActivityViewPreview() {
+private fun PublishActivityViewPreview() {
     AniHyouTheme {
         Surface {
             PublishActivityContent(

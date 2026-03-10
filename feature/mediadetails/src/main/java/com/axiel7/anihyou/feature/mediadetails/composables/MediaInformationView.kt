@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import com.axiel7.anihyou.core.model.media.AnimeSeason
 import com.axiel7.anihyou.core.model.media.episodeNumber
 import com.axiel7.anihyou.core.model.media.externalLinks
@@ -48,7 +49,6 @@ import com.axiel7.anihyou.core.ui.composables.common.TagChip
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
 import com.axiel7.anihyou.core.ui.composables.media.VideoThumbnailItem
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
-import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.formatted
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.minutesToLegibleText
 import com.axiel7.anihyou.feature.mediadetails.MediaDetailsUiState
@@ -360,7 +360,7 @@ fun MediaInformationView(
 
 @Preview
 @Composable
-fun MediaInformationViewPreview() {
+private fun MediaInformationViewPreview() {
     AniHyouTheme {
         Surface {
             MediaInformationView(

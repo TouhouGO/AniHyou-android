@@ -25,6 +25,12 @@ import com.axiel7.anihyou.core.base.ANILIST_ACCOUNT_SETTINGS_URL
 import com.axiel7.anihyou.core.base.DISCORD_SERVER_URL
 import com.axiel7.anihyou.core.base.GITHUB_PROFILE_URL
 import com.axiel7.anihyou.core.base.GITHUB_REPO_URL
+import com.axiel7.anihyou.core.common.utils.ContextUtils.copyToClipBoard
+import com.axiel7.anihyou.core.common.utils.ContextUtils.getActivity
+import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
+import com.axiel7.anihyou.core.common.utils.ContextUtils.openByDefaultSettings
+import com.axiel7.anihyou.core.common.utils.ContextUtils.openLink
+import com.axiel7.anihyou.core.common.utils.ContextUtils.showToast
 import com.axiel7.anihyou.core.model.AppColorMode
 import com.axiel7.anihyou.core.model.DefaultTab
 import com.axiel7.anihyou.core.model.ItemsPerRow
@@ -44,15 +50,9 @@ import com.axiel7.anihyou.core.ui.composables.PlainPreference
 import com.axiel7.anihyou.core.ui.composables.PreferencesTitle
 import com.axiel7.anihyou.core.ui.composables.SwitchPreference
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.SmallCircularProgressIndicator
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
-import com.axiel7.anihyou.core.common.utils.ContextUtils.copyToClipBoard
-import com.axiel7.anihyou.core.common.utils.ContextUtils.getActivity
-import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
-import com.axiel7.anihyou.core.common.utils.ContextUtils.openByDefaultSettings
-import com.axiel7.anihyou.core.common.utils.ContextUtils.openLink
-import com.axiel7.anihyou.core.common.utils.ContextUtils.showToast
-import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.feature.settings.composables.CustomColorPreference
 import com.axiel7.anihyou.feature.settings.composables.LanguagePreference
 import com.axiel7.anihyou.feature.worker.NotificationWorker.Companion.createDefaultNotificationChannels
@@ -371,7 +371,7 @@ private fun SettingsContent(
 @OptIn(ExperimentalPermissionsApi::class)
 @Preview
 @Composable
-fun SettingsViewPreview() {
+private fun SettingsViewPreview() {
     AniHyouTheme {
         Surface {
             SettingsContent(

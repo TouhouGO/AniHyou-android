@@ -285,7 +285,7 @@ private fun DiscoverContent(
 
 @Preview
 @Composable
-fun DiscoverViewPreview() {
+private fun DiscoverViewPreview() {
     val now = remember { LocalDateTime.now() }
     AniHyouTheme {
         Surface {

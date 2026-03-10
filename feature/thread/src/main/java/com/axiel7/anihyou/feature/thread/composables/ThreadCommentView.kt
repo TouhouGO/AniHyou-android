@@ -163,7 +163,7 @@ fun ThreadCommentViewPlaceholder() {
 
 @Preview
 @Composable
-fun ThreadCommentViewPreview() {
+private fun ThreadCommentViewPreview() {
     AniHyouTheme {
         Surface {
             Column {

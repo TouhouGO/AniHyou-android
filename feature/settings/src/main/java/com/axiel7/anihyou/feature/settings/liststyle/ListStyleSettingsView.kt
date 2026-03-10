@@ -125,7 +125,7 @@ private fun ListStyleSettingsContent(
 
 @Preview
 @Composable
-fun ListStyleSettingsViewPreview() {
+private fun ListStyleSettingsViewPreview() {
     AniHyouTheme {
         Surface {
             ListStyleSettingsContent(

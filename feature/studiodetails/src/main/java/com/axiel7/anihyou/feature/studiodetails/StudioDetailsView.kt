@@ -147,7 +147,7 @@ private fun StudioDetailsContent(
 
 @Preview
 @Composable
-fun StudioDetailsViewPreview() {
+private fun StudioDetailsViewPreview() {
     AniHyouTheme {
         Surface {
             StudioDetailsContent(

@@ -56,7 +56,7 @@ fun SmileyRatingView(
 
 @Preview
 @Composable
-fun SmileyRatingViewPreview() {
+private fun SmileyRatingViewPreview() {
     var rating by remember { mutableDoubleStateOf(0.0) }
     AniHyouTheme {
         Surface {

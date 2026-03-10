@@ -120,7 +120,7 @@ fun MediaRelationsView(
 
 @Preview
 @Composable
-fun MediaRelationsViewPreview() {
+private fun MediaRelationsViewPreview() {
     AniHyouTheme {
         Surface {
             MediaRelationsView(

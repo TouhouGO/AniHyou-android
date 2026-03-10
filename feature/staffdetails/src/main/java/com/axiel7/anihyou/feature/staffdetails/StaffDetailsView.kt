@@ -172,7 +172,7 @@ private fun StaffDetailsContent(
 
 @Preview
 @Composable
-fun StaffDetailsViewPreview() {
+private fun StaffDetailsViewPreview() {
     AniHyouTheme {
         Surface {
             StaffDetailsContent(

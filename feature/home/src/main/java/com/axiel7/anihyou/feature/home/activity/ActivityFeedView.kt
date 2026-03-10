@@ -174,7 +174,7 @@ private fun ActivityFeedContent(
 
 @Preview
 @Composable
-fun ActivityFeedViewPreview() {
+private fun ActivityFeedViewPreview() {
     AniHyouTheme {
         Surface {
             ActivityFeedContent(

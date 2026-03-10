@@ -26,7 +26,7 @@ fun SmallCircularProgressIndicator(
 
 @Preview
 @Composable
-fun ProgressIndicatorPreview() {
+private fun ProgressIndicatorPreview() {
     AniHyouTheme {
         Surface {
             SmallCircularProgressIndicator()

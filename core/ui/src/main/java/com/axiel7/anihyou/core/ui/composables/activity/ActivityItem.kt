@@ -227,7 +227,7 @@ fun ActivityItemPlaceholder(
 
 @Preview
 @Composable
-fun ActivityItemPreview() {
+private fun ActivityItemPreview() {
     AniHyouTheme {
         Surface {
             Column {

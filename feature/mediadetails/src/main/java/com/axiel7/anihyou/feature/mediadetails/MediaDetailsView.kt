@@ -58,6 +58,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.axiel7.anihyou.core.common.utils.ContextUtils.copyToClipBoard
 import com.axiel7.anihyou.core.common.utils.NumberUtils.format
 import com.axiel7.anihyou.core.common.utils.StringUtils.htmlStripped
 import com.axiel7.anihyou.core.common.utils.StringUtils.orUnknown
@@ -70,11 +71,14 @@ import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.resources.ColorUtils.colorFromHex
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.navigation.Routes
+import com.axiel7.anihyou.core.ui.composables.ConnectedButtonGroup
 import com.axiel7.anihyou.core.ui.composables.TextIconHorizontal
 import com.axiel7.anihyou.core.ui.composables.TextSubtitleVertical
 import com.axiel7.anihyou.core.ui.composables.TopBannerView
 import com.axiel7.anihyou.core.ui.composables.character.CharacterVoiceActorsSheet
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
+import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ShareIconButton
 import com.axiel7.anihyou.core.ui.composables.common.TranslateIconButton
@@ -84,10 +88,6 @@ import com.axiel7.anihyou.core.ui.composables.media.MEDIA_POSTER_BIG_HEIGHT
 import com.axiel7.anihyou.core.ui.composables.media.MEDIA_POSTER_BIG_WIDTH
 import com.axiel7.anihyou.core.ui.composables.media.MediaPoster
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
-import com.axiel7.anihyou.core.common.utils.ContextUtils.copyToClipBoard
-import com.axiel7.anihyou.core.ui.common.navigation.Routes
-import com.axiel7.anihyou.core.ui.composables.ConnectedButtonGroup
-import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.secondsToLegibleText
 import com.axiel7.anihyou.core.ui.utils.LocaleUtils.LocalIsLanguageEn
 import com.axiel7.anihyou.core.ui.utils.StringUtils.htmlDecoded
@@ -539,7 +539,7 @@ fun MediaInfoTabs(
 
 @Preview
 @Composable
-fun MediaDetailsViewPreview() {
+private fun MediaDetailsViewPreview() {
     AniHyouTheme {
         Surface {
             MediaDetailsContent(

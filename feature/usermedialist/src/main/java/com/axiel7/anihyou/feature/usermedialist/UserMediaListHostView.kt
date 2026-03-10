@@ -246,7 +246,7 @@ private fun UserMediaListHostContent(
 
 @Preview
 @Composable
-fun UserMediaListViewPreview() {
+private fun UserMediaListViewPreview() {
     AniHyouTheme {
         Surface {
             UserMediaListHostContent(

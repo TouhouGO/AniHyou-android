@@ -171,7 +171,7 @@ fun UserActivityView(
 
 @Preview
 @Composable
-fun UserActivityViewPreview() {
+private fun UserActivityViewPreview() {
     AniHyouTheme {
         Surface {
             UserActivityView(

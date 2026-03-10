@@ -58,7 +58,7 @@ fun MediaPoster(
 
 @Preview(showBackground = true)
 @Composable
-fun MediaPosterPreview() {
+private fun MediaPosterPreview() {
     AniHyouTheme {
         Surface {
             MediaPoster(

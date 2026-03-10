@@ -162,7 +162,7 @@ private fun ReviewDetailsContent(
 
 @Preview
 @Composable
-fun ReviewDetailsViewPreview() {
+private fun ReviewDetailsViewPreview() {
     AniHyouTheme {
         Surface {
             ReviewDetailsContent(

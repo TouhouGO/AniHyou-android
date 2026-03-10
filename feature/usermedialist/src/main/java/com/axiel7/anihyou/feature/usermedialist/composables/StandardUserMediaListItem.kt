@@ -179,7 +179,7 @@ fun StandardUserMediaListItem(
 
 @Preview
 @Composable
-fun StandardUserMediaListItemPreview() {
+private fun StandardUserMediaListItemPreview() {
     AniHyouTheme {
         Surface {
             Column {

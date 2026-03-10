@@ -312,7 +312,7 @@ private fun SeasonalList(
 
 @Preview
 @Composable
-fun SeasonAnimeViewPreview() {
+private fun SeasonAnimeViewPreview() {
     AniHyouTheme {
         Surface {
             SeasonAnimeContent(

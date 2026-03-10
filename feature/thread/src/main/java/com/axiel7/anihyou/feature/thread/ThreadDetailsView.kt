@@ -186,7 +186,7 @@ private fun ThreadDetailsContent(
 
 @Preview
 @Composable
-fun ThreadDetailsViewPreview() {
+private fun ThreadDetailsViewPreview() {
     AniHyouTheme {
         Surface {
             ThreadDetailsContent(

@@ -54,7 +54,7 @@ fun FiveStarRatingView(
 
 @Preview
 @Composable
-fun FiveStarRatingViewPreview() {
+private fun FiveStarRatingViewPreview() {
     AniHyouTheme {
         Surface {
             FiveStarRatingView(

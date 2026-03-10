@@ -221,7 +221,7 @@ fun OverviewStatsView(
 
 @Preview
 @Composable
-fun OverviewUserStatsViewPreview() {
+private fun OverviewUserStatsViewPreview() {
     AniHyouTheme {
         Surface {
             OverviewStatsView(

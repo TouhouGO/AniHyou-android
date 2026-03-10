@@ -183,7 +183,7 @@ fun MediaItemVerticalPlaceholder(
 
 @Preview
 @Composable
-fun MediaItemVerticalPreview() {
+private fun MediaItemVerticalPreview() {
     AniHyouTheme {
         Surface {
             MediaItemVertical(

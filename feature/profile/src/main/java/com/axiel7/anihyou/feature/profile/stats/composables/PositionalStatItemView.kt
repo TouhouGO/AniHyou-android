@@ -150,7 +150,7 @@ fun PositionalStatItemViewPlaceholder(
 
 @Preview
 @Composable
-fun PositionalStatItemViewPreview() {
+private fun PositionalStatItemViewPreview() {
     AniHyouTheme {
         Surface {
             Column(
