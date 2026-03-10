@@ -89,7 +89,7 @@ class CalendarViewModel(
                     airingAtGreater = start,
                     airingAtLesser = end,
                     onMyList = uiState.onMyList,
-                    displayAdult = displayAdult == true,
+                    isAdult = displayAdult == true,
                     page = uiState.page
                 )
             }

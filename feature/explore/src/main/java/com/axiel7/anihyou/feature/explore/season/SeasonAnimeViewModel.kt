@@ -105,7 +105,7 @@ class SeasonAnimeViewModel(
                 mediaRepository.getSeasonalAnimePage(
                     animeSeason = it.season!!,
                     sort = listOf(it.sort),
-                    displayAdult = it.displayAdult,
+                    isAdult = it.isAdult,
                     page = it.page
                 )
             }

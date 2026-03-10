@@ -73,7 +73,7 @@ class MediaChartViewModel(
             .flatMapLatest { uiState ->
                 mediaRepository.getMediaChartPage(
                     type = uiState.chartType!!,
-                    displayAdult = uiState.displayAdult,
+                    isAdult = uiState.isAdult,
                     page = uiState.page,
                     perPage = MediaChartUiState.PER_PAGE
                 )

@@ -41,4 +41,6 @@ data class DiscoverUiState(
 ) : UiState() {
     override fun setError(value: String?) = copy(error = value)
     override fun setLoading(value: Boolean) = copy(isLoading = value)
+
+    val isAdult = displayAdult.takeIf { !it }
 }
