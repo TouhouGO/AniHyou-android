@@ -68,11 +68,7 @@ fun DefaultMarkdownTextPreview() {
         Surface {
             DefaultMarkdownText(
                 markdown = "",
-                uriHandler = MarkdownUriHandler(
-                    onImageClicked = {},
-                    onSpoilerClicked = {},
-                    onLinkClicked = {}
-                )
+                uriHandler = MarkdownUriHandler()
             )
         }
     }

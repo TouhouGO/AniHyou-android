@@ -60,7 +60,7 @@ class ThreadDetailsViewModel(
     }
 
     override fun refresh() {
-        mutableUiState.update { it.copy(fetchFromNetwork = true) }
+        mutableUiState.update { it.copy(page = 1, fetchFromNetwork = true) }
     }
 
     init {
@@ -98,6 +98,7 @@ class ThreadDetailsViewModel(
             .onEach { result ->
                 mutableUiState.update {
                     if (result is PagedResult.Success) {
+                        if (it.page == 1) it.comments.clear()
                         it.comments.addAll(result.list)
                         it.copy(
                             isLoading = false,
@@ -105,7 +106,7 @@ class ThreadDetailsViewModel(
                             fetchFromNetwork = false,
                         )
                     } else {
-                        result.toUiState()
+                        result.toUiState().copy(hasNextPage = false)
                     }
                 }
             }
