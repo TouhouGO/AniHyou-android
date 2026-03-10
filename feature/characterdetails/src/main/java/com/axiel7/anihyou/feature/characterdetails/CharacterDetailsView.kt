@@ -34,6 +34,7 @@ import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ShareIconButton
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.characterdetails.content.CharacterInfoView
 import com.axiel7.anihyou.feature.characterdetails.content.CharacterMediaView
@@ -44,6 +45,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun CharacterDetailsView(
     arguments: Routes.CharacterDetails,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager
 ) {
     val viewModel: CharacterDetailsViewModel = koinViewModel(parameters = { parametersOf(arguments) })
@@ -52,6 +54,7 @@ fun CharacterDetailsView(
     CharacterDetailsContent(
         uiState = uiState,
         event = viewModel,
+        uriHandler = uriHandler,
         navActionManager = navActionManager,
     )
 }
@@ -61,6 +64,7 @@ fun CharacterDetailsView(
 private fun CharacterDetailsContent(
     uiState: CharacterDetailsUiState,
     event: CharacterDetailsEvent?,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     val scope = rememberCoroutineScope()
@@ -139,6 +143,7 @@ private fun CharacterDetailsContent(
                         contentPadding = PaddingValues(
                             bottom = padding.calculateBottomPadding()
                         ),
+                        uriHandler = uriHandler,
                         navigateToFullscreenImage = navActionManager::toFullscreenImage,
                     )
 
@@ -179,6 +184,7 @@ fun CharacterDetailsViewPreview() {
             CharacterDetailsContent(
                 uiState = CharacterDetailsUiState(),
                 event = null,
+                uriHandler = MarkdownUriHandler(),
                 navActionManager = NavActionManager.rememberNavActionManager()
             )
         }

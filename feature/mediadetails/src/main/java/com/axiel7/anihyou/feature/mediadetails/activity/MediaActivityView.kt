@@ -37,6 +37,7 @@ import com.axiel7.anihyou.core.ui.composables.activity.ActivityFeedItem
 import com.axiel7.anihyou.core.ui.composables.activity.ActivityItemPlaceholder
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -44,6 +45,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun MediaActivityView(
     arguments: Routes.MediaActivity,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager
 ) {
     val viewModel: MediaActivityViewModel = koinViewModel(parameters = { parametersOf(arguments) })
@@ -52,6 +54,7 @@ fun MediaActivityView(
     MediaActivityContent(
         uiState = uiState,
         event = viewModel,
+        uriHandler = uriHandler,
         navActionManager = navActionManager,
     )
 }
@@ -61,6 +64,7 @@ fun MediaActivityView(
 private fun MediaActivityContent(
     uiState: MediaActivityUiState,
     event: MediaActivityEvent?,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -132,7 +136,8 @@ private fun MediaActivityContent(
                     },
                     onClickDelete = {
                         event?.deleteActivity(item.id)
-                    }
+                    },
+                    uriHandler = uriHandler,
                 )
                 HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
             }
@@ -160,6 +165,7 @@ private fun MediaActivityViewPreview() {
             MediaActivityContent(
                 uiState = MediaActivityUiState(),
                 event = null,
+                uriHandler = MarkdownUriHandler(),
                 navActionManager = NavActionManager.rememberNavActionManager()
             )
         }

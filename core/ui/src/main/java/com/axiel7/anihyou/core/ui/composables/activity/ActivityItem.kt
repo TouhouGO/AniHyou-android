@@ -41,6 +41,7 @@ import com.axiel7.anihyou.core.ui.composables.common.CommentIconButton
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
 import com.axiel7.anihyou.core.ui.composables.markdown.DefaultMarkdownText
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.composables.media.MediaPoster
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemSmall
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
@@ -66,7 +67,7 @@ fun ActivityItem(
     onClickImage: () -> Unit = {},
     onClickLike: () -> Unit,
     onClickDelete: () -> Unit,
-    navigateToFullscreenImage: (String) -> Unit = {},
+    uriHandler: MarkdownUriHandler,
 ) {
     Row(
         modifier = modifier
@@ -101,7 +102,7 @@ fun ActivityItem(
                         markdown = text,
                         modifier = Modifier.weight(1f),
                         lineHeight = 20.sp,
-                        navigateToFullscreenImage = navigateToFullscreenImage
+                        uriHandler = uriHandler,
                     )
                 } else {
                     Text(
@@ -242,6 +243,7 @@ fun ActivityItemPreview() {
                     onClick = {},
                     onClickLike = {},
                     onClickDelete = {},
+                    uriHandler = MarkdownUriHandler(),
                 )
                 ActivityItemPlaceholder(
                     modifier = Modifier.padding(8.dp)

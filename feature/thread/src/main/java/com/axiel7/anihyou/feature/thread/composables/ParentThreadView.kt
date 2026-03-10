@@ -23,6 +23,7 @@ import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ReplyButton
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
 import com.axiel7.anihyou.core.ui.composables.markdown.DefaultMarkdownText
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemSmall
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 
@@ -33,7 +34,7 @@ fun ParentThreadView(
     onClickLike: () -> Unit,
     onClickReply: () -> Unit,
     navigateToUserDetails: (Int) -> Unit,
-    navigateToFullscreenImage: (String) -> Unit,
+    uriHandler: MarkdownUriHandler,
 ) {
     Column(
         modifier = Modifier
@@ -56,7 +57,7 @@ fun ParentThreadView(
             markdown = thread.body,
             modifier = Modifier.padding(vertical = 8.dp),
             fontSize = 17.sp,
-            navigateToFullscreenImage = navigateToFullscreenImage,
+            uriHandler = uriHandler,
         )
 
         Row(
@@ -168,7 +169,7 @@ fun ParentThreadViewPreview() {
                     onClickLike = {},
                     onClickReply = {},
                     navigateToUserDetails = {},
-                    navigateToFullscreenImage = {},
+                    uriHandler = MarkdownUriHandler()
                 )
                 ParentThreadViewPlaceholder()
             }

@@ -7,23 +7,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
-import coil.imageLoader
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
-import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import com.axiel7.anihyou.core.ui.utils.MarkdownUtils.formatCompatibleMarkdown
-import com.axiel7.anihyou.core.ui.utils.MarkdownUtils.onMarkdownLinkClicked
-import dev.jeziellago.compose.markdowntext.MarkdownText
+import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
+import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownTypography
 
 @Composable
 fun DefaultMarkdownText(
@@ -31,38 +26,21 @@ fun DefaultMarkdownText(
     modifier: Modifier = Modifier,
     fontSize: TextUnit = LocalTextStyle.current.fontSize,
     lineHeight: TextUnit = LocalTextStyle.current.lineHeight,
-    color: Color = MaterialTheme.colorScheme.onSurface,
-    navigateToFullscreenImage: (String) -> Unit = {},
+    uriHandler: MarkdownUriHandler,
 ) {
-    val context = LocalContext.current
-    var spoilerText by remember { mutableStateOf<String?>(null) }
-
-    spoilerText?.let {
-        SpoilerDialog(
-            text = it,
-            onDismiss = {
-                spoilerText = null
-            }
+    CompositionLocalProvider(LocalUriHandler provides uriHandler) {
+        Markdown(
+            content = markdown?.formatCompatibleMarkdown().orEmpty(),
+            typography = markdownTypography(
+                text = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = fontSize,
+                    lineHeight = lineHeight,
+                )
+            ),
+            modifier = modifier,
+            imageTransformer = Coil3ImageTransformerImpl,
         )
     }
-    MarkdownText(
-        markdown = markdown?.formatCompatibleMarkdown().orEmpty(),
-        modifier = modifier,
-        linkColor = MaterialTheme.colorScheme.primary,
-        style = LocalTextStyle.current.copy(
-            color = color,
-            fontSize = fontSize,
-            lineHeight = lineHeight,
-        ),
-        onLinkClicked = { link ->
-            link.onMarkdownLinkClicked(
-                onSpoilerClicked = { spoilerText = it },
-                onLinkClicked = { context.openActionView(it) },
-                onImageClicked = navigateToFullscreenImage
-            )
-        },
-        imageLoader = context.imageLoader
-    )
 }
 
 @Composable
@@ -90,6 +68,11 @@ fun DefaultMarkdownTextPreview() {
         Surface {
             DefaultMarkdownText(
                 markdown = "",
+                uriHandler = MarkdownUriHandler(
+                    onImageClicked = {},
+                    onSpoilerClicked = {},
+                    onLinkClicked = {}
+                )
             )
         }
     }

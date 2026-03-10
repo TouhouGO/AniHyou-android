@@ -5,7 +5,7 @@ apollo = "4.4.1"
 appcompat = "1.7.1"
 benchmarkMacroJunit4 = "1.4.1"
 coil = "3.4.0"
-composeMarkdown = "0.5.8"
+markdownRenderer = "0.39.2"
 coreSplashscreen = "1.2.0"
 datastorePreferences = "1.2.0"
 desugar_jdk_libs = "2.1.5"
@@ -58,7 +58,9 @@ apollo-api = { group = "com.apollographql.apollo", name = "apollo-api", version.
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-gif = { group = "io.coil-kt.coil3", name = "coil-gif", version.ref = "coil" }
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
-compose-markdown = { group = "com.github.jeziellago", name = "compose-markdown", version.ref = "composeMarkdown" }
+markdown-renderer = { group = "com.mikepenz", name = "multiplatform-markdown-renderer-android", version.ref = "markdownRenderer" }
+markdown-renderer-material3 = { group = "com.mikepenz", name = "multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
+markdown-renderer-coil3 = { group = "com.mikepenz", name = "multiplatform-markdown-renderer-coil3", version.ref = "markdownRenderer" }
 desugar_jdk_libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 koin-bom = { group = "io.insert-koin", name = "koin-bom", version.ref = "koin" }
 koin-core = { group = "io.insert-koin", name = "koin-core" }

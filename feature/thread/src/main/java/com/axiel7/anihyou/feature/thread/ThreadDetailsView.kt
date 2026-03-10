@@ -35,6 +35,7 @@ import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.NotificationIconButton
 import com.axiel7.anihyou.core.ui.composables.common.OpenInBrowserIconButton
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.thread.composables.ParentThreadView
 import com.axiel7.anihyou.feature.thread.composables.ParentThreadViewPlaceholder
@@ -46,6 +47,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun ThreadDetailsView(
     arguments: Routes.ThreadDetails,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager
 ) {
     val viewModel: ThreadDetailsViewModel = koinViewModel(parameters = { parametersOf(arguments) })
@@ -54,6 +56,7 @@ fun ThreadDetailsView(
     ThreadDetailsContent(
         uiState = uiState,
         event = viewModel,
+        uriHandler = uriHandler,
         navActionManager = navActionManager,
     )
 }
@@ -63,6 +66,7 @@ fun ThreadDetailsView(
 private fun ThreadDetailsContent(
     uiState: ThreadDetailsUiState,
     event: ThreadDetailsEvent?,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     val pullRefreshState = rememberPullToRefreshState()
@@ -132,7 +136,7 @@ private fun ThreadDetailsContent(
                                 )
                             },
                             navigateToUserDetails = navActionManager::toUserDetails,
-                            navigateToFullscreenImage = navActionManager::toFullscreenImage,
+                            uriHandler = uriHandler,
                         )
                     } else {
                         ParentThreadViewPlaceholder()
@@ -165,7 +169,7 @@ private fun ThreadDetailsContent(
                                 text = text,
                             )
                         },
-                        navigateToFullscreenImage = navActionManager::toFullscreenImage
+                        uriHandler = uriHandler,
                     )
                     HorizontalDivider(modifier = Modifier.padding(top = 16.dp))
                 }
@@ -188,6 +192,7 @@ fun ThreadDetailsViewPreview() {
             ThreadDetailsContent(
                 uiState = ThreadDetailsUiState(),
                 event = null,
+                uriHandler = MarkdownUriHandler(),
                 navActionManager = NavActionManager.rememberNavActionManager()
             )
         }

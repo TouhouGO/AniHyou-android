@@ -41,6 +41,7 @@ import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.activitydetails.composables.ActivityTextView
 import com.axiel7.anihyou.feature.activitydetails.composables.ActivityTextViewPlaceholder
@@ -50,6 +51,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun ActivityDetailsView(
     arguments: Routes.ActivityDetails,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     val viewModel: ActivityDetailsViewModel = koinViewModel(parameters = { parametersOf(arguments) })
@@ -59,6 +61,7 @@ fun ActivityDetailsView(
         activityId = arguments.id,
         uiState = uiState,
         event = viewModel,
+        uriHandler = uriHandler,
         navActionManager = navActionManager,
     )
 }
@@ -69,6 +72,7 @@ private fun ActivityDetailsContent(
     activityId: Int,
     uiState: ActivityDetailsUiState,
     event: ActivityDetailsEvent?,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -158,7 +162,7 @@ private fun ActivityDetailsContent(
                             onClickLike = {
                                 event?.toggleLikeActivity()
                             },
-                            navigateToFullscreenImage = navActionManager::toFullscreenImage
+                            uriHandler = uriHandler,
                         )
                     } else {
                         ActivityTextViewPlaceholder()
@@ -186,7 +190,7 @@ private fun ActivityDetailsContent(
                         onClickLike = {
                             event?.toggleLikeReply(item.id)
                         },
-                        navigateToFullscreenImage = navActionManager::toFullscreenImage
+                        uriHandler = uriHandler,
                     )
                 }
             }
@@ -203,6 +207,7 @@ fun ActivityDetailsViewPreview() {
                 activityId = 1,
                 uiState = ActivityDetailsUiState(),
                 event = null,
+                uriHandler = MarkdownUriHandler(),
                 navActionManager = NavActionManager.rememberNavActionManager(),
             )
         }
