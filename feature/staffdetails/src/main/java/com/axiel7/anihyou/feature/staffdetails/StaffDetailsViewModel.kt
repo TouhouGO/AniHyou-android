@@ -3,13 +3,13 @@ package com.axiel7.anihyou.feature.staffdetails
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
+import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.FavoriteRepository
 import com.axiel7.anihyou.core.domain.repository.StaffRepository
 import com.axiel7.anihyou.core.model.staff.StaffMediaGrouped
 import com.axiel7.anihyou.core.network.StaffMediaQuery
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
-import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StaffDetailsViewModel(
@@ -34,8 +35,8 @@ class StaffDetailsViewModel(
     }
 
     override fun toggleFavorite() {
-        favoriteRepository.toggleFavorite(staffId = arguments.id)
-            .onEach { result ->
+        viewModelScope.launch {
+            favoriteRepository.toggleFavorite(staffId = arguments.id).let { result ->
                 if (result is DataResult.Success && result.data != null) {
                     mutableUiState.update { uiState ->
                         val newDetails = uiState.details
@@ -50,7 +51,7 @@ class StaffDetailsViewModel(
                     }
                 }
             }
-            .launchIn(viewModelScope)
+        }
     }
 
     override fun loadNextPageMedia() {

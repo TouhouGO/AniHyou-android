@@ -37,7 +37,7 @@ class UserRepository(
             it.Viewer?.userSettings
         }
 
-    fun updateUser(
+    suspend fun updateUser(
         displayAdultContent: Boolean? = null,
         titleLanguage: UserTitleLanguage? = null,
         staffNameLanguage: UserStaffNameLanguage? = null,
@@ -55,12 +55,12 @@ class UserRepository(
             animeListOptions,
             mangaListOptions
         )
-        .toFlow()
+        .execute()
         .asDataResult {
             it.UpdateUser?.userSettings
         }
 
-    fun updateCustomLists(
+    suspend fun updateCustomLists(
         animeList: List<String>? = null,
         mangaList: List<String>? = null,
     ) = updateUser(
@@ -96,9 +96,9 @@ class UserRepository(
             it.User?.userInfo
         }
 
-    fun toggleFollow(userId: Int) = api
+    suspend fun toggleFollow(userId: Int) = api
         .toggleFollowMutation(userId)
-        .toFlow()
+        .execute()
         .asDataResult {
             it.ToggleFollow
         }

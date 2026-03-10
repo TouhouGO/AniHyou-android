@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ThreadDetailsViewModel(
@@ -25,23 +26,25 @@ class ThreadDetailsViewModel(
     override val initialState = ThreadDetailsUiState()
 
     override fun toggleLikeThread() {
-        likeRepository.toggleThreadLike(
-            id = arguments.id
-        ).onEach { result ->
-            if (result is DataResult.Success && result.data != null) {
-                mutableUiState.update { it.copy(isLiked = result.data?.isLiked == true) }
+        viewModelScope.launch {
+            likeRepository.toggleThreadLike(
+                id = arguments.id
+            ).let { result ->
+                if (result is DataResult.Success && result.data != null) {
+                    mutableUiState.update { it.copy(isLiked = result.data?.isLiked == true) }
+                }
             }
-        }.launchIn(viewModelScope)
+        }
     }
 
     override fun subscribeToThread(subscribe: Boolean) {
-        threadRepository.subscribeToThread(arguments.id, subscribe)
-            .onEach { result ->
+        viewModelScope.launch {
+            threadRepository.subscribeToThread(arguments.id, subscribe).let { result ->
                 if (result is DataResult.Success && result.data != null) {
                     mutableUiState.update { it.copy(isSubscribed = result.data!!) }
                 }
             }
-            .launchIn(viewModelScope)
+        }
     }
 
     override suspend fun toggleLikeComment(id: Int): Boolean {

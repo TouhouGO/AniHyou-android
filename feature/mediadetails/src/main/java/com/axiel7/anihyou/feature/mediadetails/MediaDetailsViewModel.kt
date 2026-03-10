@@ -3,16 +3,16 @@ package com.axiel7.anihyou.feature.mediadetails
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
+import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.FavoriteRepository
 import com.axiel7.anihyou.core.domain.repository.MediaRepository
-import com.axiel7.anihyou.core.model.stats.overview.StatusDistribution.Companion.asStat
 import com.axiel7.anihyou.core.model.stats.overview.ScoreDistribution.Companion.asStat
+import com.axiel7.anihyou.core.model.stats.overview.StatusDistribution.Companion.asStat
 import com.axiel7.anihyou.core.network.MediaDetailsQuery
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.fragment.MediaCharacter
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
-import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -53,29 +53,31 @@ class MediaDetailsViewModel(
 
     override fun toggleFavorite() {
         mutableUiState.value.details?.let { details ->
-            favoriteRepository.toggleFavorite(
-                animeId = if (details.basicMediaDetails.type == MediaType.ANIME)
-                    details.id else null,
-                mangaId = if (details.basicMediaDetails.type == MediaType.MANGA)
-                    details.id else null,
-            ).onEach { result ->
-                mutableUiState.update { state ->
-                    if (result is DataResult.Success && result.data != null) {
-                        val newDetails = state.details
-                            ?.copy(isFavourite = !state.details.isFavourite)
-                            ?.also {
-                                mediaRepository.updateMediaDetailsCache(it)
-                            }
-                        state.copy(
-                            details = newDetails
-                        )
-                    } else {
-                        state.copy(
-                            error = (result as? DataResult.Error)?.message
-                        )
+            viewModelScope.launch {
+                favoriteRepository.toggleFavorite(
+                    animeId = if (details.basicMediaDetails.type == MediaType.ANIME)
+                        details.id else null,
+                    mangaId = if (details.basicMediaDetails.type == MediaType.MANGA)
+                        details.id else null,
+                ).let { result ->
+                    mutableUiState.update { state ->
+                        if (result is DataResult.Success && result.data != null) {
+                            val newDetails = state.details
+                                ?.copy(isFavourite = !state.details.isFavourite)
+                                ?.also {
+                                    mediaRepository.updateMediaDetailsCache(it)
+                                }
+                            state.copy(
+                                details = newDetails
+                            )
+                        } else {
+                            state.copy(
+                                error = (result as? DataResult.Error)?.message
+                            )
+                        }
                     }
                 }
-            }.launchIn(viewModelScope)
+            }
         }
     }
 

@@ -3,13 +3,13 @@ package com.axiel7.anihyou.feature.profile
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
+import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.ActivityRepository
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.LikeRepository
 import com.axiel7.anihyou.core.domain.repository.UserRepository
 import com.axiel7.anihyou.core.model.activity.updateLikeStatus
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
-import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -85,8 +85,8 @@ class ProfileViewModel(
 
     override fun toggleFollow() {
         uiState.value.userInfo?.id?.let { userId ->
-            userRepository.toggleFollow(userId)
-                .onEach { result ->
+            viewModelScope.launch {
+                userRepository.toggleFollow(userId).let { result ->
                     mutableUiState.update {
                         it.copy(
                             userInfo = it.userInfo?.copy(
@@ -96,44 +96,48 @@ class ProfileViewModel(
                         )
                     }
                 }
-                .launchIn(viewModelScope)
+            }
         }
     }
 
     override fun toggleLikeActivity(id: Int) {
-        likeRepository.toggleListActivityLike(id).onEach { result ->
-            if (result is DataResult.Success && result.data != null) {
-                mutableUiState.value.run {
-                    findActivityIndex(id)?.let { foundIndex ->
-                        val oldItem = activities[foundIndex]
-                        activities[foundIndex] = oldItem.copy(
-                            onTextActivity = oldItem.onTextActivity?.copy(
-                                textActivityFragment = oldItem.onTextActivity!!.textActivityFragment
-                                    .updateLikeStatus(result.data?.isLiked == true)
-                            ),
-                            onListActivity = oldItem.onListActivity?.copy(
-                                listActivityFragment = oldItem.onListActivity!!.listActivityFragment
-                                    .updateLikeStatus(result.data?.isLiked == true)
+        viewModelScope.launch {
+            likeRepository.toggleListActivityLike(id).let { result ->
+                if (result is DataResult.Success && result.data != null) {
+                    mutableUiState.value.run {
+                        findActivityIndex(id)?.let { foundIndex ->
+                            val oldItem = activities[foundIndex]
+                            activities[foundIndex] = oldItem.copy(
+                                onTextActivity = oldItem.onTextActivity?.copy(
+                                    textActivityFragment = oldItem.onTextActivity!!.textActivityFragment
+                                        .updateLikeStatus(result.data?.isLiked == true)
+                                ),
+                                onListActivity = oldItem.onListActivity?.copy(
+                                    listActivityFragment = oldItem.onListActivity!!.listActivityFragment
+                                        .updateLikeStatus(result.data?.isLiked == true)
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
-        }.launchIn(viewModelScope)
+        }
     }
 
     override fun deleteActivity(id: Int) {
-        activityRepository.deleteActivity(id).onEach { result ->
-            if (result is DataResult.Success && result.data == true) {
-                mutableUiState.value.run {
-                    findActivityIndex(id)?.let { foundIndex ->
-                        activities.removeAt(foundIndex)
+        viewModelScope.launch {
+            activityRepository.deleteActivity(id).let { result ->
+                if (result is DataResult.Success && result.data == true) {
+                    mutableUiState.value.run {
+                        findActivityIndex(id)?.let { foundIndex ->
+                            activities.removeAt(foundIndex)
+                        }
                     }
+                } else if (result is DataResult.Error) {
+                    mutableUiState.update { it.copy(error = result.message) }
                 }
-            } else if (result is DataResult.Error) {
-                mutableUiState.update { it.copy(error = result.message) }
             }
-        }.launchIn(viewModelScope)
+        }
     }
 
     override fun onRefresh() {

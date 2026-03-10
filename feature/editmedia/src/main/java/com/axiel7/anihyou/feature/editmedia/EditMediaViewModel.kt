@@ -3,6 +3,7 @@ package com.axiel7.anihyou.feature.editmedia
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.common.utils.DateUtils.millisToLocalDate
+import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.MediaListRepository
 import com.axiel7.anihyou.core.model.media.advancedScoreNames
@@ -14,7 +15,6 @@ import com.axiel7.anihyou.core.network.fragment.BasicMediaDetails
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.type.MediaListStatus
 import com.axiel7.anihyou.core.network.type.MediaType
-import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
@@ -292,8 +292,8 @@ class EditMediaViewModel(
 
     override fun deleteListEntry() {
         uiState.value.listEntry?.id?.let { entryId ->
-            mediaListRepository.deleteEntry(entryId)
-                .onEach { result ->
+            viewModelScope.launch {
+                mediaListRepository.deleteEntry(entryId).let { result ->
                     mutableUiState.update {
                         if (result is DataResult.Success) {
                             it.copy(
@@ -306,7 +306,7 @@ class EditMediaViewModel(
                         }
                     }
                 }
-                .launchIn(viewModelScope)
+            }
         }
     }
 

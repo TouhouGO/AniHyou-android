@@ -46,29 +46,29 @@ class ActivityRepository(
         activity: ActivityDetailsQuery.Activity,
     ) = api.updateActivityDetailsCache(id, activity)
 
-    fun updateTextActivity(
+    suspend fun updateTextActivity(
         id: Int? = null,
         text: String
     ) = api
         .updateTextActivityMutation(id, text)
-        .toFlow()
+        .execute()
         .asDataResult {
             it.SaveTextActivity?.onTextActivity
         }
 
-    fun updateActivityReply(
+    suspend fun updateActivityReply(
         activityId: Int,
         id: Int? = null,
         text: String
     ) = api
         .updateActivityReplyMutation(activityId, id, text)
-        .toFlow()
+        .execute()
         .asDataResult {
             it.SaveActivityReply?.activityReplyFragment
         }
 
-    fun deleteActivity(id: Int) = api
+    suspend fun deleteActivity(id: Int) = api
         .deleteActivityMutation(id)
-        .toFlow()
+        .execute()
         .asDataResult { it.DeleteActivity?.deleted }
 }

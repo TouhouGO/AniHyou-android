@@ -3,10 +3,10 @@ package com.axiel7.anihyou.feature.studiodetails
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
+import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.FavoriteRepository
 import com.axiel7.anihyou.core.domain.repository.StudioRepository
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
-import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StudioDetailsViewModel(
@@ -25,8 +26,8 @@ class StudioDetailsViewModel(
     override val initialState = StudioDetailsUiState()
 
     override fun toggleFavorite() {
-        favoriteRepository.toggleFavorite(studioId = arguments.id)
-            .onEach { result ->
+        viewModelScope.launch {
+            favoriteRepository.toggleFavorite(studioId = arguments.id).let { result ->
                 if (result is DataResult.Success && result.data != null) {
                     mutableUiState.update { state ->
                         val newDetails = state.details
@@ -40,7 +41,7 @@ class StudioDetailsViewModel(
                     }
                 }
             }
-            .launchIn(viewModelScope)
+        }
     }
 
     init {

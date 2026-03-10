@@ -2,14 +2,12 @@ package com.axiel7.anihyou.feature.settings.customlists
 
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
+import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.UserRepository
 import com.axiel7.anihyou.core.network.type.MediaType
-import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -41,21 +39,25 @@ class CustomListsViewModel(
     }
 
     override fun updateCustomLists() {
-        userRepository.updateCustomLists(
-            animeList = mutableUiState.value.animeLists,
-            mangaList = mutableUiState.value.mangaLists,
-        ).onEach { result ->
-            if (result is DataResult.Success) {
-                defaultPreferencesRepository.saveAnimeCustomLists(
-                    result.data?.mediaListOptions?.animeList?.customLists?.filterNotNull().orEmpty()
-                )
-                defaultPreferencesRepository.saveMangaCustomLists(
-                    result.data?.mediaListOptions?.mangaList?.customLists?.filterNotNull().orEmpty()
-                )
-            } else {
-                mutableUiState.update { result.toUiState() }
+        viewModelScope.launch {
+            userRepository.updateCustomLists(
+                animeList = mutableUiState.value.animeLists,
+                mangaList = mutableUiState.value.mangaLists,
+            ).let { result ->
+                if (result is DataResult.Success) {
+                    defaultPreferencesRepository.saveAnimeCustomLists(
+                        result.data?.mediaListOptions?.animeList?.customLists?.filterNotNull()
+                            .orEmpty()
+                    )
+                    defaultPreferencesRepository.saveMangaCustomLists(
+                        result.data?.mediaListOptions?.mangaList?.customLists?.filterNotNull()
+                            .orEmpty()
+                    )
+                } else {
+                    mutableUiState.update { result.toUiState() }
+                }
             }
-        }.launchIn(viewModelScope)
+        }
     }
 
     init {

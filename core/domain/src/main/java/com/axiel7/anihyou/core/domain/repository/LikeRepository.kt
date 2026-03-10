@@ -12,7 +12,7 @@ class LikeRepository(
     defaultPreferencesRepository: DefaultPreferencesRepository,
 ) : BaseNetworkRepository(defaultPreferencesRepository) {
 
-    fun toggleActivityLike(id: Int, type: ActivityType) = when (type) {
+    suspend fun toggleActivityLike(id: Int, type: ActivityType) = when (type) {
         ActivityType.TEXT -> toggleTextActivityLike(id) { it?.isLiked == true }
 
         ActivityType.MESSAGE -> toggleMessageActivityLike(id) { it?.isLiked == true }
@@ -20,55 +20,55 @@ class LikeRepository(
         else -> toggleListActivityLike(id) { it?.isLiked == true }
     }
 
-    private fun <T> toggleListActivityLike(
+    private suspend fun <T> toggleListActivityLike(
         id: Int,
         transform: (ListActivityFragment?) -> T
     ) = api
         .toggleLikeMutation(id, LikeableType.ACTIVITY)
-        .toFlow()
+        .execute()
         .asDataResult { data ->
             val details = data.ToggleLikeV2?.onListActivity?.listActivityFragment
             transform(details)
         }
 
-    fun toggleListActivityLike(id: Int) = toggleListActivityLike(id) { it }
+    suspend fun toggleListActivityLike(id: Int) = toggleListActivityLike(id) { it }
 
-    private fun <T> toggleTextActivityLike(
+    private suspend fun <T> toggleTextActivityLike(
         id: Int,
         transform: (TextActivityFragment?) -> T
     ) = api
         .toggleLikeMutation(id, LikeableType.ACTIVITY)
-        .toFlow()
+        .execute()
         .asDataResult { data ->
             val details = data.ToggleLikeV2?.onTextActivity?.textActivityFragment
             transform(details)
         }
 
-    fun toggleTextActivityLike(id: Int) = toggleTextActivityLike(id) { it }
+    suspend fun toggleTextActivityLike(id: Int) = toggleTextActivityLike(id) { it }
 
-    private fun <T> toggleMessageActivityLike(
+    private suspend fun <T> toggleMessageActivityLike(
         id: Int,
         transform: (MessageActivityFragment?) -> T
     ) = api
         .toggleLikeMutation(id, LikeableType.ACTIVITY)
-        .toFlow()
+        .execute()
         .asDataResult { data ->
             val details = data.ToggleLikeV2?.onMessageActivity?.messageActivityFragment
             transform(details)
         }
 
-    fun toggleMessageActivityLike(id: Int) = toggleMessageActivityLike(id) { it }
+    suspend fun toggleMessageActivityLike(id: Int) = toggleMessageActivityLike(id) { it }
 
-    fun toggleActivityReplyLike(id: Int) = api
+    suspend fun toggleActivityReplyLike(id: Int) = api
         .toggleLikeMutation(id, LikeableType.ACTIVITY_REPLY)
-        .toFlow()
+        .execute()
         .asDataResult {
             it.ToggleLikeV2?.onActivityReply?.activityReplyFragment
         }
 
-    fun toggleThreadLike(id: Int) = api
+    suspend fun toggleThreadLike(id: Int) = api
         .toggleLikeMutation(id, LikeableType.THREAD)
-        .toFlow()
+        .execute()
         .asDataResult {
             it.ToggleLikeV2?.onThread?.basicThreadDetails
         }
