@@ -37,7 +37,7 @@ import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.common.navigation.TopLevelBackStack
 import com.axiel7.anihyou.core.ui.composables.FullScreenImageView
 import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
-import com.axiel7.anihyou.core.ui.composables.markdown.SpoilerDialog
+import com.axiel7.anihyou.core.ui.composables.markdown.SpoilerSheet
 import com.axiel7.anihyou.feature.activitydetails.ActivityDetailsView
 import com.axiel7.anihyou.feature.activitydetails.publish.PublishActivityView
 import com.axiel7.anihyou.feature.calendar.CalendarView
@@ -98,18 +98,21 @@ fun MainNavigation(
     )
 
     var spoilerText by remember { mutableStateOf<String?>(null) }
-    spoilerText?.let {
-        SpoilerDialog(
-            text = it,
-            onDismiss = { spoilerText = null }
-        )
-    }
     val markdownUriHandler = remember {
         MarkdownUriHandler(
             onSpoilerClicked = { spoilerText = it },
             onLinkClicked = { context.openActionView(it) },
         )
     }
+
+    spoilerText?.let {
+        SpoilerSheet(
+            text = it,
+            uriHandler = markdownUriHandler,
+            onDismiss = { spoilerText = null }
+        )
+    }
+
 
     LaunchedEffect(deepLink) {
         if (deepLink != null) {
