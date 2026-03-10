@@ -111,6 +111,7 @@ private fun ThreadDetailsContent(
                         end = padding.calculateEndPadding(LocalLayoutDirection.current)
                     )
                     .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
+                state = listState,
                 contentPadding = PaddingValues(
                     bottom = padding.calculateBottomPadding()
                 )
