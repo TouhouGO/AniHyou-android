@@ -148,7 +148,7 @@ fun MediaCharacterStaffView(
 
 @Preview
 @Composable
-fun MediaCharacterStaffViewPreview() {
+private fun MediaCharacterStaffViewPreview() {
     AniHyouTheme {
         Surface {
             MediaCharacterStaffView(

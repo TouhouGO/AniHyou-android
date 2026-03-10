@@ -26,11 +26,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.model.activity.text
 import com.axiel7.anihyou.core.network.type.ActivityType
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
-import com.axiel7.anihyou.core.ui.composables.activity.ActivityItemPlaceholder
-import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
-import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.core.ui.composables.activity.ActivityFeedItem
+import com.axiel7.anihyou.core.ui.composables.activity.ActivityItemPlaceholder
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
+import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
+import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.home.activity.composables.ActivityFollowingChip
 import com.axiel7.anihyou.feature.home.activity.composables.ActivityTypeChip
 import org.koin.androidx.compose.koinViewModel
@@ -38,6 +39,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun ActivityFeedView(
     modifier: Modifier = Modifier,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     val viewModel: ActivityFeedViewModel = koinViewModel(
@@ -49,6 +51,7 @@ fun ActivityFeedView(
         modifier = modifier,
         uiState = uiState,
         event = viewModel,
+        uriHandler = uriHandler,
         navActionManager = navActionManager,
     )
 }
@@ -59,6 +62,7 @@ private fun ActivityFeedContent(
     modifier: Modifier = Modifier,
     uiState: ActivityFeedUiState,
     event: ActivityFeedEvent?,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     val pullRefreshState = rememberPullToRefreshState()
@@ -82,7 +86,8 @@ private fun ActivityFeedContent(
         }
     ) {
         LazyColumn(
-            modifier = modifier,
+            modifier = modifier.fillMaxSize(),
+            state = listState,
         ) {
             item {
                 Row(
@@ -133,7 +138,8 @@ private fun ActivityFeedContent(
                         },
                         onClickMedia = {
                             it.media?.id?.let(navActionManager::toMediaDetails)
-                        }
+                        },
+                        uriHandler = uriHandler,
                     )
                     HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
                 }
@@ -157,7 +163,7 @@ private fun ActivityFeedContent(
                         onClickLike = {
                             event?.toggleLikeActivity(it.id)
                         },
-                        navigateToFullscreenImage = navActionManager::toFullscreenImage
+                        uriHandler = uriHandler,
                     )
                     HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
                 }
@@ -168,12 +174,13 @@ private fun ActivityFeedContent(
 
 @Preview
 @Composable
-fun ActivityFeedViewPreview() {
+private fun ActivityFeedViewPreview() {
     AniHyouTheme {
         Surface {
             ActivityFeedContent(
                 uiState = ActivityFeedUiState(),
                 event = null,
+                uriHandler = MarkdownUriHandler(),
                 navActionManager = NavActionManager.rememberNavActionManager()
             )
         }

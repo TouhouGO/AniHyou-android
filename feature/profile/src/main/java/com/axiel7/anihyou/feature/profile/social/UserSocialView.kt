@@ -156,7 +156,7 @@ private fun UserSocialContent(
 
 @Preview
 @Composable
-fun UserSocialViewPreview() {
+private fun UserSocialViewPreview() {
     AniHyouTheme {
         Surface {
             UserSocialContent(

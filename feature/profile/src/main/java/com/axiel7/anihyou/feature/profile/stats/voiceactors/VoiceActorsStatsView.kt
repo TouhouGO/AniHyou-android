@@ -79,7 +79,7 @@ fun VoiceActorsStatsView(
 
 @Preview
 @Composable
-fun GenresTagsStatsViewPreview() {
+private fun GenresTagsStatsViewPreview() {
     AniHyouTheme {
         Surface {
             VoiceActorsStatsView(

@@ -196,7 +196,7 @@ fun PasteLinkDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
-fun MarkdownEditorPreview() {
+private fun MarkdownEditorPreview() {
     AniHyouTheme {
         Surface {
             Scaffold(

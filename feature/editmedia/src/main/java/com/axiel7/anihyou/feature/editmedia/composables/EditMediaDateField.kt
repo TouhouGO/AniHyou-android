@@ -95,7 +95,7 @@ fun EditMediaDateField(
 
 @Preview
 @Composable
-fun EditMediaDateFieldPreview() {
+private fun EditMediaDateFieldPreview() {
     AniHyouTheme {
         Surface {
             EditMediaDateField(

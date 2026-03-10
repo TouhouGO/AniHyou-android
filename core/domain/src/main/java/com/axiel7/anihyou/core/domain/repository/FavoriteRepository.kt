@@ -9,7 +9,7 @@ class FavoriteRepository(
     defaultPreferencesRepository: DefaultPreferencesRepository,
 ) : BaseNetworkRepository(defaultPreferencesRepository) {
 
-    fun toggleFavorite(
+    suspend fun toggleFavorite(
         animeId: Int? = null,
         mangaId: Int? = null,
         characterId: Int? = null,
@@ -17,7 +17,7 @@ class FavoriteRepository(
         studioId: Int? = null,
     ) = api
         .toggleFavouriteMutation(animeId, mangaId, characterId, staffId, studioId)
-        .toFlow()
+        .execute()
         .asDataResult {
             it.ToggleFavourite
         }

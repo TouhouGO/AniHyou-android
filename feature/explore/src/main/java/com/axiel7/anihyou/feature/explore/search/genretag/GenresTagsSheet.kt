@@ -224,7 +224,7 @@ private fun GenresTagsSheetContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
-fun GenresTagsSheetPreview() {
+private fun GenresTagsSheetPreview() {
     AniHyouTheme {
         Surface {
             GenresTagsSheetContent(

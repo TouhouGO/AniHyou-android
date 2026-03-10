@@ -434,7 +434,7 @@ private fun EditMediaSheetContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
-fun EditMediaSheetPreview() {
+private fun EditMediaSheetPreview() {
     AniHyouTheme {
         Surface {
             EditMediaSheetContent(

@@ -104,7 +104,7 @@ fun PersonItemVerticalPlaceholder() {
 
 @Preview
 @Composable
-fun PersonItemVerticalPreview() {
+private fun PersonItemVerticalPreview() {
     AniHyouTheme {
         Surface {
             Column {

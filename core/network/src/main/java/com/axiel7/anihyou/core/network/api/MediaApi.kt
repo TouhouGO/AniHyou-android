@@ -158,7 +158,7 @@ class MediaApi(
     fun seasonalAnimeQuery(
         animeSeason: AnimeSeasonDto,
         sort: List<MediaSort>,
-        displayAdult: Boolean?,
+        isAdult: Boolean?,
         page: Int,
         perPage: Int,
     ) = client
@@ -169,14 +169,14 @@ class MediaApi(
                 season = Optional.present(animeSeason.season),
                 seasonYear = Optional.present(animeSeason.year),
                 sort = Optional.present(sort),
-                isAdult = Optional.presentIfNotNull(displayAdult),
+                isAdult = Optional.presentIfNotNull(isAdult),
             )
         )
 
     fun mediaSortedQuery(
         mediaType: MediaType,
         sort: List<MediaSort>,
-        displayAdult: Boolean?,
+        isAdult: Boolean?,
         page: Int,
         perPage: Int,
     ) = client
@@ -186,7 +186,7 @@ class MediaApi(
                 perPage = Optional.present(perPage),
                 type = Optional.present(mediaType),
                 sort = Optional.present(sort),
-                isAdult = Optional.presentIfNotNull(displayAdult),
+                isAdult = Optional.presentIfNotNull(isAdult),
             )
         )
 
@@ -293,7 +293,7 @@ class MediaApi(
         sort: List<MediaSort>,
         status: MediaStatus?,
         format: MediaFormat?,
-        displayAdult: Boolean?,
+        isAdult: Boolean?,
         page: Int,
         perPage: Int,
     ) = client
@@ -305,7 +305,7 @@ class MediaApi(
                 type = Optional.present(type),
                 status = Optional.presentIfNotNull(status),
                 format = Optional.presentIfNotNull(format),
-                isAdult = Optional.presentIfNotNull(displayAdult),
+                isAdult = Optional.presentIfNotNull(isAdult),
             )
         )
 

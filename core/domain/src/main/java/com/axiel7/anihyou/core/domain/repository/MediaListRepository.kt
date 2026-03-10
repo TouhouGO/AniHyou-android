@@ -169,9 +169,9 @@ class MediaListRepository (
             it.SaveMediaListEntry
         }
 
-    fun deleteEntry(id: Int) = api
+    suspend fun deleteEntry(id: Int) = api
         .deleteMediaListMutation(id)
-        .toFlow()
+        .execute()
         .asDataResult {
             it.DeleteMediaListEntry
         }

@@ -1,29 +1,27 @@
 package com.axiel7.anihyou.core.ui.composables.markdown
 
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
-import coil.imageLoader
-import com.axiel7.anihyou.core.resources.R
+import androidx.compose.ui.unit.dp
+import com.axiel7.anihyou.core.ui.composables.rememberSheetState
+import com.axiel7.anihyou.core.ui.composables.sheet.ModalBottomSheet
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
-import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import com.axiel7.anihyou.core.ui.utils.MarkdownUtils.formatCompatibleMarkdown
-import com.axiel7.anihyou.core.ui.utils.MarkdownUtils.onMarkdownLinkClicked
-import dev.jeziellago.compose.markdowntext.MarkdownText
+import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
+import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownTypography
 
 @Composable
 fun DefaultMarkdownText(
@@ -31,65 +29,55 @@ fun DefaultMarkdownText(
     modifier: Modifier = Modifier,
     fontSize: TextUnit = LocalTextStyle.current.fontSize,
     lineHeight: TextUnit = LocalTextStyle.current.lineHeight,
-    color: Color = MaterialTheme.colorScheme.onSurface,
-    navigateToFullscreenImage: (String) -> Unit = {},
+    uriHandler: MarkdownUriHandler,
 ) {
-    val context = LocalContext.current
-    var spoilerText by remember { mutableStateOf<String?>(null) }
-
-    spoilerText?.let {
-        SpoilerDialog(
-            text = it,
-            onDismiss = {
-                spoilerText = null
-            }
+    CompositionLocalProvider(LocalUriHandler provides uriHandler) {
+        Markdown(
+            content = markdown?.formatCompatibleMarkdown().orEmpty(),
+            typography = markdownTypography(
+                text = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = fontSize,
+                    lineHeight = lineHeight,
+                )
+            ),
+            modifier = modifier,
+            imageTransformer = Coil3ImageTransformerImpl,
         )
     }
-    MarkdownText(
-        markdown = markdown?.formatCompatibleMarkdown().orEmpty(),
-        modifier = modifier,
-        linkColor = MaterialTheme.colorScheme.primary,
-        style = LocalTextStyle.current.copy(
-            color = color,
-            fontSize = fontSize,
-            lineHeight = lineHeight,
-        ),
-        onLinkClicked = { link ->
-            link.onMarkdownLinkClicked(
-                onSpoilerClicked = { spoilerText = it },
-                onLinkClicked = { context.openActionView(it) },
-                onImageClicked = navigateToFullscreenImage
-            )
-        },
-        imageLoader = context.imageLoader
-    )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SpoilerDialog(
+fun SpoilerSheet(
     text: String,
+    uriHandler: MarkdownUriHandler,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = stringResource(R.string.close))
-            }
-        },
-        text = {
-            Text(text = text)
+    ModalBottomSheet(
+        onDismissed = onDismiss,
+        sheetState = rememberSheetState(skipPartiallyExpanded = true)
+    ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(8.dp),
+        ) {
+            DefaultMarkdownText(
+                markdown = text,
+                uriHandler = uriHandler,
+            )
         }
-    )
+    }
 }
 
 @Preview
 @Composable
-fun DefaultMarkdownTextPreview() {
+private fun DefaultMarkdownTextPreview() {
     AniHyouTheme {
         Surface {
             DefaultMarkdownText(
                 markdown = "",
+                uriHandler = MarkdownUriHandler()
             )
         }
     }

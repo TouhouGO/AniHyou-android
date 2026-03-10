@@ -103,7 +103,7 @@ fun PersonItemHorizontalPlaceholder() {
 
 @Preview
 @Composable
-fun PersonItemHorizontalPreview() {
+private fun PersonItemHorizontalPreview() {
     AniHyouTheme {
         Surface {
             Column {

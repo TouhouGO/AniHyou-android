@@ -65,7 +65,7 @@ fun PersonItemSmall(
 
 @Preview
 @Composable
-fun PersonItemSmallPreview() {
+private fun PersonItemSmallPreview() {
     AniHyouTheme {
         Surface {
             PersonItemSmall(

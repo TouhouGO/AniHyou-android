@@ -17,9 +17,9 @@ class ThreadRepository(
             it.Thread
         }
 
-    fun subscribeToThread(threadId: Int, subscribe: Boolean) = api
+    suspend fun subscribeToThread(threadId: Int, subscribe: Boolean) = api
         .subscribeToThread(threadId, subscribe)
-        .toFlow()
+        .execute()
         .asDataResult {
             it.ToggleThreadSubscription?.isSubscribed
         }
@@ -37,14 +37,14 @@ class ThreadRepository(
             data.Page?.threadComments?.filterNotNull().orEmpty().map { it.toChildComment() }
         }
 
-    fun updateThreadComment(
+    suspend fun updateThreadComment(
         threadId: Int?,
         parentCommentId: Int?,
         id: Int? = null,
         text: String
     ) = api
         .updateThreadCommentMutation(threadId, parentCommentId, id, text)
-        .toFlow()
+        .execute()
         .asDataResult {
             it.SaveThreadComment
         }

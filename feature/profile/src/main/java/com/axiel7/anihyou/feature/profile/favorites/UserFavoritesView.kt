@@ -251,7 +251,7 @@ private fun UserFavoritesContent(
 
 @Preview
 @Composable
-fun UserFavoritesViewPreview() {
+private fun UserFavoritesViewPreview() {
     AniHyouTheme {
         Surface {
             UserFavoritesContent(

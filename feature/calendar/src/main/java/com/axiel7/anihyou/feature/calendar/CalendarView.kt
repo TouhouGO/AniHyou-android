@@ -214,7 +214,7 @@ private fun CalendarDayView(
 
 @Preview
 @Composable
-fun CalendarViewPreview() {
+private fun CalendarViewPreview() {
     AniHyouTheme {
         Surface {
             CalendarDayView(

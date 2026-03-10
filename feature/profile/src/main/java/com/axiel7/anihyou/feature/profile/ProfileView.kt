@@ -65,6 +65,7 @@ import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.ShareIconButton
 import com.axiel7.anihyou.core.ui.composables.common.singleClick
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.composables.person.PERSON_IMAGE_SIZE_SMALL
 import com.axiel7.anihyou.core.ui.composables.person.PersonImage
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
@@ -81,6 +82,7 @@ import org.koin.core.parameter.parametersOf
 fun ProfileView(
     arguments: Routes.UserDetails,
     modifier: Modifier = Modifier,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     val viewModel: ProfileViewModel = koinViewModel(
@@ -95,6 +97,7 @@ fun ProfileView(
         uiState = uiState,
         event = viewModel,
         modifier = modifier,
+        uriHandler = uriHandler,
         navActionManager = navActionManager,
     )
 }
@@ -105,6 +108,7 @@ private fun ProfileContent(
     uiState: ProfileUiState,
     event: ProfileEvent?,
     modifier: Modifier = Modifier,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -218,6 +222,7 @@ private fun ProfileContent(
                             uiState = uiState,
                             event = event,
                             modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
+                            uriHandler = uriHandler,
                             navActionManager = navActionManager,
                         )
                     }
@@ -343,12 +348,13 @@ private fun MainProfileInfo(
 
 @Preview
 @Composable
-fun ProfileViewPreview() {
+private fun ProfileViewPreview() {
     AniHyouTheme {
         Surface {
             ProfileContent(
                 uiState = ProfileUiState(isMyProfile = false),
                 event = null,
+                uriHandler = MarkdownUriHandler(),
                 navActionManager = NavActionManager.rememberNavActionManager()
             )
         }

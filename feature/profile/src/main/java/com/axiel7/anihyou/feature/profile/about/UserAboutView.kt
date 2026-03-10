@@ -108,7 +108,7 @@ fun UserAboutView(
 
 @Preview
 @Composable
-fun UserAboutViewPreview() {
+private fun UserAboutViewPreview() {
     AniHyouTheme {
         Surface {
             UserAboutView(

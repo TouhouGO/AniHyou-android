@@ -3,12 +3,12 @@ package com.axiel7.anihyou.feature.home.activity
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
+import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.ActivityRepository
 import com.axiel7.anihyou.core.domain.repository.LikeRepository
 import com.axiel7.anihyou.core.model.activity.ActivityTypeGrouped
 import com.axiel7.anihyou.core.model.activity.updateLikeStatus
 import com.axiel7.anihyou.core.network.type.ActivityType
-import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -58,7 +58,7 @@ class ActivityFeedViewModel(
             likeRepository.toggleActivityLike(
                 id = id,
                 type = type
-            ).collect { result ->
+            ).let { result ->
                 if (result is DataResult.Success) {
                     mutableUiState.value.run {
                         val foundIndex = activities.indexOf(foundItem)

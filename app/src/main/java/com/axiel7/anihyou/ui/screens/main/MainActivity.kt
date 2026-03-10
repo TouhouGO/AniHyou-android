@@ -246,7 +246,7 @@ fun MainView(
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Preview(showBackground = true)
 @Composable
-fun MainPreview() {
+private fun MainPreview() {
     AniHyouTheme {
         MainView(
             windowSizeClass = WindowSizeClass.calculateFromSize(

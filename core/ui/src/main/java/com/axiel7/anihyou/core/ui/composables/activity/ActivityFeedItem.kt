@@ -23,6 +23,7 @@ import com.axiel7.anihyou.core.network.type.ActivityType
 import com.axiel7.anihyou.core.ui.composables.common.CommentIconButton
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.markdown.DefaultMarkdownText
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.composables.media.MediaPoster
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemSmall
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
@@ -48,7 +49,7 @@ fun ActivityFeedItem(
     onClickLike: () -> Unit,
     onClickMedia: () -> Unit = {},
     onClickDelete: () -> Unit = {},
-    navigateToFullscreenImage: (String) -> Unit = {},
+    uriHandler: MarkdownUriHandler,
 ) {
     ListItem(
         onClick = onClick,
@@ -124,7 +125,7 @@ fun ActivityFeedItem(
                 markdown = text,
                 modifier = Modifier.padding(bottom = 4.dp),
                 lineHeight = 20.sp,
-                navigateToFullscreenImage = navigateToFullscreenImage
+                uriHandler = uriHandler,
             )
         } else {
             Text(
@@ -138,7 +139,7 @@ fun ActivityFeedItem(
 
 @Preview
 @Composable
-fun MediaActivityItemPreview() {
+private fun MediaActivityItemPreview() {
     AniHyouTheme {
         Surface {
             ActivityFeedItem(
@@ -156,6 +157,7 @@ fun MediaActivityItemPreview() {
                 onClickUser = {},
                 onClickLike = {},
                 onClickMedia = {},
+                uriHandler = MarkdownUriHandler(),
             )
         }
     }

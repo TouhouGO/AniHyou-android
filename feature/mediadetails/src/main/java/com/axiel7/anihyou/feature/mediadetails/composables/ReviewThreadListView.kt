@@ -201,7 +201,7 @@ fun ReviewThreadListView(
 
 @Preview
 @Composable
-fun ReviewThreadListViewPreview() {
+private fun ReviewThreadListViewPreview() {
     AniHyouTheme {
         Surface {
             ReviewThreadListView(

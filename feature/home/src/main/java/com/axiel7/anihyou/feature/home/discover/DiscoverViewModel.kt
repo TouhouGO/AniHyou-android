@@ -49,7 +49,7 @@ class DiscoverViewModel(
         if (mutableUiState.value.airingAnime.isEmpty()) {
             mediaRepository.getAiringAnimesPage(
                 airingAtGreater = System.currentTimeMillis() / 1000,
-                displayAdult = uiState.value.displayAdult,
+                isAdult = uiState.value.displayAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -87,7 +87,7 @@ class DiscoverViewModel(
         if (mutableUiState.value.thisSeasonAnime.isEmpty()) {
             mediaRepository.getSeasonalAnimePage(
                 animeSeason = uiState.value.nowAnimeSeason,
-                displayAdult = uiState.value.displayAdult,
+                isAdult = uiState.value.isAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -108,7 +108,7 @@ class DiscoverViewModel(
             mediaRepository.getMediaSortedPage(
                 mediaType = MediaType.ANIME,
                 sort = listOf(MediaSort.TRENDING_DESC),
-                displayAdult = uiState.value.displayAdult,
+                isAdult = uiState.value.isAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -128,7 +128,7 @@ class DiscoverViewModel(
         if (mutableUiState.value.nextSeasonAnime.isEmpty()) {
             mediaRepository.getSeasonalAnimePage(
                 animeSeason = uiState.value.nextAnimeSeason,
-                displayAdult = uiState.value.displayAdult,
+                isAdult = uiState.value.isAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -149,7 +149,7 @@ class DiscoverViewModel(
             mediaRepository.getMediaSortedPage(
                 mediaType = MediaType.MANGA,
                 sort = listOf(MediaSort.TRENDING_DESC),
-                displayAdult = uiState.value.displayAdult,
+                isAdult = uiState.value.isAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -170,7 +170,7 @@ class DiscoverViewModel(
             mediaRepository.getMediaSortedPage(
                 mediaType = MediaType.ANIME,
                 sort = listOf(MediaSort.ID_DESC),
-                displayAdult = uiState.value.displayAdult,
+                isAdult = uiState.value.isAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {
@@ -191,7 +191,7 @@ class DiscoverViewModel(
             mediaRepository.getMediaSortedPage(
                 mediaType = MediaType.MANGA,
                 sort = listOf(MediaSort.ID_DESC),
-                displayAdult = uiState.value.displayAdult,
+                isAdult = uiState.value.isAdult,
                 page = 1
             ).onEach { result ->
                 mutableUiState.update {

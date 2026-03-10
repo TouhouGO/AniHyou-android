@@ -16,7 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -24,6 +28,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import com.axiel7.anihyou.core.model.DeepLink
 import com.axiel7.anihyou.core.model.HomeTab
 import com.axiel7.anihyou.core.network.type.MediaType
@@ -31,6 +36,8 @@ import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
 import com.axiel7.anihyou.core.ui.common.navigation.TopLevelBackStack
 import com.axiel7.anihyou.core.ui.composables.FullScreenImageView
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
+import com.axiel7.anihyou.core.ui.composables.markdown.SpoilerSheet
 import com.axiel7.anihyou.feature.activitydetails.ActivityDetailsView
 import com.axiel7.anihyou.feature.activitydetails.publish.PublishActivityView
 import com.axiel7.anihyou.feature.calendar.CalendarView
@@ -84,10 +91,28 @@ fun MainNavigation(
     deepLink: DeepLink?,
     padding: PaddingValues = PaddingValues(),
 ) {
+    val context = LocalContext.current
     val bottomPadding by animateDpAsState(
         targetValue = padding.calculateBottomPadding(),
         label = "bottom_bar_padding"
     )
+
+    var spoilerText by remember { mutableStateOf<String?>(null) }
+    val markdownUriHandler = remember {
+        MarkdownUriHandler(
+            onSpoilerClicked = { spoilerText = it },
+            onLinkClicked = { context.openActionView(it) },
+        )
+    }
+
+    spoilerText?.let {
+        SpoilerSheet(
+            text = it,
+            uriHandler = markdownUriHandler,
+            onDismiss = { spoilerText = null }
+        )
+    }
+
 
     LaunchedEffect(deepLink) {
         if (deepLink != null) {
@@ -167,6 +192,7 @@ fun MainNavigation(
                     modifier = if (isCompactScreen) Modifier.padding(bottom = bottomPadding) else Modifier,
                     contentPadding = if (isCompactScreen) PaddingValues(bottom = 16.dp)
                     else PaddingValues(bottom = 16.dp + bottomPadding),
+                    uriHandler = markdownUriHandler,
                     navActionManager = navActionManager,
                 )
             }
@@ -212,6 +238,7 @@ fun MainNavigation(
                     ProfileView(
                         arguments = Routes.UserDetails(null, null),
                         modifier = if (isCompactScreen) Modifier.padding(bottom = bottomPadding) else Modifier,
+                        uriHandler = markdownUriHandler,
                         navActionManager = navActionManager,
                     )
                 } else {
@@ -235,6 +262,7 @@ fun MainNavigation(
             entry<Routes.UserDetails> {
                 ProfileView(
                     arguments = it,
+                    uriHandler = markdownUriHandler,
                     navActionManager = navActionManager,
                 )
             }
@@ -297,6 +325,7 @@ fun MainNavigation(
             entry<Routes.CharacterDetails> {
                 CharacterDetailsView(
                     arguments = it,
+                    uriHandler = markdownUriHandler,
                     navActionManager = navActionManager,
                 )
             }
@@ -304,6 +333,7 @@ fun MainNavigation(
             entry<Routes.StaffDetails> {
                 StaffDetailsView(
                     arguments = it,
+                    uriHandler = markdownUriHandler,
                     navActionManager = navActionManager,
                 )
             }
@@ -318,6 +348,7 @@ fun MainNavigation(
             entry<Routes.ThreadDetails> {
                 ThreadDetailsView(
                     arguments = it,
+                    uriHandler = markdownUriHandler,
                     navActionManager = navActionManager,
                 )
             }
@@ -360,6 +391,7 @@ fun MainNavigation(
             entry<Routes.ActivityDetails> {
                 ActivityDetailsView(
                     arguments = it,
+                    uriHandler = markdownUriHandler,
                     navActionManager = navActionManager,
                 )
             }
@@ -389,6 +421,7 @@ fun MainNavigation(
             entry<Routes.MediaActivity> {
                 MediaActivityView(
                     arguments = it,
+                    uriHandler = markdownUriHandler,
                     navActionManager = navActionManager
                 )
             }

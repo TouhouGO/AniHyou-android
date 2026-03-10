@@ -99,7 +99,7 @@ fun WearApp(
 
 @Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
 @Composable
-fun DefaultPreview() {
+private fun DefaultPreview() {
     WearApp(
         uiState = MainUiState(),
         event = null,

@@ -166,7 +166,7 @@ private fun UserStatsContent(
 
 @Preview
 @Composable
-fun UserStatsViewPreview() {
+private fun UserStatsViewPreview() {
     AniHyouTheme {
         Surface {
             UserStatsContent(

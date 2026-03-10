@@ -4,15 +4,14 @@ import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.base.extensions.indexOfFirstOrNull
+import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.ActivityRepository
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.LikeRepository
 import com.axiel7.anihyou.core.domain.repository.MediaRepository
 import com.axiel7.anihyou.core.model.activity.updateLikeStatus
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
-import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -46,7 +45,7 @@ class MediaActivityViewModel(
             likeRepository.toggleActivityLike(
                 id = id,
                 type = type
-            ).collect { result ->
+            ).let { result ->
                 if (result is DataResult.Success) {
                     mutableUiState.value.run {
                         val foundIndex = activities.indexOf(foundItem)
@@ -62,7 +61,7 @@ class MediaActivityViewModel(
 
     override fun deleteActivity(id: Int) {
         viewModelScope.launch {
-            activityRepository.deleteActivity(id).collectLatest { result ->
+            activityRepository.deleteActivity(id).let { result ->
                 if (result is DataResult.Success && result.data == true) {
                     mutableUiState.value.run {
                         activities.indexOfFirstOrNull { it.id == id }?.let {

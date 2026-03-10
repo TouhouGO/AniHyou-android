@@ -68,7 +68,7 @@ fun TopBannerView(
 
 @Preview
 @Composable
-fun TopBannerViewPreview() {
+private fun TopBannerViewPreview() {
     AniHyouTheme {
         Surface {
             TopBannerView(

@@ -30,6 +30,7 @@ import com.axiel7.anihyou.core.ui.composables.common.CommentIconButton
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ReplyButton
 import com.axiel7.anihyou.core.ui.composables.markdown.DefaultMarkdownText
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemSmall
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.secondsToLegibleText
@@ -43,7 +44,7 @@ fun ChildCommentView(
     toggleLike: suspend (Int) -> Boolean,
     navigateToUserDetails: () -> Unit,
     navigateToPublishReply: (parentCommentId: Int, Int?, String?) -> Unit,
-    navigateToFullscreenImage: (String) -> Unit,
+    uriHandler: MarkdownUriHandler,
 ) {
     val scope = rememberCoroutineScope()
     var isLiked by remember { mutableStateOf(comment.isLiked == true) }
@@ -88,7 +89,7 @@ fun ChildCommentView(
                 modifier = Modifier.padding(vertical = 8.dp),
                 fontSize = 15.sp,
                 lineHeight = 15.sp,
-                navigateToFullscreenImage = navigateToFullscreenImage
+                uriHandler = uriHandler,
             )
             Row(
                 modifier = Modifier.align(Alignment.End),
@@ -131,7 +132,7 @@ fun ChildCommentView(
                 toggleLike = toggleLike,
                 navigateToUserDetails = navigateToUserDetails,
                 navigateToPublishReply = navigateToPublishReply,
-                navigateToFullscreenImage = navigateToFullscreenImage,
+                uriHandler = uriHandler,
             )
         }
     }
@@ -139,7 +140,7 @@ fun ChildCommentView(
 
 @Preview
 @Composable
-fun ChildCommentViewPreview() {
+private fun ChildCommentViewPreview() {
     AniHyouTheme {
         Surface {
             ChildCommentView(
@@ -147,7 +148,7 @@ fun ChildCommentViewPreview() {
                 toggleLike = { true },
                 navigateToUserDetails = {},
                 navigateToPublishReply = { _, _, _ -> },
-                navigateToFullscreenImage = {}
+                uriHandler = MarkdownUriHandler(),
             )
         }
     }

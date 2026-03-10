@@ -168,7 +168,7 @@ fun CurrentListItemPlaceholder(
 
 @Preview
 @Composable
-fun CurrentListItemPreview() {
+private fun CurrentListItemPreview() {
     AniHyouTheme {
         Surface {
             Column {

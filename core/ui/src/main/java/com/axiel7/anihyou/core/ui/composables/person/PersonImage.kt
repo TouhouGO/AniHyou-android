@@ -49,7 +49,7 @@ fun PersonImage(
 
 @Preview
 @Composable
-fun PersonImagePreview() {
+private fun PersonImagePreview() {
     AniHyouTheme {
         Surface {
             PersonImage(

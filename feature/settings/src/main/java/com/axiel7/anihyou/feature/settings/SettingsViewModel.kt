@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.axiel7.anihyou.core.base.DataResult
+import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.ListPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.LoginRepository
@@ -17,14 +18,12 @@ import com.axiel7.anihyou.core.model.notification.NotificationInterval
 import com.axiel7.anihyou.core.network.type.ScoreFormat
 import com.axiel7.anihyou.core.network.type.UserStaffNameLanguage
 import com.axiel7.anihyou.core.network.type.UserTitleLanguage
-import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.feature.worker.NotificationWorker.Companion.cancelNotificationWork
 import com.axiel7.anihyou.feature.worker.NotificationWorker.Companion.scheduleNotificationWork
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
@@ -151,26 +150,26 @@ class SettingsViewModel(
     override fun setDisplayAdultContent(value: Boolean) {
         viewModelScope.launch {
             defaultPreferencesRepository.setDisplayAdult(value)
-            updateUser(displayAdultContent = value).collect()
+            updateUser(displayAdultContent = value)
         }
     }
 
     override fun setTitleLanguage(value: UserTitleLanguage) {
         viewModelScope.launch {
-            updateUser(titleLanguage = value).collect()
+            updateUser(titleLanguage = value)
         }
     }
 
     override fun setStaffNameLanguage(value: UserStaffNameLanguage) {
         viewModelScope.launch {
-            updateUser(staffNameLanguage = value).collect()
+            updateUser(staffNameLanguage = value)
         }
     }
 
     override fun setScoreFormat(value: ScoreFormat) {
         viewModelScope.launch {
             defaultPreferencesRepository.setScoreFormat(value)
-            updateUser(scoreFormat = value).collect()
+            updateUser(scoreFormat = value)
         }
     }
 
@@ -182,7 +181,7 @@ class SettingsViewModel(
 
     override fun setAiringNotification(value: Boolean) {
         viewModelScope.launch {
-            updateUser(airingNotifications = value).collect()
+            updateUser(airingNotifications = value)
         }
     }
 
@@ -194,7 +193,7 @@ class SettingsViewModel(
         }
     }
 
-    private fun updateUser(
+    private suspend fun updateUser(
         displayAdultContent: Boolean? = null,
         titleLanguage: UserTitleLanguage? = null,
         staffNameLanguage: UserStaffNameLanguage? = null,
@@ -208,7 +207,7 @@ class SettingsViewModel(
             scoreFormat = scoreFormat,
             airingNotifications = airingNotifications,
         )
-        .onEach { result ->
+        .let { result ->
             mutableUiState.update {
                 if (result is DataResult.Success) {
                     it.copy(

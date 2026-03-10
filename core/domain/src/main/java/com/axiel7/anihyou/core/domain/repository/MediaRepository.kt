@@ -30,7 +30,7 @@ class MediaRepository (
         airingAtLesser: Long? = null,
         sort: List<AiringSort> = listOf(AiringSort.TIME),
         onMyList: Boolean? = null,
-        displayAdult: Boolean = false,
+        isAdult: Boolean = false,
         page: Int,
         perPage: Int = 25,
     ) = api
@@ -45,7 +45,7 @@ class MediaRepository (
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) { data ->
             val list = data.Page?.airingSchedules?.filterNotNull().orEmpty()
             fun AiringAnimesQuery.AiringSchedule.adultFilter() =
-                if (!displayAdult) media?.isAdult == false else true
+                if (!isAdult) media?.isAdult == false else true
             when (onMyList) {
                 true -> list.filter { it.media?.mediaListEntry != null && it.adultFilter() }
                 false -> list.filter { it.media?.mediaListEntry == null && it.adultFilter() }
@@ -72,11 +72,11 @@ class MediaRepository (
     fun getSeasonalAnimePage(
         animeSeason: AnimeSeason,
         sort: List<MediaSort> = listOf(MediaSort.POPULARITY_DESC),
-        displayAdult: Boolean? = null,
+        isAdult: Boolean? = null,
         page: Int,
         perPage: Int = 25,
     ) = api
-        .seasonalAnimeQuery(animeSeason.toDto(), sort, displayAdult, page, perPage)
+        .seasonalAnimeQuery(animeSeason.toDto(), sort, isAdult, page, perPage)
         .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) {
             it.Page?.media?.filterNotNull().orEmpty()
@@ -85,11 +85,11 @@ class MediaRepository (
     fun getMediaSortedPage(
         mediaType: MediaType,
         sort: List<MediaSort>,
-        displayAdult: Boolean? = null,
+        isAdult: Boolean? = null,
         page: Int,
         perPage: Int = 25,
     ) = api
-        .mediaSortedQuery(mediaType, sort, displayAdult, page, perPage)
+        .mediaSortedQuery(mediaType, sort, isAdult, page, perPage)
         .toFlow()
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) {
             it.Page?.media?.filterNotNull().orEmpty()
@@ -97,7 +97,7 @@ class MediaRepository (
 
     fun getMediaChartPage(
         type: ChartType,
-        displayAdult: Boolean? = null,
+        isAdult: Boolean? = null,
         page: Int,
         perPage: Int = 25,
     ) = api
@@ -106,7 +106,7 @@ class MediaRepository (
             sort = listOf(type.mediaSort),
             status = type.mediaStatus,
             format = type.mediaFormat,
-            displayAdult = displayAdult,
+            isAdult = isAdult,
             page = page,
             perPage = perPage
         )

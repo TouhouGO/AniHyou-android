@@ -255,7 +255,7 @@ fun MediaItemHorizontalPlaceholder() {
 
 @Preview
 @Composable
-fun MediaItemHorizontalPreview() {
+private fun MediaItemHorizontalPreview() {
     AniHyouTheme {
         Surface {
             Column {

@@ -2,8 +2,8 @@ package com.axiel7.anihyou.feature.activitydetails.publish
 
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
-import com.axiel7.anihyou.core.domain.repository.ActivityRepository
 import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
+import com.axiel7.anihyou.core.domain.repository.ActivityRepository
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -18,7 +18,7 @@ class PublishActivityViewModel(
             activityRepository.updateTextActivity(
                 id = id,
                 text = text
-            ).collect { result ->
+            ).let { result ->
                 mutableUiState.update {
                     if (result is DataResult.Success) {
                         it.copy(
@@ -43,7 +43,7 @@ class PublishActivityViewModel(
                 activityId = activityId,
                 id = id,
                 text = text
-            ).collect { result ->
+            ).let { result ->
                 mutableUiState.update {
                     if (result is DataResult.Success) {
                         it.copy(

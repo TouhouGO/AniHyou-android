@@ -59,7 +59,9 @@ dependencies {
 
     implementation(libs.coil.compose)
 
-    implementation(libs.compose.markdown)
+    implementation(libs.markdown.renderer)
+    implementation(libs.markdown.renderer.material3)
+    implementation(libs.markdown.renderer.coil3)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 

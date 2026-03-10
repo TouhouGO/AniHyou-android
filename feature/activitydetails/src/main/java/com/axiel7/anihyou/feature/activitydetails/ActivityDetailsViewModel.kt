@@ -2,13 +2,13 @@ package com.axiel7.anihyou.feature.activitydetails
 
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
+import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.ActivityRepository
 import com.axiel7.anihyou.core.domain.repository.LikeRepository
 import com.axiel7.anihyou.core.model.activity.toGenericActivity
 import com.axiel7.anihyou.core.network.ActivityDetailsQuery
 import com.axiel7.anihyou.core.network.type.ActivityType
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
-import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -35,7 +35,7 @@ class ActivityDetailsViewModel(
         viewModelScope.launch {
             when (details.type) {
                 ActivityType.TEXT -> {
-                    likeRepository.toggleTextActivityLike(details.id).collect { result ->
+                    likeRepository.toggleTextActivityLike(details.id).let { result ->
                         if (result is DataResult.Success && result.data != null) {
                             activityRepository.updateActivityDetailsCache(
                                 id = details.id,
@@ -54,7 +54,7 @@ class ActivityDetailsViewModel(
                 }
 
                 ActivityType.MESSAGE -> {
-                    likeRepository.toggleMessageActivityLike(details.id).collect { result ->
+                    likeRepository.toggleMessageActivityLike(details.id).let { result ->
                         if (result is DataResult.Success && result.data != null) {
                             activityRepository.updateActivityDetailsCache(
                                 id = details.id,
@@ -73,7 +73,7 @@ class ActivityDetailsViewModel(
                 }
 
                 else -> {
-                    likeRepository.toggleListActivityLike(details.id).collect { result ->
+                    likeRepository.toggleListActivityLike(details.id).let { result ->
                         if (result is DataResult.Success && result.data != null) {
                             activityRepository.updateActivityDetailsCache(
                                 id = details.id,
@@ -99,7 +99,7 @@ class ActivityDetailsViewModel(
 
     override fun toggleLikeReply(id: Int) {
         viewModelScope.launch {
-            likeRepository.toggleActivityReplyLike(id).collect { result ->
+            likeRepository.toggleActivityReplyLike(id).let { result ->
                 if (result is DataResult.Success && result.data != null) {
                     mutableUiState.value.run {
                         val foundIndex = replies.indexOfFirst { it.id == id }

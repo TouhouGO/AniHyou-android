@@ -25,6 +25,7 @@ import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
 import com.axiel7.anihyou.core.ui.composables.activity.ActivityItem
 import com.axiel7.anihyou.core.ui.composables.activity.ActivityItemPlaceholder
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.profile.ProfileEvent
 import com.axiel7.anihyou.feature.profile.ProfileUiState
@@ -36,6 +37,7 @@ fun UserActivityView(
     uiState: ProfileUiState,
     event: ProfileEvent?,
     modifier: Modifier = Modifier,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     val pullRefreshState = rememberPullToRefreshState()
@@ -96,7 +98,8 @@ fun UserActivityView(
                         },
                         onClickDelete = {
                             event?.deleteActivity(activity.id)
-                        }
+                        },
+                        uriHandler = uriHandler,
                     )
                     HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
                 }
@@ -126,7 +129,7 @@ fun UserActivityView(
                         onClickDelete = {
                             event?.deleteActivity(activity.id)
                         },
-                        navigateToFullscreenImage = navActionManager::toFullscreenImage
+                        uriHandler = uriHandler,
                     )
                     HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
                 }
@@ -157,7 +160,7 @@ fun UserActivityView(
                         onClickDelete = {
                             event?.deleteActivity(activity.id)
                         },
-                        navigateToFullscreenImage = navActionManager::toFullscreenImage
+                        uriHandler = uriHandler,
                     )
                     HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
                 }
@@ -168,13 +171,14 @@ fun UserActivityView(
 
 @Preview
 @Composable
-fun UserActivityViewPreview() {
+private fun UserActivityViewPreview() {
     AniHyouTheme {
         Surface {
             UserActivityView(
                 activities = emptyList(),
                 uiState = ProfileUiState(isMyProfile = false),
                 event = null,
+                uriHandler = MarkdownUriHandler(),
                 navActionManager = NavActionManager.rememberNavActionManager()
             )
         }

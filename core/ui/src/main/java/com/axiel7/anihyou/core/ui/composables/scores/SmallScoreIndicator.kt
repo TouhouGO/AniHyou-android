@@ -47,7 +47,7 @@ fun SmallScoreIndicator(
 
 @Preview
 @Composable
-fun SmallScoreIndicatorPreview() {
+private fun SmallScoreIndicatorPreview() {
     AniHyouTheme {
         Surface {
             SmallScoreIndicator(score = 75)

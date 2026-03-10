@@ -31,6 +31,7 @@ import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ShareIconButton
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.editmedia.EditMediaSheet
 import com.axiel7.anihyou.feature.staffdetails.content.StaffCharacterView
@@ -42,6 +43,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun StaffDetailsView(
     arguments: Routes.StaffDetails,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager
 ) {
     val viewModel: StaffDetailsViewModel = koinViewModel(parameters = { parametersOf(arguments) })
@@ -50,6 +52,7 @@ fun StaffDetailsView(
     StaffDetailsContent(
         uiState = uiState,
         event = viewModel,
+        uriHandler = uriHandler,
         navActionManager = navActionManager,
     )
 }
@@ -59,6 +62,7 @@ fun StaffDetailsView(
 private fun StaffDetailsContent(
     uiState: StaffDetailsUiState,
     event: StaffDetailsEvent?,
+    uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -123,6 +127,7 @@ private fun StaffDetailsContent(
                         contentPadding = PaddingValues(
                             bottom = padding.calculateBottomPadding()
                         ),
+                        uriHandler = uriHandler,
                         navigateToFullscreenImage = navActionManager::toFullscreenImage
                     )
 
@@ -167,12 +172,13 @@ private fun StaffDetailsContent(
 
 @Preview
 @Composable
-fun StaffDetailsViewPreview() {
+private fun StaffDetailsViewPreview() {
     AniHyouTheme {
         Surface {
             StaffDetailsContent(
                 uiState = StaffDetailsUiState(),
                 event = null,
+                uriHandler = MarkdownUriHandler(),
                 navActionManager = NavActionManager.rememberNavActionManager()
             )
         }

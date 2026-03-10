@@ -42,6 +42,7 @@ import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.composables.common.CommentIconButton
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.markdown.DefaultMarkdownText
+import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.composables.media.MEDIA_POSTER_TINY_HEIGHT
 import com.axiel7.anihyou.core.ui.composables.media.MediaPoster
 import com.axiel7.anihyou.core.ui.composables.person.PERSON_IMAGE_SIZE_VERY_SMALL
@@ -67,7 +68,7 @@ fun ActivityTextView(
     onClickUser: () -> Unit,
     onClickMedia: () -> Unit = {},
     onClickLike: () -> Unit,
-    navigateToFullscreenImage: (String) -> Unit,
+    uriHandler: MarkdownUriHandler,
 ) {
     var isLikesExpanded by remember { mutableStateOf(false) }
     Column(
@@ -111,7 +112,7 @@ fun ActivityTextView(
             DefaultMarkdownText(
                 markdown = text,
                 fontSize = 17.sp,
-                navigateToFullscreenImage = navigateToFullscreenImage,
+                uriHandler = uriHandler,
             )
         }
 
@@ -205,7 +206,7 @@ fun ActivityTextViewPreview() {
                 isLiked = false,
                 onClickLike = {},
                 onClickUser = {},
-                navigateToFullscreenImage = {},
+                uriHandler = MarkdownUriHandler(),
             )
         }
     }

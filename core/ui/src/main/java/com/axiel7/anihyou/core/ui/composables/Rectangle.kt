@@ -51,7 +51,7 @@ fun RoundedRectangle(
 
 @Preview
 @Composable
-fun RectanglePreview() {
+private fun RectanglePreview() {
     AniHyouTheme {
         Column {
             Rectangle(width = 50.dp, height = 12.dp, color = Color.Blue)

@@ -53,7 +53,7 @@ fun IconButtonWithBadge(
 
 @Preview
 @Composable
-fun IconButtonWithBadgePreview() {
+private fun IconButtonWithBadgePreview() {
     AniHyouTheme {
         Surface {
             IconButtonWithBadge(

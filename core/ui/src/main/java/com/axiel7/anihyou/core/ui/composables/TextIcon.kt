@@ -153,7 +153,7 @@ fun TextSubtitleVertical(
 
 @Preview
 @Composable
-fun TextSubtitleVerticalPreview() {
+private fun TextSubtitleVerticalPreview() {
     AniHyouTheme {
         Surface {
             TextSubtitleVertical(
@@ -166,7 +166,7 @@ fun TextSubtitleVerticalPreview() {
 
 @Preview
 @Composable
-fun TextIconHorizontalPreview() {
+private fun TextIconHorizontalPreview() {
     AniHyouTheme {
         Surface {
             TextIconHorizontal(text = "This is an example", icon = R.drawable.star_filled_20)
@@ -176,7 +176,7 @@ fun TextIconHorizontalPreview() {
 
 @Preview
 @Composable
-fun TextIconVerticalPreview() {
+private fun TextIconVerticalPreview() {
     AniHyouTheme {
         Surface {
             TextIconVertical(text = "This is an example", icon = R.drawable.star_filled_20)

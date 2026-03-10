@@ -23,6 +23,8 @@ data class MediaChartUiState(
     override fun setPage(value: Int) = copy(page = value)
     override fun setHasNextPage(value: Boolean) = copy(hasNextPage = value)
 
+    val isAdult = displayAdult.takeIf { !it }
+
     companion object {
         const val PER_PAGE = 25
     }
