@@ -33,6 +33,7 @@ workRuntime = "2.11.2"
 baselineprofile = "1.5.0-alpha05"
 wear = "1.4.0"
 wearRemoteInteractions = "1.2.0"
+wearPhoneInteractions = "1.1.0"
 wearComposeMaterial = "1.6.0"
 wearComposeFoundation = "1.6.0"
 wearToolingPreview = "1.0.0"
@@ -90,7 +91,7 @@ ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-wear = { group = "androidx.wear", name = "wear", version.ref = "wear" }
 androidx-wear-remote-interactions = { group = "androidx.wear", name = "wear-remote-interactions", version.ref = "wearRemoteInteractions" }
-androidx-wear-phone-interactions = { group = "androidx.wear", name = "wear-phone-interactions", version.ref = "wearRemoteInteractions" }
+androidx-wear-phone-interactions = { group = "androidx.wear", name = "wear-phone-interactions", version.ref = "wearPhoneInteractions" }
 androidx-wear-compose-material = { group = "androidx.wear.compose", name = "compose-material3", version.ref = "wearComposeMaterial" }
 androidx-wear-compose-foundation = { group = "androidx.wear.compose", name = "compose-foundation", version.ref = "wearComposeFoundation" }
 androidx-wear-compose-navigation = { group = "androidx.wear.compose", name = "compose-navigation", version.ref = "wearComposeMaterial" }
