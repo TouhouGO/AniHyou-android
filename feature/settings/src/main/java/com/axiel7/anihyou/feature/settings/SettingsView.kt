@@ -30,7 +30,6 @@ import com.axiel7.anihyou.core.common.utils.ContextUtils.getActivity
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openByDefaultSettings
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openLink
-import com.axiel7.anihyou.core.common.utils.ContextUtils.showToast
 import com.axiel7.anihyou.core.model.AppColorMode
 import com.axiel7.anihyou.core.model.DefaultTab
 import com.axiel7.anihyou.core.model.ItemsPerRow
@@ -44,6 +43,7 @@ import com.axiel7.anihyou.core.network.type.UserStaffNameLanguage
 import com.axiel7.anihyou.core.network.type.UserTitleLanguage
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.ListPreference
 import com.axiel7.anihyou.core.ui.composables.PlainPreference
@@ -92,6 +92,7 @@ private fun SettingsContent(
     navActionManager: NavActionManager,
 ) {
     val context = LocalContext.current
+    val snackbarManager = rememberSnackbarManager()
     val isDarkTheme = (uiState.theme == Theme.FOLLOW_SYSTEM && isSystemInDarkTheme())
             || uiState.theme == Theme.DARK
 
@@ -109,6 +110,7 @@ private fun SettingsContent(
 
     DefaultScaffoldWithSmallTopAppBar(
         title = stringResource(R.string.settings),
+        snackbarHost = snackbarManager::SnackbarHost,
         navigationIcon = {
             BackIconButton(onClick = navActionManager::goBack)
         },
@@ -177,7 +179,7 @@ private fun SettingsContent(
                     icon = R.drawable.title_24,
                     onValueChange = { value ->
                         event?.setTitleLanguage(value)
-                        context.showToast(R.string.changes_will_take_effect_on_app_restart)
+                        snackbarManager.showMessage(R.string.changes_will_take_effect_on_app_restart)
                     }
                 )
 
@@ -188,7 +190,7 @@ private fun SettingsContent(
                     icon = R.drawable.group_24,
                     onValueChange = { value ->
                         event?.setStaffNameLanguage(value)
-                        context.showToast(R.string.changes_will_take_effect_on_app_restart)
+                        snackbarManager.showMessage(R.string.changes_will_take_effect_on_app_restart)
                     }
                 )
 

@@ -1,6 +1,7 @@
 package com.axiel7.anihyou.core.ui.common
 
 import android.content.Context
+import androidx.annotation.StringRes
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -41,6 +42,18 @@ class SnackbarManager(
             if (result == SnackbarResult.ActionPerformed) {
                 context.openActionView(ANIHYOU_AUTH_URL)
             }
+        }.also {
+            currentShowingSnackbar = it
+        }
+    }
+
+    fun showMessage(@StringRes stringRes: Int): Job {
+        currentShowingSnackbar?.cancel()
+        return scope.launch {
+            snackbarHostState.showSnackbar(
+                message = context.getString(stringRes),
+                duration = SnackbarDuration.Short
+            )
         }.also {
             currentShowingSnackbar = it
         }
