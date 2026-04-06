@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -47,6 +48,7 @@ import com.axiel7.anihyou.core.network.fragment.CommonMediaListEntry
 import com.axiel7.anihyou.core.network.type.ScoreFormat
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.list.HorizontalListHeader
 import com.axiel7.anihyou.core.ui.composables.media.MEDIA_POSTER_COMPACT_HEIGHT
@@ -59,6 +61,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun CurrentView(
+    isLoggedIn: Boolean,
     navActionManager: NavActionManager,
     modifier: Modifier = Modifier,
 ) {
@@ -68,6 +71,7 @@ fun CurrentView(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     CurrentContent(
+        isLoggedIn = isLoggedIn,
         uiState = uiState,
         event = viewModel,
         navActionManager = navActionManager,
@@ -78,6 +82,7 @@ fun CurrentView(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CurrentContent(
+    isLoggedIn: Boolean,
     uiState: CurrentUiState,
     event: CurrentEvent?,
     navActionManager: NavActionManager,
@@ -85,6 +90,7 @@ private fun CurrentContent(
 ) {
     val haptic = LocalHapticFeedback.current
     val pullRefreshState = rememberPullToRefreshState()
+    val snackbarManager = rememberSnackbarManager()
     val bottomBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     var showEditSheet by rememberSaveable { mutableStateOf(false) }
@@ -124,45 +130,52 @@ private fun CurrentContent(
             )
         }
     ) {
-        Column(
-            modifier = modifier
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 16.dp)
-        ) {
-            CurrentListType.entries.forEach { type ->
-                val list = uiState.getListFromType(type)
-                if (list.isNotEmpty()) {
-                    HorizontalListHeader(
-                        text = type.localized(),
-                        onClick = { navActionManager.toCurrentFullList(type) }
-                    )
+        Scaffold(snackbarHost = snackbarManager::SnackbarHost) { contentPadding ->
+            Column(
+                modifier = modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(contentPadding)
+                    .padding(bottom = 16.dp)
+            ) {
+                CurrentListType.entries.forEach { type ->
+                    val list = uiState.getListFromType(type)
+                    if (list.isNotEmpty()) {
+                        HorizontalListHeader(
+                            text = type.localized(),
+                            onClick = { navActionManager.toCurrentFullList(type) }
+                        )
 
-                    CurrentLazyGrid(
-                        items = list,
-                        scoreFormat = uiState.scoreFormat,
-                        isLoading = uiState.isLoading,
-                        isPlusEnabled = !uiState.isLoadingPlusOne,
-                        onClick = { navActionManager.toMediaDetails(it.mediaId) },
-                        onClickPlus = { increment, item ->
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            event?.onClickPlusOne(increment, item, type)
-                        },
-                        onLongClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            event?.selectItem(it, type)
-                            showEditSheet = true
-                        },
-                        blockPlus = { event?.blockPlusOne() }
+                        CurrentLazyGrid(
+                            items = list,
+                            scoreFormat = uiState.scoreFormat,
+                            isLoading = uiState.isLoading,
+                            isPlusEnabled = !uiState.isLoadingPlusOne,
+                            onClick = { navActionManager.toMediaDetails(it.mediaId) },
+                            onClickPlus = { increment, item ->
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                event?.onClickPlusOne(increment, item, type)
+                            },
+                            onLongClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                if (isLoggedIn) {
+                                    event?.selectItem(it, type)
+                                    showEditSheet = true
+                                } else {
+                                    snackbarManager.showNotLoggedInSnackbar()
+                                }
+                            },
+                            blockPlus = { event?.blockPlusOne() }
+                        )
+                    }
+                }
+                if (!uiState.isLoading && uiState.hasNothing) {
+                    Text(
+                        text = stringResource(R.string.no_information),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(16.dp)
                     )
                 }
-            }
-            if (!uiState.isLoading && uiState.hasNothing) {
-                Text(
-                    text = stringResource(R.string.no_information),
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(16.dp)
-                )
             }
         }
     }
@@ -231,6 +244,7 @@ private fun CurrentViewPreview() {
     AniHyouTheme {
         Surface {
             CurrentContent(
+                isLoggedIn = true,
                 uiState = CurrentUiState(
                     airingList = remember {
                         mutableStateListOf(exampleCommonMediaListEntry)

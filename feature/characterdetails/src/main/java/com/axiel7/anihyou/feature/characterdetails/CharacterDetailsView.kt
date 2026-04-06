@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
+import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.ConnectedButtonGroup
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.character.CharacterVoiceActorsSheet
@@ -44,6 +45,7 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 fun CharacterDetailsView(
+    isLoggedIn: Boolean,
     arguments: Routes.CharacterDetails,
     uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager
@@ -52,6 +54,7 @@ fun CharacterDetailsView(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     CharacterDetailsContent(
+        isLoggedIn = isLoggedIn,
         uiState = uiState,
         event = viewModel,
         uriHandler = uriHandler,
@@ -62,12 +65,14 @@ fun CharacterDetailsView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CharacterDetailsContent(
+    isLoggedIn: Boolean,
     uiState: CharacterDetailsUiState,
     event: CharacterDetailsEvent?,
     uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
     val scope = rememberCoroutineScope()
+    val snackbarManager = rememberSnackbarManager()
 
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         rememberTopAppBarState()
@@ -116,6 +121,7 @@ private fun CharacterDetailsContent(
             )
             ShareIconButton(url = uiState.character?.siteUrl.orEmpty())
         },
+        snackbarHost = snackbarManager::SnackbarHost,
         scrollBehavior = topAppBarScrollBehavior
     ) { padding ->
         Column(
@@ -166,8 +172,12 @@ private fun CharacterDetailsContent(
                         },
                         showEditSheet = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            event?.selectMediaItem(it)
-                            showEditSheet = true
+                            if (isLoggedIn) {
+                                event?.selectMediaItem(it)
+                                showEditSheet = true
+                            } else {
+                                snackbarManager.showNotLoggedInSnackbar()
+                            }
                         }
                     )
                 }
@@ -182,6 +192,7 @@ fun CharacterDetailsViewPreview() {
     AniHyouTheme {
         Surface {
             CharacterDetailsContent(
+                isLoggedIn = true,
                 uiState = CharacterDetailsUiState(),
                 event = null,
                 uriHandler = MarkdownUriHandler(),

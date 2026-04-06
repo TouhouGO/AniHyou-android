@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.model.CurrentListType
 import com.axiel7.anihyou.core.model.media.exampleCommonMediaListEntry
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithMediumTopAppBar
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
@@ -51,6 +52,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun CurrentFullListView(
+    isLoggedIn: Boolean,
     listType: CurrentListType,
     navActionManager: NavActionManager,
     modifier: Modifier = Modifier
@@ -59,6 +61,7 @@ fun CurrentFullListView(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     CurrentFullListContent(
+        isLoggedIn = isLoggedIn,
         listType = listType,
         uiState = uiState,
         event = viewModel,
@@ -70,6 +73,7 @@ fun CurrentFullListView(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CurrentFullListContent(
+    isLoggedIn: Boolean,
     listType: CurrentListType,
     uiState: CurrentUiState,
     event: CurrentEvent?,
@@ -78,6 +82,7 @@ private fun CurrentFullListContent(
 ) {
     val haptic = LocalHapticFeedback.current
     val pullRefreshState = rememberPullToRefreshState()
+    val snackbarManager = rememberSnackbarManager()
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         rememberTopAppBarState()
     )
@@ -116,6 +121,7 @@ private fun CurrentFullListContent(
             BackIconButton(onClick = navActionManager::goBack)
         },
         scrollBehavior = topAppBarScrollBehavior,
+        snackbarHost = snackbarManager::SnackbarHost,
         contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
     ) { padding ->
         PullToRefreshBox(
@@ -153,8 +159,12 @@ private fun CurrentFullListContent(
                         },
                         onLongClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            event?.selectItem(item, listType)
-                            showEditSheet = true
+                            if (isLoggedIn) {
+                                event?.selectItem(item, listType)
+                                showEditSheet = true
+                            } else {
+                                snackbarManager.showNotLoggedInSnackbar()
+                            }
                         },
                         blockPlus = { event?.blockPlusOne() }
                     )
@@ -186,6 +196,7 @@ private fun CurrentFullListViewPreview() {
     AniHyouTheme {
         Surface {
             CurrentFullListContent(
+                isLoggedIn = true,
                 listType = CurrentListType.AIRING,
                 uiState = CurrentUiState(
                     airingList = exampleList,

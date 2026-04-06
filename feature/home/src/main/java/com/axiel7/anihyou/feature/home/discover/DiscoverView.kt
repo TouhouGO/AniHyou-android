@@ -33,7 +33,9 @@ import com.axiel7.anihyou.core.model.media.nextAnimeSeason
 import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.resources.R
+import com.axiel7.anihyou.core.ui.common.SnackbarManager
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
@@ -56,9 +58,11 @@ enum class DiscoverInfo {
 
 @Composable
 fun DiscoverView(
+    isLoggedIn: Boolean,
+    snackbarManager: SnackbarManager,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
-    navActionManager: NavActionManager
+    navActionManager: NavActionManager,
 ) {
     val viewModel: DiscoverViewModel = koinViewModel(
         viewModelStoreOwner = LocalActivity.current as AppCompatActivity
@@ -66,6 +70,8 @@ fun DiscoverView(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     DiscoverContent(
+        isLoggedIn = isLoggedIn,
+        snackbarManager = snackbarManager,
         uiState = uiState,
         event = viewModel,
         navActionManager = navActionManager,
@@ -77,6 +83,8 @@ fun DiscoverView(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun DiscoverContent(
+    isLoggedIn: Boolean,
+    snackbarManager: SnackbarManager,
     uiState: DiscoverUiState,
     event: DiscoverEvent?,
     navActionManager: NavActionManager,
@@ -92,7 +100,11 @@ private fun DiscoverContent(
 
     fun showEditSheetAction() {
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        showEditSheet = true
+        if (isLoggedIn) {
+            showEditSheet = true
+        } else {
+            snackbarManager.showNotLoggedInSnackbar()
+        }
     }
 
     if (showEditSheet && uiState.selectedMediaDetails != null) {
@@ -290,6 +302,8 @@ private fun DiscoverViewPreview() {
     AniHyouTheme {
         Surface {
             DiscoverContent(
+                isLoggedIn = true,
+                snackbarManager = rememberSnackbarManager(),
                 uiState = DiscoverUiState(
                     infos = DiscoverInfo.entries.toMutableStateList(),
                     nowAnimeSeason = now.currentAnimeSeason(),

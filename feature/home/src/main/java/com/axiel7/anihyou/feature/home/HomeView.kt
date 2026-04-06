@@ -33,6 +33,7 @@ import com.axiel7.anihyou.core.common.utils.NumberUtils.format
 import com.axiel7.anihyou.core.model.HomeTab
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.IconButtonWithBadge
 import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
@@ -60,6 +61,7 @@ fun HomeView(
         rememberTopAppBarState()
     )
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(defaultHomeTab.ordinal) }
+    val snackbarManager = rememberSnackbarManager()
 
     LaunchedEffect(selectedTabIndex) {
         viewModel.saveHomeTab(selectedTabIndex)
@@ -68,6 +70,7 @@ fun HomeView(
     DefaultScaffoldWithSmallTopAppBar(
         title = stringResource(R.string.home),
         modifier = modifier,
+        snackbarHost = snackbarManager::SnackbarHost,
         floatingActionButton = {
             if (selectedTabIndex == HomeTab.ACTIVITY_FEED.ordinal && isLoggedIn) {
                 FloatingActionButton(
@@ -119,6 +122,8 @@ fun HomeView(
             when (HomeTab.entries[selectedTabIndex]) {
                 HomeTab.DISCOVER ->
                     DiscoverView(
+                        isLoggedIn = isLoggedIn,
+                        snackbarManager = snackbarManager,
                         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
                         contentPadding = contentPadding,
                         navActionManager = navActionManager,
@@ -139,6 +144,7 @@ fun HomeView(
                 HomeTab.CURRENT -> {
                     if (isLoggedIn) {
                         CurrentView(
+                            isLoggedIn = true,
                             navActionManager = navActionManager,
                             modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
                         )

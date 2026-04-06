@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
+import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.ConnectedButtonGroup
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
@@ -42,6 +43,7 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 fun StaffDetailsView(
+    isLoggedIn: Boolean,
     arguments: Routes.StaffDetails,
     uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager
@@ -50,6 +52,7 @@ fun StaffDetailsView(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     StaffDetailsContent(
+        isLoggedIn = isLoggedIn,
         uiState = uiState,
         event = viewModel,
         uriHandler = uriHandler,
@@ -60,11 +63,13 @@ fun StaffDetailsView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StaffDetailsContent(
+    isLoggedIn: Boolean,
     uiState: StaffDetailsUiState,
     event: StaffDetailsEvent?,
     uriHandler: MarkdownUriHandler,
     navActionManager: NavActionManager,
 ) {
+    val snackbarManager = rememberSnackbarManager()
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         rememberTopAppBarState()
     )
@@ -101,6 +106,7 @@ private fun StaffDetailsContent(
             )
             ShareIconButton(url = uiState.details?.siteUrl.orEmpty())
         },
+        snackbarHost = snackbarManager::SnackbarHost,
         scrollBehavior = topAppBarScrollBehavior
     ) { padding ->
         Column(
@@ -144,8 +150,12 @@ private fun StaffDetailsContent(
                         ),
                         showEditSheet = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            event?.selectMediaItem(it)
-                            showEditSheet = true
+                            if (isLoggedIn) {
+                                event?.selectMediaItem(it)
+                                showEditSheet = true
+                            } else {
+                                snackbarManager.showNotLoggedInSnackbar()
+                            }
                         },
                         navigateToMediaDetails = navActionManager::toMediaDetails
                     )
@@ -176,6 +186,7 @@ private fun StaffDetailsViewPreview() {
     AniHyouTheme {
         Surface {
             StaffDetailsContent(
+                isLoggedIn = true,
                 uiState = StaffDetailsUiState(),
                 event = null,
                 uriHandler = MarkdownUriHandler(),

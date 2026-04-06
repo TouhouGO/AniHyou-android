@@ -51,6 +51,7 @@ import com.axiel7.anihyou.core.network.SeasonalAnimeQuery
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
+import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithMediumTopAppBar
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
@@ -70,6 +71,7 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 fun SeasonAnimeView(
+    isLoggedIn: Boolean,
     arguments: Routes.SeasonAnime,
     navActionManager: NavActionManager
 ) {
@@ -77,6 +79,7 @@ fun SeasonAnimeView(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     SeasonAnimeContent(
+        isLoggedIn = isLoggedIn,
         uiState = uiState,
         event = viewModel,
         navActionManager = navActionManager,
@@ -86,6 +89,7 @@ fun SeasonAnimeView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SeasonAnimeContent(
+    isLoggedIn: Boolean,
     uiState: SeasonAnimeUiState,
     event: SeasonAnimeEvent?,
     navActionManager: NavActionManager,
@@ -95,6 +99,7 @@ private fun SeasonAnimeContent(
     )
 
     val scope = rememberCoroutineScope()
+    val snackbarManager = rememberSnackbarManager()
     val haptic = LocalHapticFeedback.current
     var showFilterSheet by rememberSaveable { mutableStateOf(false) }
     var showEditSheet by rememberSaveable { mutableStateOf(false) }
@@ -126,6 +131,7 @@ private fun SeasonAnimeContent(
 
     DefaultScaffoldWithMediumTopAppBar(
         title = uiState.season?.localized().orEmpty(),
+        snackbarHost = snackbarManager::SnackbarHost,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showFilterSheet = true },
@@ -198,8 +204,12 @@ private fun SeasonAnimeContent(
                 },
                 onLongClickItem = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    event?.selectItem(it)
-                    showEditSheet = true
+                    if (isLoggedIn) {
+                        event?.selectItem(it)
+                        showEditSheet = true
+                    } else {
+                        snackbarManager.showNotLoggedInSnackbar()
+                    }
                 }
             )
         }
@@ -316,6 +326,7 @@ private fun SeasonAnimeViewPreview() {
     AniHyouTheme {
         Surface {
             SeasonAnimeContent(
+                isLoggedIn = true,
                 uiState = SeasonAnimeUiState(),
                 event = null,
                 navActionManager = NavActionManager.rememberNavActionManager(),
