@@ -305,12 +305,14 @@ fun MainNavigation(
             entry<Routes.MediaChartList> {
                 MediaChartListView(
                     arguments = it,
+                    isLoggedIn = isLoggedIn,
                     navActionManager = navActionManager,
                 )
             }
 
             entry<Routes.SeasonAnime> {
                 SeasonAnimeView(
+                    isLoggedIn = isLoggedIn,
                     arguments = it,
                     navActionManager = navActionManager,
                 )
@@ -318,12 +320,14 @@ fun MainNavigation(
 
             entry<Routes.Calendar> {
                 CalendarView(
+                    isLoggedIn = isLoggedIn,
                     navActionManager = navActionManager,
                 )
             }
 
             entry<Routes.CharacterDetails> {
                 CharacterDetailsView(
+                    isLoggedIn = isLoggedIn,
                     arguments = it,
                     uriHandler = markdownUriHandler,
                     navActionManager = navActionManager,
@@ -332,6 +336,7 @@ fun MainNavigation(
 
             entry<Routes.StaffDetails> {
                 StaffDetailsView(
+                    isLoggedIn = isLoggedIn,
                     arguments = it,
                     uriHandler = markdownUriHandler,
                     navActionManager = navActionManager,
@@ -428,6 +433,7 @@ fun MainNavigation(
 
             entry<Routes.CurrentFullList> {
                 CurrentFullListView(
+                    isLoggedIn = isLoggedIn,
                     listType = it.listType,
                     navActionManager = navActionManager,
                 )

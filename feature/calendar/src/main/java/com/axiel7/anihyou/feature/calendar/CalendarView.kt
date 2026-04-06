@@ -38,7 +38,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.base.UNKNOWN_CHAR
 import com.axiel7.anihyou.core.common.utils.DateUtils.timestampToTimeString
 import com.axiel7.anihyou.core.resources.R
+import com.axiel7.anihyou.core.ui.common.SnackbarManager
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
+import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
 import com.axiel7.anihyou.core.ui.composables.TabRowWithPager
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
@@ -55,12 +57,14 @@ import java.time.LocalDate
 
 @Composable
 fun CalendarView(
+    isLoggedIn: Boolean,
     navActionManager: NavActionManager
 ) {
     val viewModel: CalendarHostViewModel = koinViewModel()
     val onMyList by viewModel.onMyList.collectAsStateWithLifecycle(initialValue = null)
 
     CalendarViewContent(
+        isLoggedIn = isLoggedIn,
         onMyList = onMyList,
         onMyListChanged = viewModel::onMyListChanged,
         navActionManager = navActionManager
@@ -70,6 +74,7 @@ fun CalendarView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CalendarViewContent(
+    isLoggedIn: Boolean,
     onMyList: Boolean?,
     onMyListChanged: (Boolean?) -> Unit,
     navActionManager: NavActionManager
@@ -77,6 +82,7 @@ private fun CalendarViewContent(
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         rememberTopAppBarState()
     )
+    val snackbarManager = rememberSnackbarManager()
     val showEditSheet = remember { mutableStateOf(false) }
 
     DefaultScaffoldWithSmallTopAppBar(
@@ -90,6 +96,7 @@ private fun CalendarViewContent(
                 modifier = Modifier.padding(horizontal = 8.dp),
             )
         },
+        snackbarHost = snackbarManager::SnackbarHost,
         scrollBehavior = topAppBarScrollBehavior
     ) { padding ->
         TabRowWithPager(
@@ -119,6 +126,8 @@ private fun CalendarViewContent(
             }
 
             CalendarDayView(
+                isLoggedIn = isLoggedIn,
+                snackbarManager = snackbarManager,
                 uiState = uiState,
                 events = viewModel,
                 showEditSheet = showEditSheet,
@@ -137,6 +146,8 @@ private fun CalendarViewContent(
 
 @Composable
 private fun CalendarDayView(
+    isLoggedIn: Boolean,
+    snackbarManager: SnackbarManager,
     uiState: CalendarUiState,
     events: CalendarEvent?,
     showEditSheet: MutableState<Boolean>,
@@ -199,8 +210,12 @@ private fun CalendarDayView(
                 },
                 onLongClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    events?.selectItem(item)
-                    showEditSheet.value = true
+                    if (isLoggedIn) {
+                        events?.selectItem(item)
+                        showEditSheet.value = true
+                    } else {
+                        snackbarManager.showNotLoggedInSnackbar()
+                    }
                 }
             )
         }
@@ -218,6 +233,8 @@ private fun CalendarViewPreview() {
     AniHyouTheme {
         Surface {
             CalendarDayView(
+                isLoggedIn = true,
+                snackbarManager = rememberSnackbarManager(),
                 uiState = CalendarUiState(),
                 events = null,
                 showEditSheet = remember { mutableStateOf(false) },

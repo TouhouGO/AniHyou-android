@@ -64,6 +64,7 @@ import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
+import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.ErrorTextButton
@@ -185,6 +186,7 @@ fun SearchContentView(
     navActionManager: NavActionManager,
 ) {
     val scope = rememberCoroutineScope()
+    val snackbarManager = rememberSnackbarManager()
     val listState = rememberLazyListState()
     if (!uiState.isLoading) {
         listState.OnBottomReached(buffer = 3, onLoadMore = { event?.onLoadMore() })
@@ -222,6 +224,7 @@ fun SearchContentView(
     }
 
     Scaffold(
+        snackbarHost = snackbarManager::SnackbarHost,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -324,7 +327,11 @@ fun SearchContentView(
                             onLongClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 event?.selectMediaItem(item)
-                                showEditSheet = true
+                                if (uiState.isLoggedIn) {
+                                    showEditSheet = true
+                                } else {
+                                    snackbarManager.showNotLoggedInSnackbar()
+                                }
                             },
                             status = item.mediaListEntry?.basicMediaListEntry?.status,
                         )
