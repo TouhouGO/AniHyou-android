@@ -130,7 +130,10 @@ private fun CurrentContent(
             )
         }
     ) {
-        Scaffold(snackbarHost = snackbarManager::SnackbarHost) { contentPadding ->
+        Scaffold(
+            snackbarHost = snackbarManager::SnackbarHost,
+            contentWindowInsets = WindowInsets(),
+        ) { contentPadding ->
             Column(
                 modifier = modifier
                     .verticalScroll(rememberScrollState())
