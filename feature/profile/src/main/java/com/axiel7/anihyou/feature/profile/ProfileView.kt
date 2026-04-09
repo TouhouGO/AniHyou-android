@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -102,7 +101,6 @@ fun ProfileView(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProfileContent(
     uiState: ProfileUiState,

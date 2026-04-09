@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -45,7 +44,6 @@ private val translations = mapOf(
     "uk-UA" to "Syly_vibes, Sensetivity, magnariuk, DanielleTlumach",
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TranslationsView(
     navActionManager: NavActionManager,
