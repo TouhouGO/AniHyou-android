@@ -34,6 +34,7 @@ import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 @Composable
 fun FullScreenImageView(
     arguments: FullScreenImage,
+    isCompactScreen: Boolean,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -59,7 +60,7 @@ fun FullScreenImageView(
             error = {
                 Icon(painter = painterResource(R.drawable.cancel_24), contentDescription = null)
             },
-            contentScale = ContentScale.FillWidth
+            contentScale = if (isCompactScreen) ContentScale.FillWidth else ContentScale.FillHeight
         )
 
         Row(
@@ -96,6 +97,7 @@ private fun FullScreenImageViewPreview() {
     AniHyouTheme {
         FullScreenImageView(
             arguments = FullScreenImage(imageUrl = ""),
+            isCompactScreen = true,
             onDismiss = {},
         )
     }

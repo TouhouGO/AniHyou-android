@@ -389,6 +389,7 @@ fun MainNavigation(
             entry<Routes.FullScreenImage> {
                 FullScreenImageView(
                     arguments = it,
+                    isCompactScreen = isCompactScreen,
                     onDismiss = navActionManager::goBack
                 )
             }
