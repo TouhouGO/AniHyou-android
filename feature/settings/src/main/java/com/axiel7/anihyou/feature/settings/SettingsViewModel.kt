@@ -14,6 +14,7 @@ import com.axiel7.anihyou.core.model.DefaultTab
 import com.axiel7.anihyou.core.model.ItemsPerRow
 import com.axiel7.anihyou.core.model.ListStyle
 import com.axiel7.anihyou.core.model.Theme
+import com.axiel7.anihyou.core.model.TranslatorApp
 import com.axiel7.anihyou.core.model.notification.NotificationInterval
 import com.axiel7.anihyou.core.network.type.ScoreFormat
 import com.axiel7.anihyou.core.network.type.UserStaffNameLanguage
@@ -151,6 +152,12 @@ class SettingsViewModel(
         viewModelScope.launch {
             defaultPreferencesRepository.setDisplayAdult(value)
             updateUser(displayAdultContent = value)
+        }
+    }
+
+    override fun setTranslatorApp(value: TranslatorApp) {
+        viewModelScope.launch {
+            defaultPreferencesRepository.setTranslatorApp(value)
         }
     }
 
@@ -320,6 +327,12 @@ class SettingsViewModel(
         defaultPreferencesRepository.notificationCheckInterval
             .onEach { value ->
                 mutableUiState.update { it.copy(notificationCheckInterval = value) }
+            }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.translatorApp
+            .onEach { value ->
+                mutableUiState.update { it.copy(translatorApp = value) }
             }
             .launchIn(viewModelScope)
     }

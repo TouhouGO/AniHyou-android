@@ -34,6 +34,7 @@ import com.axiel7.anihyou.core.model.DefaultTab
 import com.axiel7.anihyou.core.model.ItemsPerRow
 import com.axiel7.anihyou.core.model.ListStyle
 import com.axiel7.anihyou.core.model.Theme
+import com.axiel7.anihyou.core.model.TranslatorApp
 import com.axiel7.anihyou.core.model.entriesLocalized
 import com.axiel7.anihyou.core.model.notification.NotificationInterval
 import com.axiel7.anihyou.core.model.user.entriesLocalized
@@ -52,6 +53,7 @@ import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.SmallCircularProgressIndicator
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.utils.LocaleUtils.LocalIsLanguageEn
 import com.axiel7.anihyou.feature.settings.composables.CustomColorPreference
 import com.axiel7.anihyou.feature.settings.composables.LanguagePreference
 import com.axiel7.anihyou.feature.worker.NotificationWorker.Companion.createDefaultNotificationChannels
@@ -90,6 +92,7 @@ private fun SettingsContent(
     notificationPermission: PermissionState?,
     navActionManager: NavActionManager,
 ) {
+    val isEnglishLocale = LocalIsLanguageEn.current
     val context = LocalContext.current
     val snackbarManager = rememberSnackbarManager()
     val isDarkTheme = (uiState.theme == Theme.FOLLOW_SYSTEM && isSystemInDarkTheme())
@@ -169,6 +172,18 @@ private fun SettingsContent(
             )
 
             LanguagePreference()
+
+            if (!isEnglishLocale) {
+                ListPreference(
+                    title = stringResource(R.string.translator_app),
+                    entriesValues = TranslatorApp.entriesLocalized,
+                    preferenceValue = uiState.translatorApp,
+                    icon = R.drawable.translate_24,
+                    onValueChange = { value ->
+                        event?.setTranslatorApp(value)
+                    }
+                )
+            }
 
             if (uiState.isLoggedIn) {
                 ListPreference(

@@ -126,6 +126,7 @@ private fun ThreadDetailsContent(
                         ParentThreadView(
                             thread = uiState.details.basicThreadDetails,
                             isLiked = uiState.isLiked,
+                            translatorApp = uiState.translatorApp,
                             onClickLike = { event?.toggleLikeThread() },
                             onClickReply = {
                                 navActionManager.toPublishThreadComment(
@@ -156,6 +157,7 @@ private fun ThreadDetailsContent(
                         isLocked = item.isLocked,
                         createdAt = item.createdAt,
                         childComments = item.childComments,
+                        translatorApp = uiState.translatorApp,
                         toggleLike = { event?.toggleLikeComment(item.id) ?: false },
                         navigateToUserDetails = {
                             navActionManager.toUserDetails(item.user!!.id)

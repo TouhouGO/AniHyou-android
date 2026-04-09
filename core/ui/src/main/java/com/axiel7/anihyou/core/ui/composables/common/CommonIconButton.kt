@@ -25,6 +25,7 @@ import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openLink
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openShareSheet
 import com.axiel7.anihyou.core.common.utils.NumberUtils.abbreviated
+import com.axiel7.anihyou.core.model.TranslatorApp
 import com.axiel7.anihyou.core.ui.utils.TranslateUtils.openTranslator
 
 fun singleClick(onClick: () -> Unit): () -> Unit {
@@ -188,12 +189,13 @@ fun ReplyButton(
 @Composable
 fun TranslateIconButton(
     text: String?,
+    app: TranslatorApp,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     IconButton(
         onClick = {
-            text?.let { context.openTranslator(it) }
+            text?.let { context.openTranslator(app, it) }
         },
         modifier = modifier,
         shapes = IconButtonDefaults.shapes()

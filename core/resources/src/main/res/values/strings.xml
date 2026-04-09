@@ -646,4 +646,8 @@
     <string name="minimum_tag_percentage">Minimum Tag Percentage</string>
     <string name="search_my_list">Search my list…</string>
     <string name="notifications_submission">Submission</string>
+    <string name="translator_app">Translator</string>
+    <string name="google_translate" translatable="false">Google</string>
+    <string name="deepl" translatable="false">DeepL</string>
+    <string name="translate_you" translatable="false">TranslateYou</string>
 </resources>

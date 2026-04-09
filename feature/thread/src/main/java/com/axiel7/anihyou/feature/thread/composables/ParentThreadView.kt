@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.axiel7.anihyou.core.common.utils.DateUtils.timestampToDateString
 import com.axiel7.anihyou.core.common.utils.StringUtils.htmlStripped
+import com.axiel7.anihyou.core.model.TranslatorApp
 import com.axiel7.anihyou.core.network.fragment.BasicThreadDetails
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.composables.TextIconHorizontal
@@ -34,6 +35,7 @@ import com.axiel7.anihyou.core.ui.utils.LocaleUtils.LocalIsLanguageEn
 fun ParentThreadView(
     thread: BasicThreadDetails,
     isLiked: Boolean,
+    translatorApp: TranslatorApp,
     onClickLike: () -> Unit,
     onClickReply: () -> Unit,
     navigateToUserDetails: (Int) -> Unit,
@@ -77,7 +79,10 @@ fun ParentThreadView(
                 }
             )
             if (!isEnglishLocale) {
-                TranslateIconButton(text = thread.body?.htmlStripped())
+                TranslateIconButton(
+                    text = thread.body?.htmlStripped(),
+                    app = translatorApp,
+                )
             }
             FavoriteIconButton(
                 isFavorite = isLiked,
@@ -173,6 +178,7 @@ private fun ParentThreadViewPreview() {
                 ParentThreadView(
                     thread = thread,
                     isLiked = true,
+                    translatorApp = TranslatorApp.DEFAULT,
                     onClickLike = {},
                     onClickReply = {},
                     navigateToUserDetails = {},

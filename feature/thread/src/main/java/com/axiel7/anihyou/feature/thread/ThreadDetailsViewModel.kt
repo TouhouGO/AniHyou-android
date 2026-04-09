@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
+import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.LikeRepository
 import com.axiel7.anihyou.core.domain.repository.ThreadRepository
 import com.axiel7.anihyou.core.ui.common.navigation.Routes
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class ThreadDetailsViewModel(
     private val arguments: Routes.ThreadDetails,
+    defaultPreferencesRepository: DefaultPreferencesRepository,
     private val threadRepository: ThreadRepository,
     private val likeRepository: LikeRepository,
 ) : PagedUiStateViewModel<ThreadDetailsUiState>(), ThreadDetailsEvent {
@@ -109,6 +111,12 @@ class ThreadDetailsViewModel(
                         result.toUiState().copy(hasNextPage = false)
                     }
                 }
+            }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.translatorApp
+            .onEach { value ->
+                mutableUiState.update { it.copy(translatorApp = value) }
             }
             .launchIn(viewModelScope)
     }

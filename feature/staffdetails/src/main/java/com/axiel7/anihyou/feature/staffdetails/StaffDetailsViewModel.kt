@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
+import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.FavoriteRepository
 import com.axiel7.anihyou.core.domain.repository.StaffRepository
 import com.axiel7.anihyou.core.model.staff.StaffMediaGrouped
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class StaffDetailsViewModel(
     private val arguments: Routes.StaffDetails,
+    defaultPreferencesRepository: DefaultPreferencesRepository,
     private val staffRepository: StaffRepository,
     private val favoriteRepository: FavoriteRepository,
 ) : UiStateViewModel<StaffDetailsUiState>(), StaffDetailsEvent {
@@ -182,6 +184,12 @@ class StaffDetailsViewModel(
                         )
                     }
                 }
+            }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.translatorApp
+            .onEach { value ->
+                mutableUiState.update { it.copy(translatorApp = value) }
             }
             .launchIn(viewModelScope)
     }

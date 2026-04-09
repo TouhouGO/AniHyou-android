@@ -166,6 +166,7 @@ fun CharacterInfoView(
             if (!isCurrentLanguageEn) {
                 TranslateIconButton(
                     text = uiState.character.description,
+                    app = uiState.translatorApp,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }

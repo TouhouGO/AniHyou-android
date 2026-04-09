@@ -15,6 +15,7 @@ import com.axiel7.anihyou.core.model.AppColorMode
 import com.axiel7.anihyou.core.model.DefaultTab
 import com.axiel7.anihyou.core.model.HomeTab
 import com.axiel7.anihyou.core.model.Theme
+import com.axiel7.anihyou.core.model.TranslatorApp
 import com.axiel7.anihyou.core.model.notification.NotificationInterval
 import com.axiel7.anihyou.core.model.user.hexColor
 import com.axiel7.anihyou.core.network.ViewerOptionsQuery
@@ -288,6 +289,13 @@ class DefaultPreferencesRepository (
         dataStore.setValue(COLOR_PALETTE_KEY, value)
     }
 
+    val translatorApp = dataStore.getValue(TRANSLATOR_APP_KEY, default = TranslatorApp.DEFAULT.name)
+        .map { TranslatorApp.valueOf(it) }
+
+    suspend fun setTranslatorApp(value: TranslatorApp) {
+        dataStore.setValue(TRANSLATOR_APP_KEY, value.name)
+    }
+
     companion object {
         private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
         private val USER_ID_KEY = intPreferencesKey("user_id")
@@ -320,5 +328,7 @@ class DefaultPreferencesRepository (
         private val APP_COLOR_KEY = stringPreferencesKey("app_color")
 
         private val COLOR_PALETTE_KEY = stringPreferencesKey("color_palette")
+
+        private val TRANSLATOR_APP_KEY = stringPreferencesKey("translator_app")
     }
 }

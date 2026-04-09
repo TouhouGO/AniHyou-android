@@ -165,6 +165,7 @@ fun StaffInfoView(
             if (!isCurrentLanguageEn) {
                 TranslateIconButton(
                     text = uiState.details.description,
+                    app = uiState.translatorApp,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }

@@ -5,6 +5,7 @@ import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.CharacterRepository
+import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.FavoriteRepository
 import com.axiel7.anihyou.core.network.CharacterMediaQuery
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
@@ -21,6 +22,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class CharacterDetailsViewModel(
     private val arguments: Routes.CharacterDetails,
+    defaultPreferencesRepository: DefaultPreferencesRepository,
     private val characterRepository: CharacterRepository,
     private val favoriteRepository: FavoriteRepository,
 ) : PagedUiStateViewModel<CharacterDetailsUiState>(), CharacterDetailsEvent {
@@ -121,6 +123,12 @@ class CharacterDetailsViewModel(
                         result.toUiState(loadingWhen = false)
                     }
                 }
+            }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.translatorApp
+            .onEach { value ->
+                mutableUiState.update { it.copy(translatorApp = value) }
             }
             .launchIn(viewModelScope)
     }

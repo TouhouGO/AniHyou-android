@@ -401,7 +401,8 @@ private fun MediaDetailsContent(
             ) {
                 if (!isCurrentLanguageEn) {
                     TranslateIconButton(
-                        text = uiState.details?.description?.htmlStripped()
+                        text = uiState.details?.description?.htmlStripped(),
+                        app = uiState.translatorApp,
                     )
                 } else {
                     Spacer(modifier = Modifier.size(48.dp))

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.axiel7.anihyou.core.common.utils.DateUtils.timestampIntervalSinceNow
 import com.axiel7.anihyou.core.common.utils.StringUtils.htmlStripped
+import com.axiel7.anihyou.core.model.TranslatorApp
 import com.axiel7.anihyou.core.model.thread.ChildComment
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.composables.TextIconHorizontal
@@ -49,6 +50,7 @@ fun ThreadCommentView(
     isLocked: Boolean?,
     createdAt: Int,
     childComments: List<ChildComment?>?,
+    translatorApp: TranslatorApp,
     toggleLike: suspend (Int) -> Boolean,
     navigateToUserDetails: () -> Unit,
     navigateToPublishReply: (parentCommentId: Int, Int?, String?) -> Unit,
@@ -98,7 +100,10 @@ fun ThreadCommentView(
             modifier = Modifier.align(Alignment.End)
         ) {
             if (!isEnglishLocale) {
-                TranslateIconButton(text = body.htmlStripped())
+                TranslateIconButton(
+                    text = body.htmlStripped(),
+                    app = translatorApp,
+                )
             }
             FavoriteIconButton(
                 isFavorite = isLikedState,
@@ -119,6 +124,7 @@ fun ThreadCommentView(
         childComments?.filterNotNull()?.forEach { comment ->
             ChildCommentView(
                 comment = comment,
+                translatorApp = translatorApp,
                 toggleLike = toggleLike,
                 navigateToUserDetails = navigateToUserDetails,
                 navigateToPublishReply = navigateToPublishReply,
@@ -183,6 +189,7 @@ private fun ThreadCommentViewPreview() {
                     isLocked = false,
                     createdAt = 1212370032,
                     childComments = listOf(ChildComment.preview, ChildComment.preview),
+                    translatorApp = TranslatorApp.DEFAULT,
                     toggleLike = { true },
                     navigateToUserDetails = {},
                     navigateToPublishReply = { _, _, _ -> },

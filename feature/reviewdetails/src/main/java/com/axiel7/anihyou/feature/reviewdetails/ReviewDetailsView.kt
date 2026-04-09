@@ -79,7 +79,10 @@ private fun ReviewDetailsContent(
         navigationIcon = { BackIconButton(onClick = navActionManager::goBack) },
         actions = {
             if (!isEnglishLocale) {
-                TranslateIconButton(text = uiState.details?.body?.htmlStripped())
+                TranslateIconButton(
+                    text = uiState.details?.body?.htmlStripped(),
+                    app = uiState.translatorApp,
+                )
             }
             OpenInBrowserIconButton(url = ANILIST_REVIEW_URL + uiState.details?.id)
         },

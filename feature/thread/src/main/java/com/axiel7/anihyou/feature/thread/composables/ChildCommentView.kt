@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.axiel7.anihyou.core.common.utils.DateUtils.timestampIntervalSinceNow
 import com.axiel7.anihyou.core.common.utils.StringUtils.htmlStripped
+import com.axiel7.anihyou.core.model.TranslatorApp
 import com.axiel7.anihyou.core.model.thread.ChildComment
 import com.axiel7.anihyou.core.ui.composables.common.CommentIconButton
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
@@ -43,6 +44,7 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun ChildCommentView(
     comment: ChildComment,
+    translatorApp: TranslatorApp,
     modifier: Modifier = Modifier,
     toggleLike: suspend (Int) -> Boolean,
     navigateToUserDetails: () -> Unit,
@@ -100,7 +102,10 @@ fun ChildCommentView(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 if (!isEnglishLocale) {
-                    TranslateIconButton(text = comment.comment?.htmlStripped())
+                    TranslateIconButton(
+                        text = comment.comment?.htmlStripped(),
+                        app = translatorApp,
+                    )
                 }
                 if (!comment.childComments.isNullOrEmpty()) {
                     CommentIconButton(
@@ -134,6 +139,7 @@ fun ChildCommentView(
         comment.childComments?.filterNotNull()?.forEach {
             ChildCommentView(
                 comment = it,
+                translatorApp = translatorApp,
                 modifier = Modifier.padding(start = 16.dp),
                 toggleLike = toggleLike,
                 navigateToUserDetails = navigateToUserDetails,
@@ -151,6 +157,7 @@ private fun ChildCommentViewPreview() {
         Surface {
             ChildCommentView(
                 comment = ChildComment.preview,
+                translatorApp = TranslatorApp.DEFAULT,
                 toggleLike = { true },
                 navigateToUserDetails = {},
                 navigateToPublishReply = { _, _, _ -> },
