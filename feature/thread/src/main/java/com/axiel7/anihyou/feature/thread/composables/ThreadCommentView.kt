@@ -21,17 +21,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.axiel7.anihyou.core.common.utils.DateUtils.timestampIntervalSinceNow
+import com.axiel7.anihyou.core.common.utils.StringUtils.htmlStripped
 import com.axiel7.anihyou.core.model.thread.ChildComment
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.composables.TextIconHorizontal
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ReplyButton
+import com.axiel7.anihyou.core.ui.composables.common.TranslateIconButton
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
 import com.axiel7.anihyou.core.ui.composables.markdown.DefaultMarkdownText
 import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemSmall
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.secondsToLegibleText
+import com.axiel7.anihyou.core.ui.utils.LocaleUtils.LocalIsLanguageEn
 import kotlinx.coroutines.launch
 import java.time.temporal.ChronoUnit
 
@@ -51,6 +54,7 @@ fun ThreadCommentView(
     navigateToPublishReply: (parentCommentId: Int, Int?, String?) -> Unit,
     uriHandler: MarkdownUriHandler,
 ) {
+    val isEnglishLocale = LocalIsLanguageEn.current
     val scope = rememberCoroutineScope()
     var isLikedState by remember { mutableStateOf(isLiked) }
     Column(
@@ -93,6 +97,9 @@ fun ThreadCommentView(
         Row(
             modifier = Modifier.align(Alignment.End)
         ) {
+            if (!isEnglishLocale) {
+                TranslateIconButton(text = body.htmlStripped())
+            }
             FavoriteIconButton(
                 isFavorite = isLikedState,
                 favoritesCount = likeCount,
@@ -105,7 +112,6 @@ fun ThreadCommentView(
             if (isLocked == false) {
                 ReplyButton(
                     onClick = { navigateToPublishReply(id, null, null) },
-                    fontSize = 14.sp,
                     iconSize = 20.dp,
                 )
             }

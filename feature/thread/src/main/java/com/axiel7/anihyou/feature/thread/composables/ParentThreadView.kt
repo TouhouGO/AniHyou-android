@@ -16,16 +16,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.axiel7.anihyou.core.common.utils.DateUtils.timestampToDateString
+import com.axiel7.anihyou.core.common.utils.StringUtils.htmlStripped
 import com.axiel7.anihyou.core.network.fragment.BasicThreadDetails
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.composables.TextIconHorizontal
 import com.axiel7.anihyou.core.ui.composables.common.FavoriteIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ReplyButton
+import com.axiel7.anihyou.core.ui.composables.common.TranslateIconButton
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
 import com.axiel7.anihyou.core.ui.composables.markdown.DefaultMarkdownText
 import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemSmall
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.utils.LocaleUtils.LocalIsLanguageEn
 
 @Composable
 fun ParentThreadView(
@@ -36,6 +39,7 @@ fun ParentThreadView(
     navigateToUserDetails: (Int) -> Unit,
     uriHandler: MarkdownUriHandler,
 ) {
+    val isEnglishLocale = LocalIsLanguageEn.current
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -72,6 +76,9 @@ fun ParentThreadView(
                     thread.user?.id?.let(navigateToUserDetails)
                 }
             )
+            if (!isEnglishLocale) {
+                TranslateIconButton(text = thread.body?.htmlStripped())
+            }
             FavoriteIconButton(
                 isFavorite = isLiked,
                 favoritesCount = thread.likeCount,

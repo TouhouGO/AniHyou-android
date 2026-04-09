@@ -165,14 +165,13 @@ fun CommentIconButton(
 fun ReplyButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    fontSize: TextUnit = TextUnit.Unspecified,
     iconSize: Dp = 24.dp,
     tint: Color = LocalContentColor.current
 ) {
-    TextButton(
+    IconButton(
         onClick = onClick,
         modifier = modifier,
-        shapes = ButtonDefaults.shapes(),
+        shapes = IconButtonDefaults.shapes(),
     ) {
         Icon(
             painter = painterResource(R.drawable.reply_24),
@@ -181,11 +180,6 @@ fun ReplyButton(
                 .padding(end = 8.dp)
                 .size(iconSize),
             tint = tint
-        )
-        Text(
-            text = stringResource(R.string.reply),
-            color = tint,
-            fontSize = fontSize,
         )
     }
 }
