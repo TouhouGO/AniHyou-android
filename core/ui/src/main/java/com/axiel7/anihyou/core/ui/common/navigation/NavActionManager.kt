@@ -10,11 +10,10 @@ import com.axiel7.anihyou.core.network.type.MediaSeason
 import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.network.type.ScoreFormat
-import com.axiel7.anihyou.core.ui.common.BottomDestination
 
 @Immutable
 class NavActionManager(
-    private val navigator: Navigator,
+    private val navigator: INavigator,
 ) {
     fun goBack() {
         navigator.goBack()
@@ -196,12 +195,7 @@ class NavActionManager(
     companion object {
         @Composable
         fun rememberNavActionManager(
-            navigator: Navigator = Navigator(
-                rememberNavigationState(
-                    startRoute = BottomDestination.Home.route,
-                    topLevelRoutes = BottomDestination.routes
-                )
-            )
+            navigator: INavigator = PreviewNavigator()
         ) = remember {
             NavActionManager(navigator)
         }

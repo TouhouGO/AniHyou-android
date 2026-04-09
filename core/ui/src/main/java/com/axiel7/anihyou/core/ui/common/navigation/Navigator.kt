@@ -22,8 +22,8 @@ import androidx.navigation3.runtime.NavKey
  * Handles navigation events (forward and back) by updating the navigation state.
  */
 @Stable
-class Navigator(val state: NavigationState) {
-    fun navigate(route: NavKey) {
+class Navigator(val state: NavigationState) : INavigator {
+    override fun navigate(route: NavKey) {
         if (route in state.backStacks.keys) {
             // This is a top level route, just switch to it
             state.topLevelRoute = route
@@ -32,7 +32,7 @@ class Navigator(val state: NavigationState) {
         }
     }
 
-    fun goBack() {
+    override fun goBack() {
         val currentStack = state.backStacks[state.topLevelRoute]
             ?: error("Stack for ${state.topLevelRoute} not found")
         val currentRoute = currentStack.last()
