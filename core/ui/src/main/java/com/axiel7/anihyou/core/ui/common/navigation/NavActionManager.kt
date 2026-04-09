@@ -3,8 +3,6 @@ package com.axiel7.anihyou.core.ui.common.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
-import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.rememberNavBackStack
 import com.axiel7.anihyou.core.model.CurrentListType
 import com.axiel7.anihyou.core.model.media.AnimeSeason
 import com.axiel7.anihyou.core.model.media.ChartType
@@ -16,62 +14,62 @@ import com.axiel7.anihyou.core.ui.common.BottomDestination
 
 @Immutable
 class NavActionManager(
-    private val backStack: TopLevelBackStack<NavKey>
+    private val navigator: Navigator,
 ) {
     fun goBack() {
-        backStack.removeLast()
+        navigator.goBack()
     }
 
     fun toMediaDetails(id: Int) {
-        backStack.add(Routes.MediaDetails(id))
+        navigator.navigate(Routes.MediaDetails(id))
     }
 
     fun toMediaActivity(mediaId: Int) {
-        backStack.add(Routes.MediaActivity(mediaId))
+        navigator.navigate(Routes.MediaActivity(mediaId))
     }
 
     fun toCharacterDetails(id: Int) {
-        backStack.add(Routes.CharacterDetails(id))
+        navigator.navigate(Routes.CharacterDetails(id))
     }
 
     fun toStaffDetails(id: Int) {
-        backStack.add(Routes.StaffDetails(id))
+        navigator.navigate(Routes.StaffDetails(id))
     }
 
     fun toStudioDetails(id: Int) {
-        backStack.add(Routes.StudioDetails(id))
+        navigator.navigate(Routes.StudioDetails(id))
     }
 
     fun toUserDetails(id: Int) {
-        backStack.add(Routes.UserDetails(id = id, userName = null))
+        navigator.navigate(Routes.UserDetails(id = id, userName = null))
     }
 
     fun toUserDetails(userId: Int?, username: String?) {
-        backStack.add(Routes.UserDetails(userId, username))
+        navigator.navigate(Routes.UserDetails(userId, username))
     }
 
     fun toActivityDetails(id: Int) {
-        backStack.add(Routes.ActivityDetails(id))
+        navigator.navigate(Routes.ActivityDetails(id))
     }
 
     fun toThreadDetails(id: Int) {
-        backStack.add(Routes.ThreadDetails(id))
+        navigator.navigate(Routes.ThreadDetails(id))
     }
 
     fun toReviewDetails(id: Int) {
-        backStack.add(Routes.ReviewDetails(id))
+        navigator.navigate(Routes.ReviewDetails(id))
     }
 
     fun toFullscreenImage(url: String) {
-        backStack.add(Routes.FullScreenImage(url))
+        navigator.navigate(Routes.FullScreenImage(url))
     }
 
     fun toSearch() {
-        backStack.add(Routes.Search(focus = true))
+        navigator.navigate(Routes.Search(focus = true))
     }
 
     fun toSearchOnMyList(mediaType: MediaType) {
-        backStack.add(
+        navigator.navigate(
             Routes.Search(mediaType = mediaType.rawValue, onList = true, focus = true)
         )
     }
@@ -81,13 +79,13 @@ class NavActionManager(
         genre: String?,
         tag: String?
     ) {
-        backStack.add(
+        navigator.navigate(
             Routes.Search(mediaType = mediaType.rawValue, genre = genre, tag = tag)
         )
     }
 
     fun toAnimeSeason(season: AnimeSeason) {
-        backStack.add(
+        navigator.navigate(
             Routes.SeasonAnime(season = season.season.rawValue, year = season.year)
         )
     }
@@ -102,25 +100,25 @@ class NavActionManager(
     }
 
     fun toCalendar() {
-        backStack.add(Routes.Calendar)
+        navigator.navigate(Routes.Calendar)
     }
 
     fun toCurrentFullList(listType: CurrentListType) {
-        backStack.add(Routes.CurrentFullList(listType = listType))
+        navigator.navigate(Routes.CurrentFullList(listType = listType))
     }
 
     fun toExplore(mediaType: MediaType, mediaSort: MediaSort) {
-        backStack.add(
+        navigator.navigate(
             Routes.Search(mediaType = mediaType.rawValue, mediaSort = mediaSort.rawValue)
         )
     }
 
     fun toNotifications(unread: Int = 0) {
-        backStack.add(Routes.Notifications(unread))
+        navigator.navigate(Routes.Notifications(unread))
     }
 
     fun toPublishNewActivity() {
-        backStack.add(
+        navigator.navigate(
             Routes.PublishActivity(activityId = null, id = null, text = null)
         )
     }
@@ -130,7 +128,7 @@ class NavActionManager(
         replyId: Int?,
         text: String?
     ) {
-        backStack.add(
+        navigator.navigate(
             Routes.PublishActivity(activityId = activityId, id = replyId, text = text)
         )
     }
@@ -140,7 +138,7 @@ class NavActionManager(
         commentId: Int?,
         text: String?
     ) {
-        backStack.add(
+        navigator.navigate(
             Routes.PublishComment(threadId = threadId, id = commentId ?: 0, text = text)
         )
     }
@@ -151,7 +149,7 @@ class NavActionManager(
         commentId: Int?,
         text: String?
     ) {
-        backStack.add(
+        navigator.navigate(
             Routes.PublishComment(
                 threadId = threadId,
                 parentCommentId = parentCommentId,
@@ -162,7 +160,7 @@ class NavActionManager(
     }
 
     fun toMediaChart(type: ChartType) {
-        backStack.add(Routes.MediaChartList(type.name))
+        navigator.navigate(Routes.MediaChartList(type.name))
     }
 
     fun toUserMediaList(
@@ -170,7 +168,7 @@ class NavActionManager(
         userId: Int,
         scoreFormat: ScoreFormat
     ) {
-        backStack.add(
+        navigator.navigate(
             Routes.UserMediaList(
                 mediaType = mediaType.rawValue,
                 userId = userId,
@@ -180,30 +178,32 @@ class NavActionManager(
     }
 
     fun toSettings() {
-        backStack.add(Routes.Settings)
+        navigator.navigate(Routes.Settings)
     }
 
     fun toListStyleSettings() {
-        backStack.add(Routes.ListStyleSettings)
+        navigator.navigate(Routes.ListStyleSettings)
     }
 
     fun toCustomLists() {
-        backStack.add(Routes.CustomLists)
+        navigator.navigate(Routes.CustomLists)
     }
 
     fun toTranslations() {
-        backStack.add(Routes.Translations)
+        navigator.navigate(Routes.Translations)
     }
 
     companion object {
         @Composable
         fun rememberNavActionManager(
-            backStack: TopLevelBackStack<NavKey> = TopLevelBackStack(
-                startKey = BottomDestination.Home.route,
-                backStack = rememberNavBackStack()
+            navigator: Navigator = Navigator(
+                rememberNavigationState(
+                    startRoute = BottomDestination.Home.route,
+                    topLevelRoutes = BottomDestination.routes
+                )
             )
         ) = remember {
-            NavActionManager(backStack)
+            NavActionManager(navigator)
         }
     }
 }

@@ -65,6 +65,8 @@ sealed class BottomDestination(
     }
 
     companion object {
+        val routes = setOf(Home.route, AnimeList.route, MangaList.route, Profile.route, Explore.route)
+
         val values = listOf(Home, AnimeList, MangaList, Profile, Explore)
 
         val railValues = listOf(Home, AnimeList, MangaList, Profile)

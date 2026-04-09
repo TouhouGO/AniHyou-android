@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.runtime.rememberNavBackStack
 import com.axiel7.anihyou.core.base.extensions.firstBlocking
 import com.axiel7.anihyou.core.model.DeepLink
 import com.axiel7.anihyou.core.model.HomeTab
@@ -49,7 +48,8 @@ import com.axiel7.anihyou.core.ui.common.BottomDestination
 import com.axiel7.anihyou.core.ui.common.BottomDestination.Companion.isBottomDestination
 import com.axiel7.anihyou.core.ui.common.BottomDestination.Companion.toBottomDestinationRoute
 import com.axiel7.anihyou.core.ui.common.navigation.NavActionManager
-import com.axiel7.anihyou.core.ui.common.navigation.TopLevelBackStack
+import com.axiel7.anihyou.core.ui.common.navigation.Navigator
+import com.axiel7.anihyou.core.ui.common.navigation.rememberNavigationState
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.ui.screens.main.composables.MainBottomNavBar
 import com.axiel7.anihyou.ui.screens.main.composables.MainNavigationRail
@@ -187,19 +187,19 @@ fun MainView(
     val startKey = remember(tabToOpen) {
         tabToOpen.toBottomDestinationRoute() ?: BottomDestination.Home.route
     }
-    val backStack = rememberNavBackStack(startKey)
-    val topLevelBackStack = remember { TopLevelBackStack(startKey, backStack) }
+    val navigationState = rememberNavigationState(startKey, BottomDestination.routes)
+    val navigator = remember { Navigator(navigationState) }
     val isBottomDestination by remember {
-        derivedStateOf { topLevelBackStack.backStack.lastOrNull()?.isBottomDestination() == true }
+        derivedStateOf { navigationState.getCurrentRoute()?.isBottomDestination() == true }
     }
-    val navActionManager = NavActionManager.rememberNavActionManager(topLevelBackStack)
+    val navActionManager = NavActionManager.rememberNavActionManager(navigator)
     val isCompactScreen = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
 
     Scaffold(
         bottomBar = {
             if (isCompactScreen) {
                 MainBottomNavBar(
-                    topLevelBackStack = topLevelBackStack,
+                    navigator = navigator,
                     navActionManager = navActionManager,
                     isVisible = isBottomDestination,
                     onItemSelected = { event?.saveLastTab(it) }
@@ -211,7 +211,7 @@ fun MainView(
     ) { padding ->
         if (isCompactScreen) {
             MainNavigation(
-                topLevelBackStack = topLevelBackStack,
+                navigator = navigator,
                 navActionManager = navActionManager,
                 isCompactScreen = true,
                 isLoggedIn = isLoggedIn,
@@ -224,12 +224,12 @@ fun MainView(
                 modifier = Modifier.padding(padding)
             ) {
                 MainNavigationRail(
-                    topLevelBackStack = topLevelBackStack,
+                    navigator = navigator,
                     onItemSelected = { event?.saveLastTab(it) },
                     modifier = Modifier.safeDrawingPadding(),
                 )
                 MainNavigation(
-                    topLevelBackStack = topLevelBackStack,
+                    navigator = navigator,
                     navActionManager = navActionManager,
                     isCompactScreen = false,
                     isLoggedIn = isLoggedIn,
