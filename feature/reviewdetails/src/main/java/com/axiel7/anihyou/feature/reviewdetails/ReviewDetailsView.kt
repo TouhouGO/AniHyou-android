@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.base.ANILIST_REVIEW_URL
+import com.axiel7.anihyou.core.common.utils.StringUtils.htmlStripped
 import com.axiel7.anihyou.core.model.review.userRatingsString
 import com.axiel7.anihyou.core.network.type.ReviewRating
 import com.axiel7.anihyou.core.resources.R
@@ -37,9 +38,11 @@ import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.LikeButton
 import com.axiel7.anihyou.core.ui.composables.common.OpenInBrowserIconButton
+import com.axiel7.anihyou.core.ui.composables.common.TranslateIconButton
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
 import com.axiel7.anihyou.core.ui.composables.webview.HtmlWebView
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.utils.LocaleUtils.LocalIsLanguageEn
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -64,6 +67,7 @@ private fun ReviewDetailsContent(
     event: ReviewDetailsEvent?,
     navActionManager: NavActionManager,
 ) {
+    val isEnglishLocale = LocalIsLanguageEn.current
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         rememberTopAppBarState()
     )
@@ -74,6 +78,9 @@ private fun ReviewDetailsContent(
         title = uiState.details?.user?.name ?: stringResource(R.string.loading),
         navigationIcon = { BackIconButton(onClick = navActionManager::goBack) },
         actions = {
+            if (!isEnglishLocale) {
+                TranslateIconButton(text = uiState.details?.body?.htmlStripped())
+            }
             OpenInBrowserIconButton(url = ANILIST_REVIEW_URL + uiState.details?.id)
         },
         scrollBehavior = topAppBarScrollBehavior
