@@ -38,7 +38,7 @@ wearPhoneInteractions = "1.1.0"
 wearComposeMaterial = "1.6.1"
 wearComposeFoundation = "1.6.1"
 wearToolingPreview = "1.0.0"
-gmsWearable = "19.0.0"
+gmsWearable = "20.0.1"
 horologist = "0.7.15"
 
 [libraries]
