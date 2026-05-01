@@ -12,6 +12,7 @@ desugar_jdk_libs = "2.1.5"
 glanceAppwidget = "1.1.1"
 glancePreview = "1.1.1"
 koin = "4.2.1"
+koinPlugin = "1.0.0-RC2"
 kotlin = "2.3.21"
 coreKtx = "1.18.0"
 junit = "4.13.2"
@@ -109,3 +110,4 @@ jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serializati
 androidx-baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
 apollo = { id = "com.apollographql.apollo", version.ref = "apollo" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+koin-compiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koinPlugin" }

@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.compose)
     alias(libs.plugins.androidx.baselineprofile)
+    alias(libs.plugins.koin.compiler)
 }
 
 val appPackageName: String by rootProject.extra

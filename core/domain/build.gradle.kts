@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.serialization)
+    alias(libs.plugins.koin.compiler)
 }
 
 val appPackageName: String by rootProject.extra
