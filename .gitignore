@@ -4,6 +4,14 @@
 /.idea
 !/.idea/icon.svg
 .DS_Store
+/docs/audit/
+/docs/superpowers/
+/.local-audit/
+/.codex/
+/.claude/
+/.cursor/
+AGENTS.md
+CLAUDE.md
 /build
 /app/release
 /captures
@@ -12,3 +20,6 @@
 local.properties
 /fastlane/report.xml
 .kotlin
+build_outputs/*.keystore
+/build_outputs/
+/anihyou_release.keystore

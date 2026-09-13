@@ -124,7 +124,7 @@
     <string name="search_match">搜索匹配</string>
     <string name="top_100">Top 100</string>
     <string name="top_popular">热门排行</string>
-    <string name="popular_manhwa">热门漫画</string>
+    <string name="popular_manhwa">热门条漫</string>
     <string name="apply">确定</string>
     <string name="sort_default">默认</string>
     <string name="descending">降序</string>
@@ -656,7 +656,7 @@
     <string name="separate_novels_and_manga">分隔小说和漫画</string>
     <string name="novels">小说</string>
     <plurals name="notification_episode_aired">
-        <item quantity="other">《%s》的第 %d 集已播出</item>
+        <item quantity="other">《%2$s》的第 %1$d 集已播出</item>
     </plurals>
     <string name="notification_activity_liked">%s 赞了你的动态</string>
     <string name="notification_activity_reply_liked">%s 赞了你的动态评论</string>
@@ -668,4 +668,27 @@
     <string name="notification_media_changed">《%s》收到了信息变更</string>
     <string name="notification_media_deleted">《%s》已被从网站上删除</string>
     <string name="notification_forum_mention">%1$s 在论坛帖子 %2$s 中提到了你</string>
+    <string name="chinese_title_localization">简体中文标题增强</string>
+    <string name="chinese_title_localization_desc">在首页、探索、搜索等全站优先显示番剧与漫画的简体中文译名</string>
+    <string name="localization_settings_title">语言与本地化</string>
+    <string name="localization_settings_subtitle">简体中文 · 数据包管理</string>
+    <string name="localization_features_title">功能细分</string>
+    <string name="localization_title_title">作品标题汉化</string>
+    <string name="localization_title_desc">在首页、探索、搜索等全站优先显示番剧与漫画的中文译名</string>
+    <string name="localization_tag_title">分类与标签汉化</string>
+    <string name="localization_tag_desc">将流派与题材标签翻译为中文（如 Isekai 翻译为异世界）</string>
+    <string name="localization_character_title">角色与声优汉化</string>
+    <string name="localization_character_desc">汉化作品主要角色及配音演员名字</string>
+    <string name="localization_description_title">剧情简介繁转简与补充</string>
+    <string name="localization_description_desc">将作品剧情简介繁体转换为简体，并优先联动 Bangumi 简介</string>
+    <string name="localization_bundle_card_title">语言包管理</string>
+    <string name="localization_bundle_builtin">内置基础版</string>
+    <string name="localization_bundle_overlay">已激活扩展包</string>
+    <string name="localization_bundle_desc">独立数据字典体系，支持离线运作与热重载。包含 20,000+ 译名与 1,000+ 标签。</string>
+    <string name="localization_check_update">检查更新</string>
+    <string name="localization_download_bundle">下载 / 更新最新语言包</string>
+    <string name="localization_reset_builtin">恢复内置默认</string>
+    <string name="localization_up_to_date">已是最新版本</string>
+    <string name="localization_update_available">检测到新版本</string>
+    <string name="id">ID</string>
 </resources>

@@ -13,6 +13,8 @@ import com.axiel7.anihyou.core.ui.common.navigation.Route
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -159,6 +161,16 @@ class ProfileViewModel(
     }
 
     init {
+        defaultPreferencesRepository.localizationConfig
+            .drop(1)
+            .distinctUntilChangedBy { it.configVersion }
+            .onEach {
+                if (mutableUiState.value.isMyProfile) getMyUserInfo()
+                else getUserInfo(arguments.id, arguments.userName)
+                onRefreshActivities()
+            }
+            .launchIn(viewModelScope)
+
         if (mutableUiState.value.isMyProfile) getMyUserInfo()
         else getUserInfo(arguments.id, arguments.userName)
 

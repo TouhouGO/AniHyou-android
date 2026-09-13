@@ -11,9 +11,12 @@ import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import org.koin.core.annotation.InjectedParam
@@ -58,6 +61,8 @@ class MediaChartViewModel(
         }
     }
 
+    private val refreshTrigger = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     init {
         defaultPreferencesRepository.displayAdult
             .onEach { value ->
@@ -65,12 +70,29 @@ class MediaChartViewModel(
             }
             .launchIn(viewModelScope)
 
-        mutableUiState
-            .filter { it.hasNextPage && it.chartType != null }
-            .distinctUntilChanged { old, new ->
-                old.page == new.page
-                        && old.chartType == new.chartType
+        defaultPreferencesRepository.localizationConfig
+            .drop(1)
+            .distinctUntilChangedBy { it.configVersion }
+            .onEach {
+                mutableUiState.update {
+                    it.media.clear()
+                    it.copy(page = 1, hasNextPage = true, isLoading = true)
+                }
+                refreshTrigger.tryEmit(Unit)
             }
+            .launchIn(viewModelScope)
+
+        kotlinx.coroutines.flow.merge(
+            mutableUiState
+                .filter { it.hasNextPage && it.chartType != null }
+                .distinctUntilChanged { old, new ->
+                    old.page == new.page
+                            && old.chartType == new.chartType
+                },
+            refreshTrigger.mapNotNull {
+                mutableUiState.value.takeIf { it.hasNextPage && it.chartType != null }
+            }
+        )
             .flatMapLatest { uiState ->
                 mediaRepository.getMediaChartPage(
                     type = uiState.chartType!!,

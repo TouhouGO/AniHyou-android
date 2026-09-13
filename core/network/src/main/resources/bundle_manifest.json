@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "version": "2026.09.08",
+  "buildTimestamp": 1788871800000,
+  "description": "AniHyou 内置汉化基线资源包",
+  "files": {
+    "titles_zh_cn.json": {
+      "size": 1158225,
+      "md5": "3edba9e86b5398272636f0fe66e0fcf6"
+    },
+    "tags_zh_cn.json": {
+      "size": 12134,
+      "md5": "a0ffc569d30ae51c745cec5228b73e1b"
+    },
+    "staff_characters_zh_cn.json": {
+      "size": 1744993,
+      "md5": "8c0e4e2428f30668cf5df30d4953dbb5"
+    },
+    "t2s_char_map.json": {
+      "size": 35377,
+      "md5": "9926180db1bff9f3e067cae1cc0cd89a"
+    }
+  }
+}

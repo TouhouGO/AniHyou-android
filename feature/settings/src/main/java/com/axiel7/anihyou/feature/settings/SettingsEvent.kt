@@ -62,6 +62,8 @@ interface SettingsEvent : UiEvent {
 
     fun setTranslatorApp(value: TranslatorApp)
 
+    fun setChineseTitleLocalization(value: Boolean)
+
     fun setTitleLanguage(value: UserTitleLanguage)
 
     fun setStaffNameLanguage(value: UserStaffNameLanguage)

@@ -33,6 +33,9 @@ import com.axiel7.anihyou.core.network.type.MediaStatus
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.network.type.ScoreFormat
 import com.axiel7.anihyou.core.network.type.UserTitleLanguage
+import com.axiel7.anihyou.core.network.fragment.BasicMediaDetails
+import com.axiel7.anihyou.core.network.localization.ChineseTagProvider
+import com.axiel7.anihyou.core.network.localization.ChineseTitleProvider
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.Route
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +46,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -60,6 +64,8 @@ class UserMediaListViewModel(
     private val mediaListRepository: MediaListRepository,
     private val defaultPreferencesRepository: DefaultPreferencesRepository,
     private val listPreferencesRepository: ListPreferencesRepository,
+    private val chineseTitleProvider: ChineseTitleProvider? = null,
+    private val chineseTagProvider: ChineseTagProvider? = null,
 ) : UiStateViewModel<UserMediaListUiState>(), UserMediaListEvent {
 
     private val scoreFormat = arguments.scoreFormat?.let { ScoreFormat.safeValueOf(it) }
@@ -172,10 +178,10 @@ class UserMediaListViewModel(
                 increment = increment,
                 total = entry.duration()
             ).collectLatest { result ->
+                if (result is DataResult.Success && result.data != null) {
+                    onUpdateListEntry(result.data!!.basicMediaListEntry)
+                }
                 mutableUiState.update {
-                    if (result is DataResult.Success && result.data != null) {
-                        onUpdateListEntry(result.data!!.basicMediaListEntry)
-                    }
                     result.toUiState().copy(isLoadingPlusOne = result is DataResult.Loading)
                 }
             }
@@ -194,46 +200,75 @@ class UserMediaListViewModel(
         mutableUiState.value.run {
             selectedItem?.let { selectedItem ->
                 if (selectedItem.basicMediaListEntry != newListEntry) {
-                    val selectedListName = selectedListName ?: return
-                    val list = lists[selectedListName]?.toMutableList() ?: return
-                    if (newListEntry != null) {
-                        list.indexOfFirstOrNull { it.mediaId == selectedItem.mediaId }
-                            ?.let { index ->
+                    val targetMediaId = newListEntry?.mediaId ?: selectedItem.mediaId
+                    val listName = selectedListName ?: lists.entries.firstOrNull { (_, items) ->
+                        items.any { it.mediaId == targetMediaId }
+                    }?.key
+
+                    var updatedEntry: CommonMediaListEntry? = null
+
+                    if (listName != null) {
+                        val list = lists[listName]?.toMutableList()
+                        if (list != null) {
+                            val index = list.indexOfFirstOrNull { it.mediaId == targetMediaId }
+                            if (index != null) {
                                 val oldValue = list[index]
-                                val newEntry = oldValue.copy(basicMediaListEntry = newListEntry)
-                                if (newListEntry.status != oldValue.basicMediaListEntry.status) {
-                                    list.removeAt(index)
-                                    newListEntry.status?.let { status ->
-                                        oldValue.media?.format?.let { mediaFormat ->
-                                            oldValue.media?.basicMediaDetails?.type?.let { mediaType ->
-                                                findListForEntry(status, mediaType, mediaFormat)
-                                                    ?.let { newList ->
+                                if (newListEntry != null) {
+                                    val newEntry = oldValue.copy(basicMediaListEntry = newListEntry)
+                                    updatedEntry = newEntry
+                                    if (newListEntry.status != oldValue.basicMediaListEntry.status) {
+                                        list.removeAt(index)
+                                        newListEntry.status?.let { status ->
+                                            oldValue.media?.format?.let { mediaFormat ->
+                                                oldValue.media?.basicMediaDetails?.type?.let { mediaType ->
+                                                    findListForEntry(status, mediaType, mediaFormat)?.let { newList ->
                                                         lists[newList] =
                                                             lists[newList].orEmpty()
                                                                 .plus(newEntry)
                                                     }
+                                                }
                                             }
                                         }
-                                    }
 
-                                    val openSetScoreDialog =
-                                        newListEntry.status == MediaListStatus.COMPLETED
+                                        val openSetScoreDialog =
+                                            newListEntry.status == MediaListStatus.COMPLETED
                                                 && newListEntry.score.isNullOrZero()
-                                    mutableUiState.update {
-                                        it.copy(
-                                            openSetScoreDialog = openSetScoreDialog,
-                                            selectedItem = newEntry
-                                        )
+                                        mutableUiState.update {
+                                            it.copy(
+                                                openSetScoreDialog = openSetScoreDialog,
+                                                selectedItem = newEntry
+                                            )
+                                        }
+                                    } else {
+                                        list[index] = newEntry
+                                        mutableUiState.update { it.copy(selectedItem = newEntry) }
                                     }
                                 } else {
-                                    list[index] = newEntry
+                                    list.removeAt(index)
                                 }
+                                lists[listName] = list
                             }
-                    } else {
-                        list.remove(selectedItem)
+                        }
                     }
-                    lists[selectedListName] = list
-                    onChangeList(selectedListName)
+
+                    // Directly update the visible `entries` (SnapshotStateList) for immediate Compose recomposition
+                    val entryIndex = entries.indexOfFirstOrNull { it.mediaId == targetMediaId }
+                    if (entryIndex != null) {
+                        if (newListEntry != null) {
+                            val oldDisplayed = entries[entryIndex]
+                            val newDisplayed = oldDisplayed.copy(basicMediaListEntry = newListEntry)
+                            if (selectedListName != null && newListEntry.status != oldDisplayed.basicMediaListEntry.status) {
+                                entries.removeAt(entryIndex)
+                            } else {
+                                entries[entryIndex] = newDisplayed
+                            }
+                            if (updatedEntry == null) {
+                                mutableUiState.update { it.copy(selectedItem = newDisplayed) }
+                            }
+                        } else {
+                            entries.removeAt(entryIndex)
+                        }
+                    }
                 }
             }
         }
@@ -652,6 +687,14 @@ class UserMediaListViewModel(
             }
             .launchIn(viewModelScope)
 
+        defaultPreferencesRepository.localizationConfig
+            ?.distinctUntilChangedBy { it.configVersion }
+            ?.drop(1)
+            ?.onEach {
+                mutableUiState.update { it.copy(fetchFromNetwork = true) }
+            }
+            ?.launchIn(viewModelScope)
+
         mutableUiState
             .distinctUntilChanged { old, new ->
                 old.sort == new.sort
@@ -687,6 +730,11 @@ class UserMediaListViewModel(
                             list?.name?.let { name ->
                                 var entries = list.entries?.mapNotNull { it?.commonMediaListEntry }
                                     .orEmpty()
+                                if (chineseTitleProvider?.isEnabled == true || chineseTagProvider?.isEnabled == true) {
+                                    entries = entries.map { entry ->
+                                        entry.withChineseTitleAndTags(chineseTitleProvider, chineseTagProvider)
+                                    }
+                                }
                                 if (uiState.sort.isTitle()) {
                                     withContext(Dispatchers.IO) {
                                         entries = entries.sortedWith(
@@ -718,5 +766,45 @@ class UserMediaListViewModel(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun CommonMediaListEntry.withChineseTitleAndTags(
+        titleProvider: ChineseTitleProvider?,
+        tagProvider: ChineseTagProvider?
+    ): CommonMediaListEntry {
+        val originalMedia = media ?: return this
+        val basic = originalMedia.basicMediaDetails
+        val zhTitle = if (titleProvider?.isEnabled == true) {
+            titleProvider.getTitle(
+                id = basic.id,
+                nativeTitle = originalMedia.title?.native,
+                romajiTitle = originalMedia.title?.romaji
+            )
+        } else null
+
+        val newBasic = if (zhTitle != null) {
+            val newBasicTitle = basic.title?.copy(userPreferred = zhTitle)
+                ?: BasicMediaDetails.Title(__typename = "MediaTitle", userPreferred = zhTitle)
+            basic.copy(title = newBasicTitle)
+        } else basic
+
+        val originalTags = originalMedia.tags
+        val newTags = if (tagProvider?.isEnabled == true && originalTags != null) {
+            originalTags.map { tag ->
+                if (tag != null) {
+                    val rawName = tag.name
+                    val zhTag = tagProvider.getChineseTag(rawName)
+                    if (zhTag != null && zhTag != rawName) {
+                        tag.copy(name = zhTag)
+                    } else tag
+                } else null
+            }
+        } else originalTags
+
+        val newMedia = originalMedia.copy(
+            basicMediaDetails = newBasic,
+            tags = newTags
+        )
+        return copy(media = newMedia)
     }
 }

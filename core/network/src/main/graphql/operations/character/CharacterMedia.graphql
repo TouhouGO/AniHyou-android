@@ -28,6 +28,8 @@ fragment CommonVoiceActor on Staff {
     id
     name {
         userPreferred
+        native
+        alternative
     }
     image {
         medium

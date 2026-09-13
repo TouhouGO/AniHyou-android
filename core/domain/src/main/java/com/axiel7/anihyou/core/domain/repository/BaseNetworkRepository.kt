@@ -30,7 +30,7 @@ abstract class BaseNetworkRepository(
 
         hasErrors() -> {
             onError(this)
-            DataResult.Error(errorString)
+            DataResult.Error(aniListErrorMessage(null, errorString))
         }
 
         exception is ApolloHttpException -> {
@@ -74,7 +74,7 @@ abstract class BaseNetworkRepository(
 
                 response.hasErrors() -> {
                     onError(response)
-                    PagedResult.Error(message = response.errorString)
+                    PagedResult.Error(message = aniListErrorMessage(null, response.errorString))
                 }
 
                 response.exception is ApolloHttpException -> {
@@ -95,7 +95,8 @@ abstract class BaseNetworkRepository(
         val exception = response.exception as ApolloHttpException
         val errorResponse = exception.parseBodyToErrorResponse()
         errorResponse?.let { onError(it) } ?: onError(response)
-        return errorResponse?.errors?.joinToString { it.message } ?: response.errorString
+        val serverMessage = errorResponse?.errors?.joinToString { it.message } ?: response.errorString
+        return aniListErrorMessage(exception.statusCode, serverMessage)
     }
 
     private suspend fun <D: Operation.Data> onNetworkException(response: ApolloResponse<D>): String {
@@ -141,3 +142,10 @@ abstract class BaseNetworkRepository(
         const val INVALID_TOKEN_ERROR = "Invalid token"
     }
 }
+
+internal fun aniListErrorMessage(statusCode: Int?, serverMessage: String): String =
+    if (statusCode == 429 || serverMessage.contains("Too Many Requests", ignoreCase = true)) {
+        "AniList 请求过于频繁，请稍后重试"
+    } else {
+        serverMessage
+    }

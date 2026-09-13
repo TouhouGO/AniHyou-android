@@ -30,12 +30,32 @@ import com.axiel7.anihyou.core.network.type.ScoreFormat
 import com.axiel7.anihyou.core.network.type.UserTitleLanguage
 import com.axiel7.anihyou.core.resources.ColorUtils.colorFromHex
 import com.axiel7.anihyou.core.resources.ColorUtils.hexToString
+import com.axiel7.anihyou.core.network.cache.ApolloCacheManager
+import com.axiel7.anihyou.core.network.localization.LocalizationConfigState
+import com.axiel7.anihyou.core.network.localization.ChineseCharacterProvider
+import com.axiel7.anihyou.core.network.localization.ChineseDescriptionProvider
+import com.axiel7.anihyou.core.network.localization.ChineseTagProvider
+import com.axiel7.anihyou.core.network.localization.ChineseTitleProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+
+import com.axiel7.anihyou.core.network.localization.LocalizationInvalidationCoordinator
+import com.axiel7.anihyou.core.network.localization.LocalizationConfigValues
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 class DefaultPreferencesRepository(
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
+    private val chineseTitleProvider: ChineseTitleProvider? = null,
+    private val chineseTagProvider: ChineseTagProvider? = null,
+    private val chineseCharacterProvider: ChineseCharacterProvider? = null,
+    private val chineseDescriptionProvider: ChineseDescriptionProvider? = null,
+    private val apolloCacheManager: ApolloCacheManager? = null,
+    private val localizationConfigState: LocalizationConfigState? = null,
+    private val invalidationCoordinator: LocalizationInvalidationCoordinator? = null,
 ) {
 
     // user credentials
@@ -403,7 +423,87 @@ class DefaultPreferencesRepository(
         else -> emptyFlow()
     }
 
+    val localizationConfig: kotlinx.coroutines.flow.StateFlow<com.axiel7.anihyou.core.network.localization.LocalizationConfigSnapshot> =
+        localizationConfigState?.snapshot ?: kotlinx.coroutines.flow.MutableStateFlow(com.axiel7.anihyou.core.network.localization.LocalizationConfigSnapshot())
+
+    val chineseTitleLocalization = dataStore.getValue(CHINESE_TITLE_LOCALIZATION_KEY, default = true)
+
+    suspend fun setChineseTitleLocalization(value: Boolean) {
+        chineseTitleProvider?.isEnabled = value
+        dataStore.setValue(CHINESE_TITLE_LOCALIZATION_KEY, value)
+    }
+
+    val chineseTagLocalization = dataStore.getValue(CHINESE_TAG_LOCALIZATION_KEY, default = true)
+
+    suspend fun setChineseTagLocalization(value: Boolean) {
+        chineseTagProvider?.isEnabled = value
+        dataStore.setValue(CHINESE_TAG_LOCALIZATION_KEY, value)
+    }
+
+    val chineseCharacterLocalization = dataStore.getValue(CHINESE_CHARACTER_LOCALIZATION_KEY, default = true)
+
+    suspend fun setChineseCharacterLocalization(value: Boolean) {
+        chineseCharacterProvider?.isEnabled = value
+        dataStore.setValue(CHINESE_CHARACTER_LOCALIZATION_KEY, value)
+    }
+
+    val chineseDescriptionLocalization = dataStore.getValue(CHINESE_DESCRIPTION_LOCALIZATION_KEY, default = true)
+
+    suspend fun setChineseDescriptionLocalization(value: Boolean) {
+        chineseDescriptionProvider?.isEnabled = value
+        dataStore.setValue(CHINESE_DESCRIPTION_LOCALIZATION_KEY, value)
+    }
+
+    init {
+        val combinedFlow = combine(
+            chineseTitleLocalization,
+            chineseTagLocalization,
+            chineseCharacterLocalization,
+            chineseDescriptionLocalization
+        ) { title, tag, character, description ->
+            LocalizationConfigValues(
+                titleEnabled = title,
+                tagEnabled = tag,
+                characterEnabled = character,
+                descriptionEnabled = description
+            )
+        }.distinctUntilChanged()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            var isFirst = true
+            combinedFlow.collect { config ->
+                if (isFirst) {
+                    isFirst = false
+                    if (invalidationCoordinator != null) {
+                        invalidationCoordinator.initialize(config)
+                    } else {
+                        chineseTitleProvider?.isEnabled = config.titleEnabled
+                        chineseTagProvider?.isEnabled = config.tagEnabled
+                        chineseCharacterProvider?.isEnabled = config.characterEnabled
+                        chineseDescriptionProvider?.isEnabled = config.descriptionEnabled
+                        localizationConfigState?.initialize(config)
+                    }
+                } else {
+                    if (invalidationCoordinator != null) {
+                        invalidationCoordinator.publishConfig(config)
+                    } else {
+                        chineseTitleProvider?.isEnabled = config.titleEnabled
+                        chineseTagProvider?.isEnabled = config.tagEnabled
+                        chineseCharacterProvider?.isEnabled = config.characterEnabled
+                        chineseDescriptionProvider?.isEnabled = config.descriptionEnabled
+                        apolloCacheManager?.clearCache()
+                        localizationConfigState?.publishConfig(config)
+                    }
+                }
+            }
+        }
+    }
+
     companion object {
+        private val CHINESE_TITLE_LOCALIZATION_KEY = booleanPreferencesKey("chinese_title_localization")
+        private val CHINESE_TAG_LOCALIZATION_KEY = booleanPreferencesKey("chinese_tag_localization")
+        private val CHINESE_CHARACTER_LOCALIZATION_KEY = booleanPreferencesKey("chinese_character_localization")
+        private val CHINESE_DESCRIPTION_LOCALIZATION_KEY = booleanPreferencesKey("chinese_description_localization")
         private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
         private val USER_ID_KEY = intPreferencesKey("user_id")
 

@@ -14,6 +14,8 @@ import com.axiel7.anihyou.core.network.fragment.ExploreMedia
 import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaType
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -179,5 +181,23 @@ class MangaExploreViewModel(
                 mutableUiState.update { it.copy(displayAdult = value ?: false) }
             }
             .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.localizationConfig
+            ?.distinctUntilChangedBy { it.configVersion }
+            ?.drop(1)
+            ?.onEach {
+                val hadTrending = mutableUiState.value.trendingManga.isNotEmpty()
+                val hadPopularManga = mutableUiState.value.popularManga.isNotEmpty()
+                val hadPopularManhwa = mutableUiState.value.popularManhwa.isNotEmpty()
+                val hadNewly = mutableUiState.value.newlyManga.isNotEmpty()
+
+                mutableUiState.value.allLists.forEach { it.clear() }
+
+                if (hadTrending) fetchTrendingManga()
+                if (hadPopularManga) fetchPopularManga()
+                if (hadPopularManhwa) fetchPopularManhwa()
+                if (hadNewly) fetchNewlyManga()
+            }
+            ?.launchIn(viewModelScope)
     }
 }

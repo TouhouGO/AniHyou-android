@@ -19,10 +19,14 @@ import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.ui.common.navigation.Route
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import org.koin.core.annotation.InjectedParam
@@ -201,6 +205,8 @@ class SearchViewModel(
         }
     }
 
+    private val refreshTrigger = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     init {
         defaultPreferencesRepository.titleLanguage
             .filterNotNull()
@@ -209,30 +215,46 @@ class SearchViewModel(
             }
             .launchIn(viewModelScope)
 
-        // media search
-        mutableUiState
-            .filter { it.searchType.isSearchMedia && it.hasNextPage }
-            .distinctUntilChanged { old, new ->
-                old.page == new.page
-                        && old.query == new.query
-                        && old.mediaType == new.mediaType
-                        && old.mediaSort == new.mediaSort
-                        && old.startYear == new.startYear
-                        && old.endYear == new.endYear
-                        && old.season == new.season
-                        && old.minEpCh == new.minEpCh
-                        && old.maxEpCh == new.maxEpCh
-                        && old.minDuration == new.minDuration
-                        && old.maxDuration == new.maxDuration
-                        && old.onMyList == new.onMyList
-                        && old.isDoujin == new.isDoujin
-                        && old.isAdult == new.isAdult
-                        && old.country == new.country
-                        && !new.genresOrTagsChanged
-                        && !new.mediaFormatsChanged
-                        && !new.mediaStatusesChanged
-                        && !new.sourcesChanged
+        defaultPreferencesRepository.localizationConfig
+            ?.distinctUntilChangedBy { it.configVersion }
+            ?.drop(1)
+            ?.onEach {
+                if (mutableUiState.value.query.isNotBlank() || mutableUiState.value.hasFiltersApplied) {
+                    mutableUiState.update { it.copy(page = 1, hasNextPage = true, isLoading = true) }
+                    refreshTrigger.tryEmit(Unit)
+                }
             }
+            ?.launchIn(viewModelScope)
+
+        // media search
+        kotlinx.coroutines.flow.merge(
+            mutableUiState
+                .filter { it.searchType.isSearchMedia && it.hasNextPage }
+                .distinctUntilChanged { old, new ->
+                    old.page == new.page
+                            && old.query == new.query
+                            && old.mediaType == new.mediaType
+                            && old.mediaSort == new.mediaSort
+                            && old.startYear == new.startYear
+                            && old.endYear == new.endYear
+                            && old.season == new.season
+                            && old.minEpCh == new.minEpCh
+                            && old.maxEpCh == new.maxEpCh
+                            && old.minDuration == new.minDuration
+                            && old.maxDuration == new.maxDuration
+                            && old.onMyList == new.onMyList
+                            && old.isDoujin == new.isDoujin
+                            && old.isAdult == new.isAdult
+                            && old.country == new.country
+                            && !new.genresOrTagsChanged
+                            && !new.mediaFormatsChanged
+                            && !new.mediaStatusesChanged
+                            && !new.sourcesChanged
+                },
+            refreshTrigger.mapNotNull {
+                mutableUiState.value.takeIf { it.searchType.isSearchMedia && it.hasNextPage }
+            }
+        )
             .flatMapLatest { uiState ->
                 searchRepository.searchMedia(
                     mediaType = uiState.mediaType!!,
@@ -286,16 +308,25 @@ class SearchViewModel(
             .launchIn(viewModelScope)
 
         // character search
-        mutableUiState
-            .filter {
-                it.searchType == SearchType.CHARACTER
-                        && it.hasNextPage
-                        && it.query.isNotBlank()
+        kotlinx.coroutines.flow.merge(
+            mutableUiState
+                .filter {
+                    it.searchType == SearchType.CHARACTER
+                            && it.hasNextPage
+                            && it.query.isNotBlank()
+                }
+                .distinctUntilChanged { old, new ->
+                    old.page == new.page
+                            && old.query == new.query
+                },
+            refreshTrigger.mapNotNull {
+                mutableUiState.value.takeIf {
+                    it.searchType == SearchType.CHARACTER
+                            && it.hasNextPage
+                            && it.query.isNotBlank()
+                }
             }
-            .distinctUntilChanged { old, new ->
-                old.page == new.page
-                        && old.query == new.query
-            }
+        )
             .flatMapLatest { uiState ->
                 searchRepository.searchCharacter(
                     query = uiState.query,
@@ -319,16 +350,25 @@ class SearchViewModel(
             .launchIn(viewModelScope)
 
         // staff search
-        mutableUiState
-            .filter {
-                it.searchType == SearchType.STAFF
-                        && it.hasNextPage
-                        && it.query.isNotBlank()
+        kotlinx.coroutines.flow.merge(
+            mutableUiState
+                .filter {
+                    it.searchType == SearchType.STAFF
+                            && it.hasNextPage
+                            && it.query.isNotBlank()
+                }
+                .distinctUntilChanged { old, new ->
+                    old.page == new.page
+                            && old.query == new.query
+                },
+            refreshTrigger.mapNotNull {
+                mutableUiState.value.takeIf {
+                    it.searchType == SearchType.STAFF
+                            && it.hasNextPage
+                            && it.query.isNotBlank()
+                }
             }
-            .distinctUntilChanged { old, new ->
-                old.page == new.page
-                        && old.query == new.query
-            }
+        )
             .flatMapLatest { uiState ->
                 searchRepository.searchStaff(
                     query = uiState.query,
@@ -352,16 +392,25 @@ class SearchViewModel(
             .launchIn(viewModelScope)
 
         // studio search
-        mutableUiState
-            .filter {
-                it.searchType == SearchType.STUDIO
-                        && it.hasNextPage
-                        && it.query.isNotBlank()
+        kotlinx.coroutines.flow.merge(
+            mutableUiState
+                .filter {
+                    it.searchType == SearchType.STUDIO
+                            && it.hasNextPage
+                            && it.query.isNotBlank()
+                }
+                .distinctUntilChanged { old, new ->
+                    old.page == new.page
+                            && old.query == new.query
+                },
+            refreshTrigger.mapNotNull {
+                mutableUiState.value.takeIf {
+                    it.searchType == SearchType.STUDIO
+                            && it.hasNextPage
+                            && it.query.isNotBlank()
+                }
             }
-            .distinctUntilChanged { old, new ->
-                old.page == new.page
-                        && old.query == new.query
-            }
+        )
             .flatMapLatest { uiState ->
                 searchRepository.searchStudio(
                     query = uiState.query,
@@ -385,16 +434,25 @@ class SearchViewModel(
             .launchIn(viewModelScope)
 
         // user search
-        mutableUiState
-            .filter {
-                it.searchType == SearchType.USER
-                        && it.hasNextPage
-                        && it.query.isNotBlank()
+        kotlinx.coroutines.flow.merge(
+            mutableUiState
+                .filter {
+                    it.searchType == SearchType.USER
+                            && it.hasNextPage
+                            && it.query.isNotBlank()
+                }
+                .distinctUntilChanged { old, new ->
+                    old.page == new.page
+                            && old.query == new.query
+                },
+            refreshTrigger.mapNotNull {
+                mutableUiState.value.takeIf {
+                    it.searchType == SearchType.USER
+                            && it.hasNextPage
+                            && it.query.isNotBlank()
+                }
             }
-            .distinctUntilChanged { old, new ->
-                old.page == new.page
-                        && old.query == new.query
-            }
+        )
             .flatMapLatest { uiState ->
                 searchRepository.searchUser(
                     query = uiState.query,

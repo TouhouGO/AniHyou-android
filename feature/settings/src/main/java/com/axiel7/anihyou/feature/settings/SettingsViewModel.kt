@@ -198,6 +198,12 @@ class SettingsViewModel(
         }
     }
 
+    override fun setChineseTitleLocalization(value: Boolean) {
+        viewModelScope.launch {
+            defaultPreferencesRepository.setChineseTitleLocalization(value)
+        }
+    }
+
     override fun setTitleLanguage(value: UserTitleLanguage) {
         viewModelScope.launch {
             updateUser(titleLanguage = value)
@@ -414,6 +420,12 @@ class SettingsViewModel(
             .filterNotNull()
             .onEach { value ->
                 mutableUiState.update { it.copy(useFuzzySearch = value) }
+            }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.chineseTitleLocalization
+            .onEach { value ->
+                mutableUiState.update { it.copy(chineseTitleLocalization = value) }
             }
             .launchIn(viewModelScope)
 

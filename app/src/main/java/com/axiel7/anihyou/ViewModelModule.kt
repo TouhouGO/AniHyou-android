@@ -30,6 +30,7 @@ import com.axiel7.anihyou.feature.settings.SettingsViewModel
 import com.axiel7.anihyou.feature.settings.customlinks.CustomLinksViewModel
 import com.axiel7.anihyou.feature.settings.customlists.CustomListsViewModel
 import com.axiel7.anihyou.feature.settings.liststyle.ListStyleSettingsViewModel
+import com.axiel7.anihyou.feature.settings.localization.LocalizationSettingsViewModel
 import com.axiel7.anihyou.feature.settings.priority_colors.PriorityColorViewModel
 import com.axiel7.anihyou.feature.staffdetails.StaffDetailsViewModel
 import com.axiel7.anihyou.feature.studiodetails.StudioDetailsViewModel
@@ -72,6 +73,7 @@ val viewModelModule = module {
     viewModel<SettingsViewModel>()
     viewModel<CustomListsViewModel>()
     viewModel<CustomLinksViewModel>()
+    viewModel<LocalizationSettingsViewModel>()
     viewModel<ListStyleSettingsViewModel>()
     viewModel<StaffDetailsViewModel>()
     viewModel<StudioDetailsViewModel>()

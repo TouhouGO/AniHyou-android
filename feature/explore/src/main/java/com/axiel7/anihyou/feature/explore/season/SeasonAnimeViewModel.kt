@@ -15,9 +15,12 @@ import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.ui.common.navigation.Route.SeasonAnime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -81,6 +84,8 @@ class SeasonAnimeViewModel(
         }
     }
 
+    private val refreshTrigger = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     init {
         defaultPreferencesRepository.displayAdult
             .onEach { value ->
@@ -95,13 +100,30 @@ class SeasonAnimeViewModel(
             }
             .launchIn(viewModelScope)
 
-        uiState
-            .filter { it.season != null && it.hasNextPage }
-            .distinctUntilChanged { old, new ->
-                old.page == new.page
-                        && old.season == new.season
-                        && old.sort == new.sort
+        defaultPreferencesRepository.localizationConfig
+            .drop(1)
+            .distinctUntilChangedBy { it.configVersion }
+            .onEach {
+                mutableUiState.update {
+                    it.animeSeasonal.clear()
+                    it.copy(page = 1, hasNextPage = true, isLoading = true)
+                }
+                refreshTrigger.tryEmit(Unit)
             }
+            .launchIn(viewModelScope)
+
+        kotlinx.coroutines.flow.merge(
+            uiState
+                .filter { it.season != null && it.hasNextPage }
+                .distinctUntilChanged { old, new ->
+                    old.page == new.page
+                            && old.season == new.season
+                            && old.sort == new.sort
+                },
+            refreshTrigger.mapNotNull {
+                uiState.value.takeIf { it.season != null && it.hasNextPage }
+            }
+        )
             .flatMapLatest {
                 mediaRepository.getSeasonalAnimePage(
                     animeSeason = it.season!!,

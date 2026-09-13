@@ -299,6 +299,14 @@ private fun SettingsContent(
                 shape = middleShape
             )
 
+            PlainPreference(
+                title = stringResource(R.string.localization_settings_title),
+                subtitle = stringResource(R.string.localization_settings_subtitle),
+                icon = R.drawable.translate_24,
+                onClick = navActionManager::toLocalizationSettings,
+                shape = middleShape
+            )
+
             SwitchPreference(
                 title = stringResource(R.string.airing_on_my_list),
                 preferenceValue = uiState.airingOnMyList,

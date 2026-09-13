@@ -4,12 +4,15 @@ import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
+import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.FavoriteRepository
 import com.axiel7.anihyou.core.domain.repository.StudioRepository
 import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.ui.common.navigation.Route
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -23,6 +26,7 @@ class StudioDetailsViewModel(
     @InjectedParam private val arguments: Route.StudioDetails,
     private val studioRepository: StudioRepository,
     private val favoriteRepository: FavoriteRepository,
+    private val defaultPreferencesRepository: DefaultPreferencesRepository? = null,
 ) : PagedUiStateViewModel<StudioDetailsUiState>(), StudioDetailsEvent {
 
     override val initialState = StudioDetailsUiState()
@@ -60,13 +64,12 @@ class StudioDetailsViewModel(
         }
     }
 
-    init {
-        // studio details
-        // it also gets the first media page in this query to avoid two consecutive api calls
+    private fun loadDetails() {
         studioRepository.getStudioDetails(arguments.id)
             .onEach { result ->
                 mutableUiState.update { uiState ->
                     if (result is DataResult.Success) {
+                        uiState.media.clear()
                         result.data?.media?.commonStudioMedia?.nodes?.filterNotNull()?.let {
                             uiState.media.addAll(it)
                         }
@@ -74,7 +77,7 @@ class StudioDetailsViewModel(
                             isLoading = false,
                             details = result.data,
                             hasNextPage = result.data?.media?.pageInfo?.commonPage?.hasNextPage == true,
-                            //page = data?.media?.pageInfo?.commonPage?.currentPage ?: it.page
+                            page = 1,
                         )
                     } else {
                         result.toUiState()
@@ -82,6 +85,20 @@ class StudioDetailsViewModel(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    init {
+        defaultPreferencesRepository?.localizationConfig
+            ?.drop(1)
+            ?.distinctUntilChangedBy { it.configVersion }
+            ?.onEach {
+                loadDetails()
+            }
+            ?.launchIn(viewModelScope)
+
+        // studio details
+        // it also gets the first media page in this query to avoid two consecutive api calls
+        loadDetails()
 
         // next media pages
         mutableUiState

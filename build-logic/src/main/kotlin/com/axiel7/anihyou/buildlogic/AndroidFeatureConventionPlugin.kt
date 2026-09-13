@@ -68,6 +68,11 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
                 add("implementation", libs.findLibrary("collections-immutable").get())
 
                 add("coreLibraryDesugaring", libs.findLibrary("desugar_jdk_libs").get())
+
+                add("testImplementation", libs.findLibrary("junit").get())
+                add("testImplementation", libs.findLibrary("kotlinx-coroutines-test").get())
+                add("testImplementation", libs.findLibrary("mockk").get())
+                add("testImplementation", libs.findLibrary("turbine").get())
             }
 
             extensions.configure<ComposeCompilerGradlePluginExtension> {

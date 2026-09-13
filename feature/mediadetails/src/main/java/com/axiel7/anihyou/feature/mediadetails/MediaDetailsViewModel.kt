@@ -16,8 +16,17 @@ import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.network.type.RecommendationRating
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.Route
+import com.axiel7.anihyou.core.network.localization.BangumiMatchSource
+import com.axiel7.anihyou.core.network.localization.ChineseConverter
+import com.axiel7.anihyou.core.network.localization.ChineseCharacterProvider
+import com.axiel7.anihyou.core.network.localization.ChineseDescriptionProvider
+import com.axiel7.anihyou.core.network.localization.ChineseDescriptionFormatter
+import com.axiel7.anihyou.core.network.localization.ChineseTitleProvider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
@@ -32,6 +41,10 @@ class MediaDetailsViewModel(
     defaultPreferencesRepository: DefaultPreferencesRepository,
     private val mediaRepository: MediaRepository,
     private val favoriteRepository: FavoriteRepository,
+    private val chineseDescriptionProvider: ChineseDescriptionProvider? = null,
+    private val chineseTitleProvider: ChineseTitleProvider? = null,
+    private val chineseConverter: ChineseConverter? = null,
+    private val chineseCharacterProvider: ChineseCharacterProvider? = null,
 ) : UiStateViewModel<MediaDetailsUiState>(), MediaDetailsEvent {
 
     override val initialState = MediaDetailsUiState(isLoggedIn = arguments.isLoggedIn)
@@ -89,14 +102,33 @@ class MediaDetailsViewModel(
         }
     }
 
+    private var detailsJob: kotlinx.coroutines.Job? = null
+    private var charactersAndStaffJob: kotlinx.coroutines.Job? = null
+    private var relationsAndRecommendationsJob: kotlinx.coroutines.Job? = null
+
     override fun fetchCharactersAndStaff() {
-        mediaRepository.getMediaCharactersAndStaff(mediaId = arguments.id)
+        fetchCharactersAndStaff(force = false)
+    }
+
+    private fun fetchCharactersAndStaff(force: Boolean) {
+        if (!force && charactersAndStaffJob?.isActive == true) return
+        charactersAndStaffJob?.cancel()
+        charactersAndStaffJob = mediaRepository.getMediaCharactersAndStaff(mediaId = arguments.id)
             .onEach { result ->
                 if (result is DataResult.Success) {
+                    val rawStaff = result.data.staff.map { it.mediaStaff }
+                    val rawCharacters = result.data.characters.map { it.mediaCharacter }
+                    val bangumiSubjectId = chineseTitleProvider?.getBangumiId(arguments.id)
+                    val localizedStaff = chineseCharacterProvider
+                        ?.localizeMediaStaff(bangumiSubjectId, rawStaff)
+                        ?: rawStaff
+                    val localizedCharacters = chineseCharacterProvider
+                        ?.localizeMediaCharacters(bangumiSubjectId, rawCharacters)
+                        ?: rawCharacters
                     mutableUiState.update { uiState ->
                         uiState.copy(
-                            staff = result.data.staff.map { it.mediaStaff },
-                            characters = result.data.characters.map { it.mediaCharacter }
+                            staff = localizedStaff,
+                            characters = localizedCharacters
                         )
                     }
                 }
@@ -105,7 +137,8 @@ class MediaDetailsViewModel(
     }
 
     override fun fetchRelationsAndRecommendations() {
-        mediaRepository.getMediaRelationsAndRecommendations(mediaId = arguments.id)
+        relationsAndRecommendationsJob?.cancel()
+        relationsAndRecommendationsJob = mediaRepository.getMediaRelationsAndRecommendations(mediaId = arguments.id)
             .onEach { result ->
                 if (result is DataResult.Success) {
                     mutableUiState.update {
@@ -270,14 +303,64 @@ class MediaDetailsViewModel(
         }
     }
 
-    init {
-        defaultPreferencesRepository.coloredMedia
-            .onEach { value ->
-                mutableUiState.update { it.copy(coloredMedia = value) }
-            }
-            .launchIn(viewModelScope)
+    private fun fetchChineseDescription(details: MediaDetailsQuery.Media) {
+        val descriptionProvider = chineseDescriptionProvider ?: return
+        if (!descriptionProvider.isEnabled) return
 
-        mediaRepository.getMediaDetails(mediaId = arguments.id)
+        viewModelScope.launch(Dispatchers.IO) {
+            val bgmId = chineseTitleProvider?.getBangumiId(details.id)
+            val isAnime = details.basicMediaDetails.type == MediaType.ANIME
+            val nativeTitle = details.title?.native ?: details.title?.romaji
+
+            val releaseYear = details.seasonYear ?: details.startDate?.fuzzyDate?.year
+            val bgmInfo = descriptionProvider.getOrFetchInfo(
+                mediaId = details.id,
+                bangumiId = bgmId,
+                nativeTitle = nativeTitle,
+                isAnime = isAnime,
+                releaseYear = releaseYear
+            )
+
+            if (!bgmInfo.summary.isNullOrBlank()) {
+                val newDescription = ChineseDescriptionFormatter.format(
+                    bangumiSummary = bgmInfo.summary,
+                    originalDescription = details.description,
+                    chineseConverter = chineseConverter
+                ) ?: details.description
+                mutableUiState.update { state ->
+                    val curDetails = state.details ?: return@update state
+                    if (curDetails.id == details.id) {
+                        state.copy(details = curDetails.copy(description = newDescription))
+                    } else state
+                }
+            }
+
+            val nameCn = bgmInfo.nameCn
+            if (bgmInfo.source == BangumiMatchSource.EXPLICIT_ID && chineseTitleProvider?.isEnabled == true && !nameCn.isNullOrBlank()) {
+                chineseTitleProvider.updateTitle(details.id, nameCn, bgmInfo.bangumiId)
+            }
+            if (chineseTitleProvider?.isEnabled == true && !nameCn.isNullOrBlank() && bgmInfo.source != BangumiMatchSource.NONE) {
+                mutableUiState.update { state ->
+                    val curDetails = state.details ?: return@update state
+                    if (curDetails.id == details.id) {
+                        val newTitle = curDetails.title?.copy(userPreferred = nameCn)
+                            ?: MediaDetailsQuery.Title(
+                                __typename = "MediaTitle",
+                                userPreferred = nameCn,
+                                romaji = null,
+                                english = null,
+                                native = null
+                            )
+                        state.copy(details = curDetails.copy(title = newTitle))
+                    } else state
+                }
+            }
+        }
+    }
+
+    private fun loadMediaDetails() {
+        detailsJob?.cancel()
+        detailsJob = mediaRepository.getMediaDetails(mediaId = arguments.id)
             .onEach { result ->
                 mutableUiState.updateAndGet {
                     if (result is DataResult.Success) {
@@ -289,10 +372,42 @@ class MediaDetailsViewModel(
                         result.toUiState()
                     }
                 }.also {
-                    it.details?.idMal?.let { idMal ->
-                        if (it.details.basicMediaDetails.type == MediaType.ANIME)
-                            fetchAnimeThemes(idMal)
+                    it.details?.let { details ->
+                        details.idMal?.let { idMal ->
+                            if (details.basicMediaDetails.type == MediaType.ANIME)
+                                fetchAnimeThemes(idMal)
+                        }
+                        fetchChineseDescription(details)
+                        if (chineseCharacterProvider?.isEnabled == true &&
+                            it.characters == null && it.staff == null
+                        ) {
+                            fetchCharactersAndStaff()
+                        }
                     }
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    init {
+        defaultPreferencesRepository.coloredMedia
+            .onEach { value ->
+                mutableUiState.update { it.copy(coloredMedia = value) }
+            }
+            .launchIn(viewModelScope)
+
+        loadMediaDetails()
+
+        defaultPreferencesRepository.localizationConfig
+            .distinctUntilChangedBy { it.configVersion }
+            .drop(1)
+            .onEach {
+                loadMediaDetails()
+                if (!mutableUiState.value.characters.isNullOrEmpty() || !mutableUiState.value.staff.isNullOrEmpty()) {
+                    fetchCharactersAndStaff(force = true)
+                }
+                if (mutableUiState.value.relationsAndRecommendations != null) {
+                    fetchRelationsAndRecommendations()
                 }
             }
             .launchIn(viewModelScope)

@@ -58,6 +58,18 @@ class SnackbarManager(
             currentShowingSnackbar = it
         }
     }
+
+    fun showMessage(message: String): Job {
+        currentShowingSnackbar?.cancel()
+        return scope.launch {
+            snackbarHostState.showSnackbar(
+                message = message,
+                duration = SnackbarDuration.Short
+            )
+        }.also {
+            currentShowingSnackbar = it
+        }
+    }
 }
 
 @Composable
