@@ -22,6 +22,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
+import com.axiel7.anihyou.core.network.localization.LocalizationBundleManager
 import org.koin.dsl.module
 
 class App : Application(), SingletonImageLoader.Factory {
@@ -29,7 +30,7 @@ class App : Application(), SingletonImageLoader.Factory {
     override fun onCreate() {
         super.onCreate()
 
-        startKoin {
+        val koinApp = startKoin {
             if (BuildConfig.DEBUG) {
                 androidLogger()
             }
@@ -50,6 +51,15 @@ class App : Application(), SingletonImageLoader.Factory {
                 workerModule,
             )
         }
+
+        val bundleManager = koinApp.koin.get<LocalizationBundleManager>()
+        bundleManager.setStorageDirectory(filesDir.resolve("localization"))
+
+        val entityNameCache = koinApp.koin.get<com.axiel7.anihyou.core.network.localization.EntityNameCache>()
+        val stateDir = filesDir.resolve("localization-state")
+        val cacheFile = stateDir.resolve("entity_names_cache.json")
+        val legacyCacheFile = filesDir.resolve("localization/entity_names_cache.json")
+        entityNameCache.setStorageFile(cacheFile, legacyFile = legacyCacheFile)
     }
 
     override fun newImageLoader(context: PlatformContext) =

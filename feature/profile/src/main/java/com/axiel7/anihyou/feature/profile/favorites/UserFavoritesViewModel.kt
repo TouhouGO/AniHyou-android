@@ -10,9 +10,12 @@ import com.axiel7.anihyou.core.network.UserFavoritesCharacterQuery
 import com.axiel7.anihyou.core.network.UserFavoritesMangaQuery
 import com.axiel7.anihyou.core.network.UserFavoritesStaffQuery
 import com.axiel7.anihyou.core.network.UserFavoritesStudioQuery
+import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -25,7 +28,8 @@ import org.koin.core.annotation.InjectedParam
 class UserFavoritesViewModel(
     @InjectedParam userId: Int,
     @InjectedParam isMyProfile: Boolean,
-    private val favoriteRepository: FavoriteRepository
+    private val favoriteRepository: FavoriteRepository,
+    private val defaultPreferencesRepository: DefaultPreferencesRepository? = null,
 ) : PagedUiStateViewModel<UserFavoritesUiState>(), UserFavoritesEvent {
 
     override val initialState = UserFavoritesUiState(userId = userId, isMyProfile = isMyProfile)
@@ -68,6 +72,14 @@ class UserFavoritesViewModel(
     }
 
     init {
+        defaultPreferencesRepository?.localizationConfig
+            ?.drop(1)
+            ?.distinctUntilChangedBy { it.configVersion }
+            ?.onEach {
+                onRefresh()
+            }
+            ?.launchIn(viewModelScope)
+
         // anime
         mutableUiState
             .filter {

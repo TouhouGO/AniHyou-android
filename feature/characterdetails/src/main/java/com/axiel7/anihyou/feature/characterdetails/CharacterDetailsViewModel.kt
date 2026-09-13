@@ -12,9 +12,11 @@ import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.ui.common.navigation.Route
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -87,8 +89,12 @@ class CharacterDetailsViewModel(
         }
     }
 
-    init {
-        characterRepository.getCharacterDetails(arguments.id)
+    private var detailsJob: kotlinx.coroutines.Job? = null
+    private val refreshTrigger = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    private fun loadCharacterDetails() {
+        detailsJob?.cancel()
+        detailsJob = characterRepository.getCharacterDetails(arguments.id)
             .onEach { result ->
                 mutableUiState.update {
                     if (result is DataResult.Success) {
@@ -102,10 +108,29 @@ class CharacterDetailsViewModel(
                 }
             }
             .launchIn(viewModelScope)
+    }
 
-        mutableUiState
-            .filter { it.hasNextPage && it.page != 0 }
-            .distinctUntilChangedBy { it.page }
+    init {
+        loadCharacterDetails()
+
+        defaultPreferencesRepository.localizationConfig
+            ?.distinctUntilChangedBy { it.configVersion }
+            ?.drop(1)
+            ?.onEach {
+                loadCharacterDetails()
+                mutableUiState.update { it.copy(page = 1, hasNextPage = true) }
+                refreshTrigger.tryEmit(Unit)
+            }
+            ?.launchIn(viewModelScope)
+
+        kotlinx.coroutines.flow.merge(
+            mutableUiState
+                .filter { it.hasNextPage && it.page != 0 }
+                .distinctUntilChangedBy { it.page },
+            refreshTrigger.mapNotNull {
+                mutableUiState.value.takeIf { it.hasNextPage && it.page != 0 }
+            }
+        )
             .flatMapLatest { uiState ->
                 characterRepository.getCharacterMediaPage(
                     characterId = arguments.id,
@@ -115,6 +140,7 @@ class CharacterDetailsViewModel(
             .onEach { result ->
                 mutableUiState.update {
                     if (result is PagedResult.Success) {
+                        if (it.page == 1) it.media.clear()
                         it.media.addAll(result.list)
                         it.copy(
                             isLoadingMedia = false,

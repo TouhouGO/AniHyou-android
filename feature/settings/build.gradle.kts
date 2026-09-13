@@ -28,4 +28,9 @@ dependencies {
 
     implementation(libs.androidx.work.runtime)
     implementation(libs.accompanist.permissions)
+
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation(libs.junit)
 }

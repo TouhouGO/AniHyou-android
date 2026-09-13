@@ -15,6 +15,8 @@ import com.axiel7.anihyou.core.network.type.RecommendationSort
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -156,6 +158,22 @@ class RecommendationsViewModel(
     }
 
     init {
+        defaultPreferencesRepository.localizationConfig
+            .drop(1)
+            .distinctUntilChangedBy { it.configVersion }
+            .onEach {
+                mutableUiState.update {
+                    it.recommendations.clear()
+                    it.copy(
+                        page = 1,
+                        hasNextPage = true,
+                        isLoading = true,
+                        fetchFromNetwork = true
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+
         uiState
             .filter { it.hasNextPage }
             .distinctUntilChanged { old, new ->

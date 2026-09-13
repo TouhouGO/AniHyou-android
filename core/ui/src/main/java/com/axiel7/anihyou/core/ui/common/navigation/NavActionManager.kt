@@ -227,4 +227,8 @@ class NavActionManager(
     fun toCustomLinks() {
         navigator.navigate(Route.CustomLinks)
     }
+
+    fun toLocalizationSettings() {
+        navigator.navigate(Route.LocalizationSettings)
+    }
 }

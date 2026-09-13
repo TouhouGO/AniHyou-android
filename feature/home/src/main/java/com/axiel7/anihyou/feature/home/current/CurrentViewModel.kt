@@ -26,6 +26,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -152,6 +154,14 @@ class CurrentViewModel(
     }
 
     init {
+        defaultPreferencesRepository.localizationConfig
+            .drop(1)
+            .distinctUntilChangedBy { it.configVersion }
+            .onEach {
+                refresh()
+            }
+            .launchIn(viewModelScope)
+
         // anime
         mutableUiState
             .distinctUntilChanged { _, new ->

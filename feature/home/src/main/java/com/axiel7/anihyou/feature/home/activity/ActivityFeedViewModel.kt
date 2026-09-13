@@ -14,6 +14,8 @@ import com.axiel7.anihyou.core.network.type.ActivityType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -149,6 +151,14 @@ class ActivityFeedViewModel(
     }
 
     init {
+        defaultPreferencesRepository.localizationConfig
+            .drop(1)
+            .distinctUntilChangedBy { it.configVersion }
+            .onEach {
+                refreshList()
+            }
+            .launchIn(viewModelScope)
+
         defaultPreferencesRepository.userId
             .filterNotNull()
             .onEach { value ->

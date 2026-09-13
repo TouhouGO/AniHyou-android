@@ -15,6 +15,8 @@ import com.axiel7.anihyou.core.network.fragment.ExploreMedia
 import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaType
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -256,5 +258,36 @@ class AnimeExploreViewModel(
                 mutableUiState.update { it.copy(displayAdult = value ?: false) }
             }
             .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.localizationConfig
+            ?.distinctUntilChangedBy { it.configVersion }
+            ?.drop(1)
+            ?.onEach {
+                val hadAiring = mutableUiState.value.airingAnime.isNotEmpty()
+                val hadAiringOnMyList = mutableUiState.value.airingAnimeOnMyList.isNotEmpty()
+                val hadThisSeason = mutableUiState.value.thisSeasonAnime.isNotEmpty()
+                val hadTrending = mutableUiState.value.trendingAnime.isNotEmpty()
+                val hadNextSeason = mutableUiState.value.nextSeasonAnime.isNotEmpty()
+                val hadPopular = mutableUiState.value.popularAnime.isNotEmpty()
+                val hadNewly = mutableUiState.value.newlyAnime.isNotEmpty()
+
+                mutableUiState.value.allLists.forEach { it.clear() }
+
+                if (hadAiringOnMyList || (mutableUiState.value.airingOnMyList == true && hadAiring)) {
+                    fetchAiringAnimeOnMyList()
+                } else if (hadAiring) {
+                    fetchAiringAnime()
+                } else {
+                    if (mutableUiState.value.airingOnMyList == true) fetchAiringAnimeOnMyList()
+                    else fetchAiringAnime()
+                }
+
+                if (hadThisSeason) fetchThisSeasonAnime()
+                if (hadTrending) fetchTrendingAnime()
+                if (hadNextSeason) fetchNextSeasonAnime()
+                if (hadPopular) fetchPopularAnime()
+                if (hadNewly) fetchNewlyAnime()
+            }
+            ?.launchIn(viewModelScope)
     }
 }

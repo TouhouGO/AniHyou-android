@@ -121,6 +121,10 @@ sealed interface Route : NavKey {
 
     @Serializable
     @Immutable
+    object LocalizationSettings: Route
+
+    @Serializable
+    @Immutable
     object Translations: Route
 
     @Serializable

@@ -12,11 +12,16 @@ import com.axiel7.anihyou.core.domain.repository.MediaRepository
 import com.axiel7.anihyou.core.model.activity.updateLikeStatus
 import com.axiel7.anihyou.core.ui.common.navigation.Route
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -74,13 +79,32 @@ class MediaActivityViewModel(
         }
     }
 
+    private val refreshTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     init {
-        mutableUiState
-            .filter { it.hasNextPage }
-            .distinctUntilChanged { old, new ->
-                old.page == new.page
-                        && old.isMine == new.isMine
+        defaultPreferencesRepository.localizationConfig
+            .drop(1)
+            .distinctUntilChangedBy { it.configVersion }
+            .onEach {
+                mutableUiState.update {
+                    it.activities.clear()
+                    it.copy(page = 1, hasNextPage = true, isLoading = true)
+                }
+                refreshTrigger.tryEmit(Unit)
             }
+            .launchIn(viewModelScope)
+
+        merge(
+            mutableUiState
+                .filter { it.hasNextPage }
+                .distinctUntilChanged { old, new ->
+                    old.page == new.page
+                            && old.isMine == new.isMine
+                },
+            refreshTrigger.mapNotNull {
+                mutableUiState.value.takeIf { it.hasNextPage }
+            }
+        )
             .flatMapLatest { uiState ->
                 mediaRepository.getMediaActivityPage(
                     mediaId = arguments.mediaId,

@@ -9,8 +9,11 @@ import com.axiel7.anihyou.core.model.activity.toGenericActivity
 import com.axiel7.anihyou.core.network.ActivityDetailsQuery
 import com.axiel7.anihyou.core.network.type.ActivityType
 import com.axiel7.anihyou.core.ui.common.navigation.Route
+import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -24,6 +27,7 @@ class ActivityDetailsViewModel(
     @InjectedParam arguments: Route.ActivityDetails,
     private val activityRepository: ActivityRepository,
     private val likeRepository: LikeRepository,
+    private val defaultPreferencesRepository: DefaultPreferencesRepository? = null,
 ) : UiStateViewModel<ActivityDetailsUiState>(), ActivityDetailsEvent {
 
     private var detailsQueryData: ActivityDetailsQuery.Activity? = null
@@ -122,6 +126,14 @@ class ActivityDetailsViewModel(
     }
 
     init {
+        defaultPreferencesRepository?.localizationConfig
+            ?.drop(1)
+            ?.distinctUntilChangedBy { it.configVersion }
+            ?.onEach {
+                refresh()
+            }
+            ?.launchIn(viewModelScope)
+
         mutableUiState
             .distinctUntilChanged { _, new -> !new.fetchFromNetwork }
             .flatMapLatest { uiState ->

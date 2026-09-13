@@ -13,9 +13,13 @@ import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.ui.common.navigation.Route
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -108,8 +112,12 @@ class StaffDetailsViewModel(
         }
     }
 
-    init {
-        staffRepository.getStaffDetails(arguments.id)
+    private var detailsJob: kotlinx.coroutines.Job? = null
+    private val refreshTrigger = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    private fun loadStaffDetails() {
+        detailsJob?.cancel()
+        detailsJob = staffRepository.getStaffDetails(arguments.id)
             .onEach { result ->
                 mutableUiState.update {
                     if (result is DataResult.Success) {
@@ -123,14 +131,40 @@ class StaffDetailsViewModel(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    init {
+        loadStaffDetails()
+
+        defaultPreferencesRepository.localizationConfig
+            ?.distinctUntilChangedBy { it.configVersion }
+            ?.drop(1)
+            ?.onEach {
+                loadStaffDetails()
+                mutableUiState.update {
+                    it.copy(
+                        pageMedia = 1,
+                        pageCharacters = 1,
+                        hasNextPageMedia = true,
+                        hasNextPageCharacters = true
+                    )
+                }
+                refreshTrigger.tryEmit(Unit)
+            }
+            ?.launchIn(viewModelScope)
 
         // staff media
-        mutableUiState
-            .filter { it.hasNextPageMedia }
-            .distinctUntilChanged { old, new ->
-                old.pageMedia == new.pageMedia
-                        && old.mediaOnMyList == new.mediaOnMyList
+        merge(
+            mutableUiState
+                .filter { it.hasNextPageMedia }
+                .distinctUntilChanged { old, new ->
+                    old.pageMedia == new.pageMedia
+                            && old.mediaOnMyList == new.mediaOnMyList
+                },
+            refreshTrigger.mapNotNull {
+                mutableUiState.value.takeIf { it.hasNextPageMedia }
             }
+        )
             .flatMapLatest { uiState ->
                 staffRepository.getStaffMediaPage(
                     staffId = arguments.id,
@@ -157,12 +191,17 @@ class StaffDetailsViewModel(
             .launchIn(viewModelScope)
 
         // staff characters
-        mutableUiState
-            .filter { it.hasNextPageCharacters }
-            .distinctUntilChanged { old, new ->
-                old.pageCharacters == new.pageCharacters
-                        && old.charactersOnMyList == new.charactersOnMyList
+        merge(
+            mutableUiState
+                .filter { it.hasNextPageCharacters }
+                .distinctUntilChanged { old, new ->
+                    old.pageCharacters == new.pageCharacters
+                            && old.charactersOnMyList == new.charactersOnMyList
+                },
+            refreshTrigger.mapNotNull {
+                mutableUiState.value.takeIf { it.hasNextPageCharacters }
             }
+        )
             .flatMapLatest { uiState ->
                 staffRepository.getStaffCharactersPage(
                     staffId = arguments.id,

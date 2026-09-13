@@ -31,21 +31,21 @@ class MarkdownUtilsTest {
     @Test
     fun `formatCompatibleMarkdown should format youtube tags correctly`() {
         val input = "youtube(https://www.youtube.com/watch?v=Z9trg537)"
-        val expected = "\n[![YouTube Video](https://img.youtube.com/vi/Z9trg537/hqdefault.jpg)](https://www.youtube.com/watch?v=Z9trg537)\n"
+        val expected = "[https://www.youtube.com/watch?v=Z9trg537](https://www.youtube.com/watch?v=Z9trg537)"
         assertEquals(expected, input.formatCompatibleMarkdown())
     }
 
     @Test
     fun `formatCompatibleMarkdown should format youtube tags with youtu_be correctly`() {
         val input = "youtube(https://youtu.be/Z9trg537)"
-        val expected = "\n[![YouTube Video](https://img.youtube.com/vi/Z9trg537/hqdefault.jpg)](https://www.youtube.com/watch?v=Z9trg537)\n"
+        val expected = "[https://youtu.be/Z9trg537](https://youtu.be/Z9trg537)"
         assertEquals(expected, input.formatCompatibleMarkdown())
     }
 
     @Test
     fun `formatCompatibleMarkdown should format youtube tags with uppercase correctly`() {
         val input = "Youtube(https://youtu.be/Z9trg537)"
-        val expected = "\n[![YouTube Video](https://img.youtube.com/vi/Z9trg537/hqdefault.jpg)](https://www.youtube.com/watch?v=Z9trg537)\n"
+        val expected = "[https://youtu.be/Z9trg537](https://youtu.be/Z9trg537)"
         assertEquals(expected, input.formatCompatibleMarkdown())
     }
 

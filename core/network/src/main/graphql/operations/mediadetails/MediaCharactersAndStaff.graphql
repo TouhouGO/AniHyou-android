@@ -19,6 +19,8 @@ fragment MediaCharacter on CharacterEdge {
         id
         name {
             userPreferred
+            native
+            alternative
         }
         image {
             medium
@@ -35,6 +37,8 @@ fragment MediaStaff on StaffEdge {
         id
         name {
             userPreferred
+            native
+            alternative
         }
         image {
             medium

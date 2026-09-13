@@ -11,6 +11,8 @@ import com.axiel7.anihyou.core.network.fragment.ExploreMedia
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -170,6 +172,22 @@ class CalendarViewModel(
             }
         }.launchIn(viewModelScope)
 
+        defaultPreferencesRepository.localizationConfig
+            .drop(1)
+            .distinctUntilChangedBy { it.configVersion }
+            .onEach {
+                mutableUiState.update {
+                    it.copy(
+                        fetchFromNetwork = true,
+                        weeklyAnime = mutableMapOf(),
+                        page = 1,
+                        hasNextPage = true,
+                        isLoading = true,
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+
         mutableUiState
             .filter { it.hasNextPage }
             .combine(displayAdult, ::Pair)
@@ -177,7 +195,8 @@ class CalendarViewModel(
                 oldState.page == newState.page &&
                         oldState.day == newState.day &&
                         oldState.onMyList == newState.onMyList &&
-                        oldAdult == newAdult
+                        oldAdult == newAdult &&
+                        !newState.fetchFromNetwork
             }
             .flatMapLatest { (uiState, displayAdult) ->
                 val start = uiState.day.toTimestamp(isEndOfDay = false)
@@ -207,6 +226,7 @@ class CalendarViewModel(
                             weeklyAnime = updatedMap,
                             hasNextPage = result.hasNextPage,
                             isLoading = false,
+                            fetchFromNetwork = false,
                         )
                     }
                 } else if (result is PagedResult.Loading) {
