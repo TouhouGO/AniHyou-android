@@ -1,0 +1,152 @@
+name: Release Localization Bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release Tag (e.g. v2026.09.09)'
+        required: true
+        default: 'v2026.09.09'
+      publish_release:
+        description: 'Publish release immediately (uncheck to leave as draft)'
+        type: boolean
+        default: true
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check repository hygiene
+        run: bash scripts/check-repository-hygiene.sh
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew and scripts
+        run: |
+          chmod +x gradlew
+          chmod +x scripts/verify_localization_release.sh
+
+      - name: Determine and Validate Release Tag
+        id: determine_tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.release_tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+
+          # Strict version format check: ^v[0-9]{4}\.[0-9]{2}\.[0-9]{2}$
+          if [[ ! "$TAG" =~ ^v[0-9]{4}\.[0-9]{2}\.[0-9]{2}$ ]]; then
+            echo "ERROR: Invalid release tag '$TAG'. Must match ^v[0-9]{4}\.[0-9]{2}\.[0-9]{2}$"
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Run Localization Unit Tests
+        run: |
+          ./gradlew :core:network:test --tests '*Localization*' --tests '*Bangumi*'
+
+      - name: Calibrate Titles with Latest Bangumi Archive
+        run: |
+          ./scripts/enrich_bundle_from_bangumi_archive.sh
+
+      - name: Package Localization Bundle & Generate Remote Manifest
+        env:
+          TAG: ${{ steps.determine_tag.outputs.tag }}
+        run: |
+          # Derive deterministic build timestamp from the commit timestamp
+          COMMIT_TIMESTAMP=$(git log -1 --format=%ct)
+          BUILD_TIMESTAMP=$((COMMIT_TIMESTAMP * 1000))
+
+          ./gradlew :core:network:generateRemoteBundleManifest \
+            -PbundleReleaseTag="$TAG" \
+            -PbundleBuildTimestamp="$BUILD_TIMESTAMP"
+
+      - name: Verify Generated Release Artifacts
+        run: |
+          ./scripts/verify_localization_release.sh \
+            core/network/build/outputs/localization/localization_bundle.zip \
+            core/network/build/outputs/localization/remote_bundle_manifest.json
+
+      - name: Draft-First Ordered Release Publication
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.determine_tag.outputs.tag }}
+          PUBLISH: ${{ github.event_name == 'push' || github.event.inputs.publish_release == 'true' }}
+        run: |
+          ZIP_FILE="core/network/build/outputs/localization/localization_bundle.zip"
+          MANIFEST_FILE="core/network/build/outputs/localization/remote_bundle_manifest.json"
+          POINTER_TAG="localization-latest"
+
+          # 1. Check if release already exists
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            IS_DRAFT=$(gh release view "$TAG" --json isDraft -q .isDraft)
+            if [ "$IS_DRAFT" != "true" ]; then
+              echo "ERROR: Release $TAG is already published! Non-destructive policy forbids overwriting published release assets. Please bump the version tag."
+              exit 1
+            fi
+            echo "Found existing draft release for $TAG."
+          else
+            echo "Creating initial draft release for $TAG..."
+            gh release create "$TAG" \
+              --title "Localization Bundle $TAG" \
+              --notes "Automated OTA localization bundle release with SHA-256 and remote bundle manifest." \
+              --draft
+          fi
+
+          # 2. Upload ZIP file first
+          echo "Uploading $ZIP_FILE..."
+          gh release upload "$TAG" "$ZIP_FILE" --clobber
+
+          # 3. Download ZIP back to verify remote integrity
+          VERIFY_DIR=$(mktemp -d)
+          trap 'rm -rf "$VERIFY_DIR"' EXIT
+
+          echo "Downloading uploaded ZIP for remote integrity verification..."
+          gh release download "$TAG" -p "localization_bundle.zip" -D "$VERIFY_DIR"
+
+          LOCAL_SHA=$(shasum -a 256 "$ZIP_FILE" | awk '{print $1}')
+          REMOTE_SHA=$(shasum -a 256 "$VERIFY_DIR/localization_bundle.zip" | awk '{print $1}')
+
+          if [ "$LOCAL_SHA" != "$REMOTE_SHA" ]; then
+            echo "ERROR: Uploaded ZIP integrity check failed! Local SHA: $LOCAL_SHA, Remote SHA: $REMOTE_SHA"
+            exit 1
+          fi
+          echo "Remote ZIP integrity confirmed."
+
+          # 4. Upload manifest last only after ZIP is verified
+          echo "Uploading $MANIFEST_FILE..."
+          gh release upload "$TAG" "$MANIFEST_FILE" --clobber
+
+          # 5. Publish draft if requested
+          if [ "$PUBLISH" = "true" ]; then
+            echo "Publishing release $TAG..."
+            gh release edit "$TAG" --draft=false
+            if ! gh release view "$POINTER_TAG" > /dev/null 2>&1; then
+              gh release create "$POINTER_TAG" \
+                --title "Latest Localization Bundle" \
+                --notes "Stable manifest pointer for the latest verified localization bundle." \
+                --latest=false
+            fi
+            gh release upload "$POINTER_TAG" "$MANIFEST_FILE" --clobber
+            gh release edit "$POINTER_TAG" --latest=false
+            echo "Release $TAG published successfully."
+          else
+            echo "Release $TAG left in draft state."
+          fi
