@@ -10,6 +10,7 @@ import okhttp3.OkHttpClient
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Protocol
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
@@ -433,6 +434,277 @@ class ChineseTitleInterceptorTest {
         val resultResponse = interceptor.intercept(chain)
 
         assertEquals(sampleText, resultResponse.body.string())
+    }
+
+    @Test
+    fun `test ChineseTitleProvider reverse lookup finds media IDs and handles Traditional Chinese`() {
+        // Test simplified Chinese query
+        val makeineIds = titleProvider.findMediaIdsByChineseTitle("败犬女主")
+        assertTrue("Should find Makeine anime ID 171457", makeineIds.contains(171457))
+        assertTrue("Should find Makeine manga ID 135276", makeineIds.contains(135276))
+
+        // Test traditional Chinese query
+        val tradMakeineIds = titleProvider.findMediaIdsByChineseTitle("敗犬女主")
+        assertTrue("Traditional Chinese query should find Makeine anime ID 171457", tradMakeineIds.contains(171457))
+
+        // Test Attack on Titan
+        val aotIds = titleProvider.findMediaIdsByChineseTitle("进击的巨人")
+        assertTrue("Should find AoT ID 16498", aotIds.contains(16498))
+
+        val tradAotIds = titleProvider.findMediaIdsByChineseTitle("進擊的巨人")
+        assertTrue("Traditional Chinese should find AoT ID 16498", tradAotIds.contains(16498))
+
+        // Test Oshi no Ko
+        val oshiIds = titleProvider.findMediaIdsByChineseTitle("我推的孩子")
+        assertTrue("Should find Oshi no Ko ID 117195", oshiIds.contains(117195))
+
+        // Test native title fallback for name-only dictionary entries
+        val nativeTitle = titleProvider.findNativeTitleByChineseTitle("太空堡垒")
+        assertEquals("Robotech", nativeTitle)
+
+        // Test title with ID in dictionary
+        val whiteSnakeIds = titleProvider.findMediaIdsByChineseTitle("白蛇传")
+        assertTrue("Should find Hakujaden ID 4513", whiteSnakeIds.contains(4513))
+
+        // Test non-existent and blank queries
+        assertTrue(titleProvider.findMediaIdsByChineseTitle("一些绝对不存在的冷门关键词999").isEmpty())
+        assertTrue(titleProvider.findMediaIdsByChineseTitle("").isEmpty())
+    }
+
+    @Test
+    fun `test rewriteRequest transforms Chinese search into id_in and updates query`() {
+        val requestJson = """
+            {
+              "operationName": "SearchMedia",
+              "variables": {
+                "page": 1,
+                "perPage": 25,
+                "search": "败犬女主",
+                "type": "ANIME"
+              },
+              "query": "query SearchMedia(${'$'}page: Int, ${'$'}perPage: Int, ${'$'}search: String, ${'$'}type: MediaType) { Page(page: ${'$'}page, perPage: ${'$'}perPage) { media(search: ${'$'}search, type: ${'$'}type) { id } } }"
+            }
+        """.trimIndent()
+
+        val parsed = Json.parseToJsonElement(requestJson)
+        val rewritten = ChineseTitleInterceptor.rewriteRequest(
+            element = parsed,
+            titleProvider = titleProvider,
+            tagProvider = tagProvider
+        )
+
+        val vars = rewritten.jsonObject["variables"]!!.jsonObject
+        val idIn = vars["id_in"] as? JsonArray
+        assertNotNull("id_in should be injected", idIn)
+        val idList = idIn!!.map { it.jsonPrimitive.content.toInt() }
+        assertTrue("id_in should contain 171457", idList.contains(171457))
+        assertTrue("id_in should contain 135276", idList.contains(135276))
+
+        // The Chinese search should be omitted from variables to prevent AniList AND mismatch
+        assertEquals(null, vars["search"])
+        assertEquals("ANIME", vars["type"]?.jsonPrimitive?.content)
+
+        // The query should have $id_in declared and passed to media()
+        val queryStr = rewritten.jsonObject["query"]?.jsonPrimitive?.content
+        assertNotNull("query should be present", queryStr)
+        assertTrue("query should declare ${'$'}id_in", queryStr!!.contains("query SearchMedia(${'$'}id_in: [Int], "))
+        assertTrue("media() should take id_in", queryStr.contains("media(id_in: ${'$'}id_in, "))
+    }
+
+    @Test
+    fun `test rewriteRequest transforms native title when only name match exists`() {
+        val requestJson = """
+            {
+              "operationName": "SearchMedia",
+              "variables": {
+                "page": 1,
+                "search": "太空堡垒"
+              },
+              "query": "query SearchMedia(${'$'}page: Int, ${'$'}search: String) { Page(page: ${'$'}page) { media(search: ${'$'}search) { id } } }"
+            }
+        """.trimIndent()
+
+        val parsed = Json.parseToJsonElement(requestJson)
+        val rewritten = ChineseTitleInterceptor.rewriteRequest(
+            element = parsed,
+            titleProvider = titleProvider,
+            tagProvider = tagProvider
+        )
+
+        val vars = rewritten.jsonObject["variables"]!!.jsonObject
+        assertEquals("Robotech", vars["search"]?.jsonPrimitive?.content)
+        assertEquals(null, vars["id_in"])
+    }
+
+    @Test
+    fun `test rewriteRequest preserves English and Japanese searches untouched`() {
+        // English search
+        val enJson = """
+            {
+              "operationName": "SearchMedia",
+              "variables": {
+                "page": 1,
+                "search": "Attack on Titan"
+              },
+              "query": "query SearchMedia(${'$'}page: Int, ${'$'}search: String) { Page(page: ${'$'}page) { media(search: ${'$'}search) { id } } }"
+            }
+        """.trimIndent()
+
+        val enParsed = Json.parseToJsonElement(enJson)
+        val enRewritten = ChineseTitleInterceptor.rewriteRequest(
+            element = enParsed,
+            titleProvider = titleProvider,
+            tagProvider = tagProvider
+        )
+
+        val enVars = enRewritten.jsonObject["variables"]!!.jsonObject
+        assertEquals("Attack on Titan", enVars["search"]?.jsonPrimitive?.content)
+        assertEquals(null, enVars["id_in"])
+
+        // Japanese Katakana search
+        val jaJson = """
+            {
+              "operationName": "SearchMedia",
+              "variables": {
+                "page": 1,
+                "search": "ナルト"
+              },
+              "query": "query SearchMedia(${'$'}page: Int, ${'$'}search: String) { Page(page: ${'$'}page) { media(search: ${'$'}search) { id } } }"
+            }
+        """.trimIndent()
+
+        val jaParsed = Json.parseToJsonElement(jaJson)
+        val jaRewritten = ChineseTitleInterceptor.rewriteRequest(
+            element = jaParsed,
+            titleProvider = titleProvider,
+            tagProvider = tagProvider
+        )
+
+        val jaVars = jaRewritten.jsonObject["variables"]!!.jsonObject
+        assertEquals("ナルト", jaVars["search"]?.jsonPrimitive?.content)
+        assertEquals(null, jaVars["id_in"])
+    }
+
+    @Test
+    fun `test rewriteRequest handles combined search with Chinese tags and genres`() {
+        val requestJson = """
+            {
+              "operationName": "SearchMedia",
+              "variables": {
+                "page": 1,
+                "perPage": 25,
+                "search": "败犬女主",
+                "genre_in": ["喜剧"],
+                "tag_in": ["校园"]
+              },
+              "query": "query SearchMedia(${'$'}page: Int, ${'$'}perPage: Int, ${'$'}search: String, ${'$'}genre_in: [String], ${'$'}tag_in: [String]) { Page(page: ${'$'}page) { media(search: ${'$'}search, genre_in: ${'$'}genre_in, tag_in: ${'$'}tag_in) { id } } }"
+            }
+        """.trimIndent()
+
+        val parsed = Json.parseToJsonElement(requestJson)
+        val rewritten = ChineseTitleInterceptor.rewriteRequest(
+            element = parsed,
+            titleProvider = titleProvider,
+            tagProvider = tagProvider
+        )
+
+        val vars = rewritten.jsonObject["variables"]!!.jsonObject
+        val idIn = vars["id_in"] as? JsonArray
+        assertNotNull("id_in should be injected", idIn)
+        assertTrue(idIn!!.map { it.jsonPrimitive.content.toInt() }.contains(171457))
+
+        val genres = (vars["genre_in"] as JsonArray).map { it.jsonPrimitive.content }
+        assertEquals(listOf("Comedy"), genres)
+
+        val tags = (vars["tag_in"] as JsonArray).map { it.jsonPrimitive.content }
+        assertEquals(listOf("School"), tags)
+    }
+
+    @Test
+    fun `test interceptor end-to-end rewrites Chinese search request and translates response`() {
+        val interceptor = ChineseTitleInterceptor(
+            titleProvider = titleProvider,
+            tagProvider = tagProvider,
+            characterProvider = characterProvider,
+            descriptionProvider = descProvider,
+            chineseConverter = converter
+        )
+
+        val requestBody = """
+            {
+              "operationName": "SearchMedia",
+              "variables": {
+                "page": 1,
+                "perPage": 25,
+                "search": "败犬女主",
+                "type": "ANIME"
+              },
+              "query": "query SearchMedia(${'$'}page: Int, ${'$'}perPage: Int, ${'$'}search: String, ${'$'}type: MediaType) { Page(page: ${'$'}page, perPage: ${'$'}perPage) { media(search: ${'$'}search, type: ${'$'}type) { id } } }"
+            }
+        """.trimIndent()
+
+        val mockServerResponseBody = """
+            {
+              "data": {
+                "Page": {
+                  "media": [
+                    {
+                      "id": 171457,
+                      "type": "ANIME",
+                      "title": {
+                        "userPreferred": "Make Heroine ga Oosugiru!",
+                        "native": "負けヒロインが多すぎる！"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+        """.trimIndent()
+
+        var interceptedRequestBody: String? = null
+        val originalRequest = Request.Builder()
+            .url(ANILIST_GRAPHQL_URL)
+            .post(requestBody.toRequestBody("application/json; charset=utf-8".toMediaType()))
+            .build()
+
+        val originalResponse = Response.Builder()
+            .request(originalRequest)
+            .protocol(Protocol.HTTP_1_1)
+            .code(200)
+            .message("OK")
+            .body(mockServerResponseBody.toResponseBody("application/json; charset=utf-8".toMediaType()))
+            .build()
+
+        val chain = object : Interceptor.Chain {
+            override fun request(): Request = originalRequest
+            override fun proceed(request: Request): Response {
+                val buffer = okio.Buffer()
+                request.body?.writeTo(buffer)
+                interceptedRequestBody = buffer.readUtf8()
+                return originalResponse
+            }
+            override fun connection() = null
+            override fun call() = throw UnsupportedOperationException()
+            override fun connectTimeoutMillis() = 10000
+            override fun withConnectTimeout(timeout: Int, unit: java.util.concurrent.TimeUnit) = this
+            override fun readTimeoutMillis() = 10000
+            override fun withReadTimeout(timeout: Int, unit: java.util.concurrent.TimeUnit) = this
+            override fun writeTimeoutMillis() = 10000
+            override fun withWriteTimeout(timeout: Int, unit: java.util.concurrent.TimeUnit) = this
+        }
+
+        val resultResponse = interceptor.intercept(chain)
+
+        // 1. Verify outgoing request was rewritten
+        val reqBody = checkNotNull(interceptedRequestBody)
+        assertTrue("Request body must contain id_in", reqBody.contains("\"id_in\":"))
+        assertTrue("Request body must contain 171457", reqBody.contains("171457"))
+        assertTrue("Query string must contain ${'$'}id_in", reqBody.contains("${'$'}id_in: [Int]"))
+
+        // 2. Verify incoming response was localized to Chinese
+        val resultBodyString = resultResponse.body.string()
+        assertTrue("Response must contain translated Chinese title", resultBodyString.contains("败犬女主太多了！"))
     }
 
     private class FakeChain(

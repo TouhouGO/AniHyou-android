@@ -8,6 +8,7 @@ import com.axiel7.anihyou.core.base.ANILIST_GRAPHQL_URL
 import com.axiel7.anihyou.core.base.MAL_CLIENT_ID
 import com.axiel7.anihyou.core.base.X_MAL_CLIENT_ID
 import com.axiel7.anihyou.core.network.cache.Cache.cache
+import com.axiel7.anihyou.core.network.localization.BangumiSearchProvider
 import com.axiel7.anihyou.core.network.localization.BundleUpdateManager
 import com.axiel7.anihyou.core.network.localization.ChineseCharacterProvider
 import com.axiel7.anihyou.core.network.localization.ChineseConverter
@@ -25,6 +26,7 @@ import com.axiel7.anihyou.core.network.localization.LocalizationBundleService
 import com.axiel7.anihyou.core.network.localization.EntityNameCache
 import com.axiel7.anihyou.core.network.localization.WikidataEntityNameSource
 import com.axiel7.anihyou.core.network.localization.ChineseEntityNameResolver
+import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import org.koin.dsl.module
@@ -44,8 +46,9 @@ val networkModule = module {
     single { ChineseTagProvider(get()) }
     single { ChineseCharacterProvider(get(), get(), entityNameResolver = get()) }
     single { ChineseTitleProvider(get()) }
+    single { BangumiSearchProvider(chineseConverter = get()).apply { prewarmConnection() } }
     single { ChineseDescriptionProvider(get(), get()) }
-    single { ChineseTitleInterceptor(get(), get(), get(), get(), get()) }
+    single { ChineseTitleInterceptor(get(), get(), get(), get(), get(), get()) }
     single { provideAuthorizationInterceptor(get()) }
     single { provideApolloClient(get(), get()) }
     single<ApolloCacheManager> {
@@ -66,6 +69,9 @@ private fun provideApolloClient(
     val cacheFactory = MemoryCacheFactory(maxSizeBytes = 10 * 1024 * 1024)
 
     val okHttpClient = OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(25, TimeUnit.SECONDS)
+        .writeTimeout(15, TimeUnit.SECONDS)
         .addInterceptor(authorizationInterceptor)
         .addInterceptor(AniListRateLimitInterceptor())
         .addInterceptor(chineseTitleInterceptor)

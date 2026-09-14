@@ -9,6 +9,7 @@ core/network/build.gradle.kts
 core/network/src/main/java/com/axiel7/anihyou/core/network/NetworkModule.kt
 core/network/src/main/java/com/axiel7/anihyou/core/network/cache/ApolloCacheManager.kt
 core/network/src/main/java/com/axiel7/anihyou/core/network/localization/BangumiSubjectMatcher.kt
+core/network/src/main/java/com/axiel7/anihyou/core/network/localization/BangumiSearchProvider.kt
 core/network/src/main/java/com/axiel7/anihyou/core/network/localization/BundleFileOps.kt
 core/network/src/main/java/com/axiel7/anihyou/core/network/localization/BundleManifest.kt
 core/network/src/main/java/com/axiel7/anihyou/core/network/localization/BundleUpdateManager.kt

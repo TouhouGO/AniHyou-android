@@ -146,6 +146,10 @@ baselineProfile {
     dexLayoutOptimization = true
 }
 
+koinCompiler {
+    compileSafety.set(false)
+}
+
 dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:domain"))
