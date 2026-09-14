@@ -235,7 +235,11 @@ class CalendarViewModel(
                     }
                 } else if (result is PagedResult.Error) {
                     mutableUiState.update {
-                        result.toUiState(loadingWhen = it.page == 1)
+                        it.copy(
+                            error = result.message,
+                            isLoading = false,
+                            hasNextPage = !result.message.contains("Too many requests"),
+                        )
                     }
                 }
             }
