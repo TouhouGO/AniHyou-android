@@ -49,15 +49,19 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # 必须 rebase 到最新远端后再提交：git fetch 只更新 origin/master
-          # 引用、不移动本地 HEAD，单独 fetch 起不到同步作用。
-          git fetch origin master
-          git rebase origin/master
-
+          # 先提交，使工作区干净——git rebase 拒绝在有未暂存改动时执行，
+          # 放在 add 之前会 100% 失败。
           git add core/network/src/main/resources/titles_zh_cn.json
           git commit -m "chore(data): auto-sync titles from anilist-zh-cn-userscript [skip ci]"
 
-          # 极端情况：fetch/rebase 与 push 之间远端又前进了，重试一次
+          # 变基到最新远端。若远端也改过 titles_zh_cn.json（例如 OTA 回填），
+          # rebase 会冲突并在此失败——这是有意的 fail loudly，不自动选边，
+          # 避免静默丢失一周的同步成果或 OTA 校准成果。人工跑一次
+          # ./scripts/sync-titles.sh 即可恢复。
+          git fetch origin master
+          git rebase origin/master
+
+          # 极端情况：rebase 与 push 之间远端又前进了，重试一次
           if ! git push origin HEAD:master; then
             echo "Push rejected; origin/master advanced during this run. Rebasing and retrying once."
             git fetch origin master
