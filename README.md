@@ -60,6 +60,10 @@ git fetch upstream
 
 确认报告后再执行实际同步。`upstream` 指向原作者仓库，`origin` 指向 TouhouGO 中文增强分支。
 
+## 同步译名数据
+
+作品中文标题数据（`titles_zh_cn.json`）由 GitHub Actions 定时工作流（每周一 04:17 UTC）自动从上游 userscript 仓库同步并提交推送，日常无需手动执行 `scripts/sync-titles.sh`。
+
 ## 数据来源
 
 - [AniList](https://anilist.co/)：作品、角色、制作人员和用户媒体数据。
