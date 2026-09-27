@@ -46,3 +46,12 @@ This document catalogs every surface in AniHyou that consumes localized GraphQL 
 - **当前优势**：各 ViewModel 按需精细化重置分页和加载状态，无需对非活跃或未实例化页面发送多余重载请求。
 - **演进方向**：评估在 Repository 层或统一 PagingSource / Apollo Cache Invalidation 拦截器中提供集中式刷新机制，彻底将 `configVersion` 的监听从 ViewModel 中移出。
 - **评估决议**：当前 18 个 ViewModel 现状运转稳健且测试齐备，集中式改造保留在后续大版本迭代中独立立项验证，不混入本次修复与维护。
+
+---
+
+## 4. 内置资源基线维护 (Built-in Resource Baseline Maintenance)
+
+- **自动回填机制 (Automated Backfill)**：在 GitHub Actions OTA 发布流程（`.github/workflows/release-localization-bundle.yaml`）中，当发布确认（`publish_release == 'true'` 或 tag push）且完成远端 SHA-256 校验后，工作流会自动解包本地构建产物 `localization_bundle.zip`，将其中的 5 个资源文件（`bundle_manifest.json`、`titles_zh_cn.json`、`tags_zh_cn.json`、`staff_characters_zh_cn.json`、`t2s_char_map.json`）原始字节回填至 `core/network/src/main/resources/` 并提交推送回分支。
+- **杜绝手工维护与校验和漂移 (Zero Manual Drift)**：内置资源基线不再依赖开发者手工计算或维护 checksum，始终严格等价于最近一次实际发布的 OTA 语言包内容。以此根治了历史上手工维护与自动校准之间反复出现的 `bundle_manifest.json` 校验和漂移问题。
+- **版本一致性保证 (Version Parity)**：APK 构建内置的资源版本与已发布的最新 OTA 语言包完全同步，确保终端用户仅在真正存在更高版本的新发布时才会收到 OTA 更新提示。
+

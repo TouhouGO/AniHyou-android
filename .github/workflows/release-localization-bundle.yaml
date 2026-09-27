@@ -18,6 +18,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: localization-bundle-release
+  cancel-in-progress: false
+
 jobs:
   release-bundle:
     runs-on: ubuntu-latest
@@ -150,3 +154,63 @@ jobs:
           else
             echo "Release $TAG left in draft state."
           fi
+
+      - name: Backfill Built-in Baseline from Published Bundle
+        if: ${{ github.event_name == 'push' || inputs.publish_release == 'true' }}
+        env:
+          TAG: ${{ steps.determine_tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          BACKFILL_DIR=$(mktemp -d)
+          trap 'rm -rf "${BACKFILL_DIR}"' EXIT
+
+          # 1. 解包本地构建产物（已与远端通过 SHA-256 校验一致）
+          unzip -q core/network/build/outputs/localization/localization_bundle.zip \
+            -d "${BACKFILL_DIR}"
+
+          # 2. 回填 5 个文件（原始字节，不重新计算）
+          for f in bundle_manifest.json titles_zh_cn.json tags_zh_cn.json \
+                   staff_characters_zh_cn.json t2s_char_map.json; do
+            cp "${BACKFILL_DIR}/${f}" core/network/src/main/resources/${f}
+          done
+
+          # 3. 校验回填后内置清单与实际文件严格一致（size + sha256）
+          python3 - <<'PYEOF'
+          import json, hashlib, sys, os
+          res = "core/network/src/main/resources"
+          m = json.load(open(os.path.join(res, "bundle_manifest.json")))
+          assert m.get("formatVersion") == 1, "bad formatVersion"
+          ok = True
+          for name, entry in m["files"].items():
+              p = os.path.join(res, name)
+              if not os.path.exists(p):
+                  print(f"MISSING: {name}"); ok = False; continue
+              data = open(p, "rb").read()
+              if len(data) != entry["size"]:
+                  print(f"SIZE MISMATCH {name}: {len(data)} != {entry['size']}"); ok = False
+              algo = "sha256" if "sha256" in entry else ("md5" if "md5" in entry else None)
+              if algo is None:
+                  print(f"NO CHECKSUM: {name}"); ok = False; continue
+              actual = hashlib.new(algo, data).hexdigest()
+              if actual.lower() != entry[algo].lower():
+                  print(f"{algo.upper()} MISMATCH {name}: {actual} != {entry[algo]}"); ok = False
+          declared = set(m["files"])
+          present = {f for f in os.listdir(res) if f.endswith(".json")}
+          extra = present - declared
+          if extra:
+              print(f"UNDECLARED JSON FILES: {sorted(extra)}"); ok = False
+          sys.exit(0 if ok else 1)
+          PYEOF
+
+          # 4. 提交并推送；无变化则正常跳过，不得失败
+          # [skip ci] 用于避免每次 OTA 发布都空跑一次 debug APK 构建；若希望新内置资源经过 APK 构建验证，可移除该标记。
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add core/network/src/main/resources/
+          if git diff --cached --quiet; then
+            echo "Built-in baseline already matches published bundle; nothing to backfill."
+            exit 0
+          fi
+          git commit -m "chore(data): backfill built-in baseline from localization bundle ${TAG} [skip ci]"
+          git push
+
