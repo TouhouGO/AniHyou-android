@@ -245,6 +245,16 @@ class ChineseTitleInterceptor(
     }
 
     companion object {
+        // NOTE(2026-09-27): The AniList IDs hardcoded below (87487, 113425, 120534,
+        // 160803, 203448, 97660, 164299, 103393, 145316, 148073) are search-ranking
+        // heuristics for the "重启" keyword, NOT a title dictionary. They are keyed on the
+        // user's runtime search term, so they cannot be data-driven without inventing a
+        // rule format. Three of them (103393, 145316, 148073) have no known provenance and
+        // are kept only because removing them would change ranking for existing users.
+        //
+        // These are independent of ChineseTitleProvider.TITLE_OVERRIDES: deleting that
+        // dictionary does NOT require editing anything here, and search results for "重启"
+        // stay the same because extraRestartIds below injects the IDs directly.
         fun rewriteMediaTitles(
             element: JsonElement,
             provider: ChineseTitleProvider,

@@ -526,9 +526,8 @@ class LocalizationBundleManager(
             T2S_MAP_FILE
         )
 
-        const val MAX_ENTRY_COUNT = 10
         const val MAX_BUNDLE_ENTRIES = 10
-        const val MAX_ENTRY_BYTES = 15L * 1024 * 1024 // 15MB
+        const val MAX_ENTRY_BYTES = 15L * 1024 * 1024 // 15MB; unreachable today since MAX_ARCHIVE_BYTES (10MB) caps the zip first
         const val MAX_TOTAL_BYTES = 30L * 1024 * 1024 // 30MB
 
         fun computeSha256(file: File): String {

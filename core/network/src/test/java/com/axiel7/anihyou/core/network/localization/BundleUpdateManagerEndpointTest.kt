@@ -1,7 +1,9 @@
 package com.axiel7.anihyou.core.network.localization
 
+import java.io.File
 import java.io.IOException
 import java.net.SocketTimeoutException
+import java.nio.file.Files
 import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -15,6 +17,33 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class BundleUpdateManagerEndpointTest {
+
+    private companion object {
+        /**
+         * Fixed stand-in for the built-in bundle version. The real built-in manifest is
+         * regenerated on every OTA release, so tests must not depend on its value.
+         */
+        const val BUILT_IN_STUB_VERSION = "2026.09.08"
+    }
+
+    /**
+     * Builds a bundle manager whose current version comes from a manifest written into a
+     * temp directory, NOT from the built-in resource. The built-in manifest is regenerated
+     * by every OTA backfill, so reading it would make these tests rot on each release.
+     */
+    private fun bundleManagerAt(version: String): LocalizationBundleManager {
+        val tempDir = Files.createTempDirectory("bundle_update_manager_test").toFile()
+        tempDir.deleteOnExit()
+        File(tempDir, "bundle_manifest.json").writeText("""{"version":"$version"}""")
+        return LocalizationBundleManager().apply { setStorageDirectory(tempDir) }
+    }
+
+    /** 2026.09.08 -> 2026.09.09, so the "newer" version never has to be hardcoded. */
+    private fun nextDayVersion(version: String): String {
+        val parts = version.split(".")
+        val day = parts[2].toInt() + 1
+        return "${parts[0]}.${parts[1]}.${day.toString().padStart(2, '0')}"
+    }
 
     private fun createClient(responseCode: Int, body: String): OkHttpClient {
         return OkHttpClient.Builder().addInterceptor { chain ->
@@ -53,7 +82,7 @@ class BundleUpdateManagerEndpointTest {
                 .body("not found".toResponseBody("text/plain".toMediaType()))
                 .build()
         }.build()
-        val result = BundleUpdateManager(LocalizationBundleManager(), customHttpClient = client)
+        val result = BundleUpdateManager(bundleManagerAt(BUILT_IN_STUB_VERSION), customHttpClient = client)
             .checkUpdate()
 
         assertEquals(
@@ -66,32 +95,36 @@ class BundleUpdateManagerEndpointTest {
 
     @Test
     fun testHttp200RemoteVersionEqualsCurrentReturnsNoUpdate() = runBlocking {
-        val client = createClient(200, validManifestJson(version = "2026.09.08"))
-        val result = BundleUpdateManager(LocalizationBundleManager(), customHttpClient = client)
+        val current = BUILT_IN_STUB_VERSION
+        val client = createClient(200, validManifestJson(version = current))
+        val result = BundleUpdateManager(bundleManagerAt(current), customHttpClient = client)
             .checkUpdate()
 
         assertTrue("Expected NoUpdate but got $result", result is BundleUpdateCheckResult.NoUpdate)
         val noUpdate = result as BundleUpdateCheckResult.NoUpdate
-        assertEquals("2026.09.08", noUpdate.info.remoteVersion)
+        assertEquals(current, noUpdate.info.remoteVersion)
         assertEquals(false, noUpdate.info.hasUpdate)
     }
 
     @Test
     fun testHttp200RemoteVersionNewerReturnsUpdateAvailable() = runBlocking {
-        val client = createClient(200, validManifestJson(version = "2026.09.15"))
-        val result = BundleUpdateManager(LocalizationBundleManager(), customHttpClient = client)
+        val current = BUILT_IN_STUB_VERSION
+        val newer = nextDayVersion(current)
+        val client = createClient(200, validManifestJson(version = newer))
+        val result = BundleUpdateManager(bundleManagerAt(current), customHttpClient = client)
             .checkUpdate()
 
         assertTrue("Expected UpdateAvailable but got $result", result is BundleUpdateCheckResult.UpdateAvailable)
         val updateAvailable = result as BundleUpdateCheckResult.UpdateAvailable
-        assertEquals("2026.09.15", updateAvailable.info.remoteVersion)
+        assertEquals(newer, updateAvailable.info.remoteVersion)
+        assertEquals(current, updateAvailable.info.currentVersion)
         assertEquals(true, updateAvailable.info.hasUpdate)
     }
 
     @Test
     fun testHttp404ReturnsRemoteUnavailableAndNeverNoUpdate() = runBlocking {
         val client = createClient(404, "Not found")
-        val result = BundleUpdateManager(LocalizationBundleManager(), customHttpClient = client)
+        val result = BundleUpdateManager(bundleManagerAt(BUILT_IN_STUB_VERSION), customHttpClient = client)
             .checkUpdate()
 
         assertEquals(BundleUpdateCheckResult.RemoteUnavailable, result)
@@ -101,7 +134,7 @@ class BundleUpdateManagerEndpointTest {
     @Test
     fun testHttp200MalformedJsonReturnsManifestInvalid() = runBlocking {
         val client = createClient(200, "{ invalid json content ...")
-        val result = BundleUpdateManager(LocalizationBundleManager(), customHttpClient = client)
+        val result = BundleUpdateManager(bundleManagerAt(BUILT_IN_STUB_VERSION), customHttpClient = client)
             .checkUpdate()
 
         assertTrue("Expected ManifestInvalid but got $result", result is BundleUpdateCheckResult.ManifestInvalid)
@@ -111,7 +144,7 @@ class BundleUpdateManagerEndpointTest {
     @Test
     fun testHttp5xxReturnsNetworkUnavailable() = runBlocking {
         val client = createClient(502, "Bad Gateway")
-        val result = BundleUpdateManager(LocalizationBundleManager(), customHttpClient = client)
+        val result = BundleUpdateManager(bundleManagerAt(BUILT_IN_STUB_VERSION), customHttpClient = client)
             .checkUpdate()
 
         assertTrue("Expected NetworkUnavailable but got $result", result is BundleUpdateCheckResult.NetworkUnavailable)
@@ -123,7 +156,7 @@ class BundleUpdateManagerEndpointTest {
         val client = OkHttpClient.Builder().addInterceptor {
             throw SocketTimeoutException("Connection timed out")
         }.build()
-        val result = BundleUpdateManager(LocalizationBundleManager(), customHttpClient = client)
+        val result = BundleUpdateManager(bundleManagerAt(BUILT_IN_STUB_VERSION), customHttpClient = client)
             .checkUpdate()
 
         assertTrue("Expected NetworkUnavailable but got $result", result is BundleUpdateCheckResult.NetworkUnavailable)

@@ -30,8 +30,14 @@ class ChineseConverter(
             val root = Json.parseToJsonElement(jsonContent).jsonObject
             val map = HashMap<Char, Char>(root.size)
             for ((key, value) in root) {
-                if (key.isNotEmpty() && value.jsonPrimitive.content.isNotEmpty()) {
-                    map[key[0]] = value.jsonPrimitive.content[0]
+                val target = value.jsonPrimitive.content
+                // Keys and values are validated upstream as exactly one code point
+                // (see LocalizationBundleManager.validateExtractedDirectory). Reading them as
+                // a single Char keeps this loader consistent with that contract for every
+                // BMP character, which is all the map contains today. Non-BMP keys would be
+                // surrogate pairs and are intentionally dropped rather than half-stored.
+                if (key.isNotEmpty() && target.isNotEmpty()) {
+                    map[key[0]] = target[0]
                 }
             }
             map

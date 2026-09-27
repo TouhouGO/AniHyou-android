@@ -40,9 +40,9 @@ val networkModule = module {
     single { LocalizationBundleService(get(), get()) }
     single { BundleUpdateManager(get(), get()) }
     single { EntityNameCache() }
-    single { WikidataEntityNameSource(get(), get()) }
+    single { WikidataEntityNameSource(chineseConverter = get()) }
     single { ChineseConverter(get()) }
-    single { ChineseEntityNameResolver(get(), get(), get(), get(), get()) }
+    single { ChineseEntityNameResolver(get(), get(), get(), get()) }
     single { ChineseTagProvider(get()) }
     single { ChineseCharacterProvider(get(), get(), entityNameResolver = get()) }
     single { ChineseTitleProvider(get()) }
