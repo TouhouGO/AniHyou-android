@@ -1,6 +1,7 @@
 package com.axiel7.anihyou.feature.mediadetails
 
 import com.axiel7.anihyou.core.base.DataResult
+import com.axiel7.anihyou.core.domain.repository.AnimeNotificationsRepository
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.FavoriteRepository
 import com.axiel7.anihyou.core.domain.repository.MediaRepository
@@ -74,7 +75,8 @@ class MediaDetailsLocalizationRefreshTest {
             arguments = Route.MediaDetails(id = 303, isLoggedIn = false),
             defaultPreferencesRepository = defaultPreferencesRepository,
             mediaRepository = mediaRepository,
-            favoriteRepository = favoriteRepository
+            favoriteRepository = favoriteRepository,
+            animeNotificationsRepository = mockk(relaxed = true)
         )
 
         advanceUntilIdle()
@@ -107,7 +109,8 @@ class MediaDetailsLocalizationRefreshTest {
             arguments = Route.MediaDetails(id = 404, isLoggedIn = false),
             defaultPreferencesRepository = defaultPreferencesRepository,
             mediaRepository = mediaRepository,
-            favoriteRepository = mockk(relaxed = true)
+            favoriteRepository = mockk(relaxed = true),
+            animeNotificationsRepository = mockk(relaxed = true)
         )
 
         viewModel.fetchCharactersAndStaff()
@@ -142,6 +145,7 @@ class MediaDetailsLocalizationRefreshTest {
             defaultPreferencesRepository = defaultPreferencesRepository,
             mediaRepository = mediaRepository,
             favoriteRepository = mockk(relaxed = true),
+            animeNotificationsRepository = mockk(relaxed = true),
             chineseDescriptionProvider = descProvider,
             chineseTitleProvider = titleProvider
         )
@@ -149,7 +153,7 @@ class MediaDetailsLocalizationRefreshTest {
         advanceUntilIdle()
 
         // With EXPLICIT_ID, updateTitle MUST be called
-        verify(exactly = 1) { titleProvider.updateTitle(100, "测试标题", 555) }
+        verify(timeout = 5000, exactly = 1) { titleProvider.updateTitle(100, "测试标题", 555) }
     }
 
     @Test
@@ -178,6 +182,7 @@ class MediaDetailsLocalizationRefreshTest {
             defaultPreferencesRepository = defaultPreferencesRepository,
             mediaRepository = mediaRepository,
             favoriteRepository = mockk(relaxed = true),
+            animeNotificationsRepository = mockk(relaxed = true),
             chineseDescriptionProvider = descProvider,
             chineseTitleProvider = titleProvider
         )

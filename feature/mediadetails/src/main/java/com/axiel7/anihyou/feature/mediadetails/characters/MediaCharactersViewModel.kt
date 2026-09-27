@@ -82,6 +82,7 @@ class MediaCharactersViewModel(
                             uiState.characters.clear()
                             availableLanguages = localizedCharacters.firstOrNull()?.voiceActors
                                 ?.mapNotNull { it?.commonVoiceActor?.languageV2 }
+                                ?.distinct()
                         }
                         uiState.characters.addAll(localizedCharacters)
                         uiState.copy(

@@ -33,6 +33,7 @@ import com.axiel7.anihyou.core.model.DeepLink
 import com.axiel7.anihyou.core.model.ExploreTab
 import com.axiel7.anihyou.core.model.HomeTab
 import com.axiel7.anihyou.core.model.NovelTab
+import com.axiel7.anihyou.core.model.Theme
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.ui.common.LocalMarkdownUriHandler
 import com.axiel7.anihyou.core.ui.common.LocalNavActionManager
@@ -43,6 +44,7 @@ import com.axiel7.anihyou.core.ui.composables.markdown.MarkdownUriHandler
 import com.axiel7.anihyou.core.ui.composables.markdown.SpoilerSheet
 import com.axiel7.anihyou.feature.activitydetails.ActivityDetailsView
 import com.axiel7.anihyou.feature.activitydetails.publish.PublishActivityView
+import com.axiel7.anihyou.feature.addrecommendation.AddRecommendationView
 import com.axiel7.anihyou.feature.calendar.CalendarView
 import com.axiel7.anihyou.feature.characterdetails.CharacterDetailsView
 import com.axiel7.anihyou.feature.explore.charts.MediaChartListView
@@ -101,6 +103,7 @@ fun MainNavigation(
     novelTab: NovelTab,
     exploreTab: ExploreTab,
     deepLink: DeepLink?,
+    theme: Theme,
     blackColors: Boolean,
     paletteStyle: PaletteStyle,
     padding: PaddingValues = PaddingValues(),
@@ -285,6 +288,7 @@ fun MainNavigation(
         entry<Route.MediaDetails> {
             MediaDetailsView(
                 arguments = it.copy(isLoggedIn = isLoggedIn),
+                theme = theme,
                 blackColors = blackColors,
                 paletteStyle = paletteStyle,
             )
@@ -431,6 +435,12 @@ fun MainNavigation(
 
         entry<Route.PriorityColors> {
             PriorityColorView()
+        }
+
+        entry<Route.AddRecommendation> {
+            AddRecommendationView(
+                arguments = it
+            )
         }
     }
 

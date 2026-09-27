@@ -22,9 +22,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -42,11 +40,11 @@ import com.axiel7.anihyou.core.ui.common.LocalBlurAdult
 import com.axiel7.anihyou.core.ui.common.LocalNavActionManager
 import com.axiel7.anihyou.core.ui.common.navigation.Route
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithMediumTopAppBar
-import com.axiel7.anihyou.core.ui.composables.appBarContainerColor
 import com.axiel7.anihyou.core.ui.composables.common.BackIconButton
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.FilterSelectionChip
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
+import com.axiel7.anihyou.core.ui.composables.rememberTopBarContainerColor
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.dateToRelativeText
 import com.axiel7.anihyou.feature.notifications.composables.NotificationItem
@@ -79,9 +77,8 @@ private fun NotificationsContent(
         rememberTopAppBarState()
     )
     val topAppBarColors = TopAppBarDefaults.topAppBarColors()
-    val appBarContainerColor by remember {
-        derivedStateOf { topAppBarScrollBehavior.appBarContainerColor(topAppBarColors) }
-    }
+    val appBarContainerColor by rememberTopBarContainerColor(topAppBarColors, topAppBarScrollBehavior)
+
     val listState = rememberLazyListState()
     if (!uiState.isLoading) {
         listState.OnBottomReached(buffer = 3, onLoadMore = { event?.onLoadMore() })
@@ -155,19 +152,21 @@ private fun NotificationsContent(
                     contentType = { it }
                 ) { item ->
                     NotificationItem(
-                        title = item.localizedText(LocalResources.current),
+                        title = item.localizedText(LocalResources.current) ?: item.text,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                         blurImage = blurAdult && item.isAdultMedia,
                         imageUrl = item.imageUrl,
                         subtitle = item.createdAt?.toLong()?.dateToRelativeText(),
                         isUnread = item.isUnread,
                         onClick = {
+                            if (item.isUnread) event?.onRead(item)
                             when (item.type) {
                                 NotificationType.AIRING,
                                 NotificationType.RELATED_MEDIA_ADDITION,
                                 NotificationType.MEDIA_DATA_CHANGE,
                                 NotificationType.MEDIA_MERGE,
-                                NotificationType.MEDIA_DELETION ->
+                                NotificationType.MEDIA_DELETION,
+                                NotificationType.MEDIA_SUBMISSION_UPDATE ->
                                     navActionManager.toMediaDetails(item.contentId)
 
                                 NotificationType.THREAD_SUBSCRIBED,
@@ -188,7 +187,13 @@ private fun NotificationsContent(
                                 NotificationType.FOLLOWING ->
                                     navActionManager.toUserDetails(item.contentId)
 
-                                else -> {}
+                                NotificationType.STAFF_SUBMISSION_UPDATE ->
+                                    navActionManager.toStaffDetails(item.contentId)
+
+                                NotificationType.CHARACTER_SUBMISSION_UPDATE ->
+                                    navActionManager.toCharacterDetails(item.contentId)
+
+                                NotificationType.UNKNOWN__, null -> {}
                             }
                         },
                         onClickImage = {

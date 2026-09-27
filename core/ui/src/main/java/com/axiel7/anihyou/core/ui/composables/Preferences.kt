@@ -52,6 +52,10 @@ import com.axiel7.anihyou.core.network.type.ScoreFormat
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.composables.common.SmallCircularProgressIndicator
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlin.math.roundToInt
 
 val topShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
@@ -167,6 +171,7 @@ fun SwitchPreference(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     preferenceValue: Boolean?,
+    enabled: Boolean = true,
     @DrawableRes icon: Int? = null,
     iconTint: Color = MaterialTheme.colorScheme.primary,
     iconPadding: PaddingValues = PaddingValues(16.dp),
@@ -185,7 +190,7 @@ fun SwitchPreference(
         Row(
             modifier = modifier
                 .fillMaxWidth()
-                .clickable {
+                .clickable(enabled = enabled) {
                     onValueChange(preferenceValue?.not() ?: false)
                 }
                 .padding(vertical = verticalPadding),
@@ -238,6 +243,7 @@ fun SwitchPreference(
                 onCheckedChange = {
                     onValueChange(it)
                 },
+                enabled = enabled,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
         }//: Row
@@ -247,7 +253,7 @@ fun SwitchPreference(
 @Composable
 fun <T> ListPreference(
     title: String,
-    values: List<T>,
+    values: ImmutableList<T>,
     modifier: Modifier = Modifier,
     labelForValue: @Composable (T) -> String = { it.toString() },
     preferenceValue: T?,
@@ -347,7 +353,7 @@ fun <T> ListPreference(
 @Composable
 fun <T> ListPreference(
     title: String,
-    entriesValues: Map<T, Int>,
+    entriesValues: ImmutableMap<T, Int>,
     modifier: Modifier = Modifier,
     preferenceValue: T?,
     @DrawableRes icon: Int? = null,
@@ -357,7 +363,7 @@ fun <T> ListPreference(
 ) {
     ListPreference(
         title = title,
-        values = entriesValues.entries.map { it.key },
+        values = entriesValues.entries.map { it.key }.toImmutableList(),
         labelForValue = { value ->
             entriesValues[value]?.let { stringResource(it) }.orEmpty()
         },
@@ -409,7 +415,8 @@ fun ScoreStepsPreferenceSheet(
     var openModal by remember { mutableStateOf(false) }
 
     var textFieldValue by remember(initialValue) {
-        mutableStateOf(if (allowDecimal) initialValue.toString() else initialValue.roundToInt().toString()
+        mutableStateOf(
+            if (allowDecimal) initialValue.toString() else initialValue.roundToInt().toString()
         )
     }
 
@@ -449,7 +456,8 @@ fun ScoreStepsPreferenceSheet(
                         if (isValid) {
                             val asNumber = input.toDoubleOrNull()
 
-                            textFieldValue = if (asNumber == null || asNumber <= maxValue) input else textFieldValue
+                            textFieldValue =
+                                if (asNumber == null || asNumber <= maxValue) input else textFieldValue
                             if (asNumber != null) {
                                 val clamped = asNumber.coerceIn(minValue, maxValue)
                                 value = clamped
@@ -474,6 +482,11 @@ fun ScoreStepsPreferenceSheet(
 
                 Slider(
                     state = sliderState,
+                    onValueChange = {
+                        sliderState.value = it
+                        textFieldValue = if (allowDecimal) ((it * 10f).roundToInt() / 10.0).toString()
+                        else it.roundToInt().toString()
+                    },
                     onValueChangeFinished = {
                         val input = sliderState.value
                         if (allowDecimal) {
@@ -518,7 +531,7 @@ private fun PreferencesPreviews() {
 
             ListPreference(
                 title = "List Preference",
-                entriesValues = mapOf("Profile" to R.string.profile),
+                entriesValues = persistentMapOf("Profile" to R.string.profile),
                 preferenceValue = null,
                 icon = R.drawable.settings_24,
                 onValueChange = {},

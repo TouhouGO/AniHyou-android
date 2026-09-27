@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Release tag matching version.properties (for example v1.6.2)
+        description: Release tag matching version.properties (for example v1.6.3)
         required: true
-        default: v1.6.2
+        default: v1.6.3
       prerelease:
         description: Publish as a prerelease
         required: true
@@ -55,6 +55,30 @@ jobs:
             exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Extract version
+        id: get_version
+        run: |
+          VERSION=$(grep '^name =' version.properties | cut -d'=' -f2 | xargs)
+          CODE=$(grep '^code =' version.properties | cut -d'=' -f2 | xargs)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "code=$CODE" >> $GITHUB_OUTPUT
+
+      - name: Check for Release/Beta prefix
+        id: check_prefix
+        run: |
+          MSG=$(echo "${{ github.event.head_commit.message }}" | head -n 1)
+          if [[ $MSG == beta:* ]]; then
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "tag_name=beta-${{ steps.get_version.outputs.code }}" >> $GITHUB_OUTPUT
+          elif [[ $MSG == release:* ]]; then
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            echo "tag_name=v${{ steps.get_version.outputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "is_release=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Decode signing keystore
         env:

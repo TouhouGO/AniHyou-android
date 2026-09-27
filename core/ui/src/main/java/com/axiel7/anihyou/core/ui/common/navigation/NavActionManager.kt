@@ -231,4 +231,8 @@ class NavActionManager(
     fun toLocalizationSettings() {
         navigator.navigate(Route.LocalizationSettings)
     }
+
+    fun toAddRecommendation(mediaId: Int) {
+        navigator.navigate(Route.AddRecommendation(mediaId))
+    }
 }

@@ -4,14 +4,17 @@ import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
+import com.axiel7.anihyou.core.domain.repository.AnimeNotificationsRepository
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.FavoriteRepository
 import com.axiel7.anihyou.core.domain.repository.MediaRepository
 import com.axiel7.anihyou.core.model.stats.overview.ScoreDistribution.Companion.asStat
 import com.axiel7.anihyou.core.model.stats.overview.StatusDistribution.Companion.asStat
 import com.axiel7.anihyou.core.network.MediaDetailsQuery
+import com.axiel7.anihyou.core.network.MediaRelationsAndRecommendationsQuery
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.fragment.MediaCharacter
+import com.axiel7.anihyou.core.network.fragment.MediaRecommended
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.network.type.RecommendationRating
 import com.axiel7.anihyou.core.resources.R
@@ -23,6 +26,8 @@ import com.axiel7.anihyou.core.network.localization.ChineseDescriptionProvider
 import com.axiel7.anihyou.core.network.localization.ChineseDescriptionFormatter
 import com.axiel7.anihyou.core.network.localization.ChineseTitleProvider
 import kotlinx.coroutines.Dispatchers
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
@@ -41,6 +46,7 @@ class MediaDetailsViewModel(
     defaultPreferencesRepository: DefaultPreferencesRepository,
     private val mediaRepository: MediaRepository,
     private val favoriteRepository: FavoriteRepository,
+    private val animeNotificationsRepository: AnimeNotificationsRepository,
     private val chineseDescriptionProvider: ChineseDescriptionProvider? = null,
     private val chineseTitleProvider: ChineseTitleProvider? = null,
     private val chineseConverter: ChineseConverter? = null,
@@ -64,9 +70,32 @@ class MediaDetailsViewModel(
                                     mediaId = uiState.details.id,
                                     basicMediaListEntry = newListEntry,
                                 )
-                        }
-                        else null
+                        } else null
                     )
+                )
+            }
+        }
+    }
+
+    override fun changeNotificationAllowance(type: AiringNotificationType, value: Boolean) {
+        mutableUiState.update {
+            when (type) {
+                AiringNotificationType.START -> it.copy(allowStartNotifications = value)
+                AiringNotificationType.AIRING -> it.copy(allowAiringNotifications = value)
+                AiringNotificationType.END -> it.copy(allowEndNotifications = value)
+            }
+        }
+    }
+
+    override fun writeNotificationAllowanceToDatabase() {
+        with(mutableUiState.value) {
+            viewModelScope.launch {
+                animeNotificationsRepository.upsertNotification(
+                    animeId = arguments.id,
+                    allowStartAiring = allowStartNotifications,
+                    allowAiringEpisode = allowAiringNotifications,
+                    allowFinishAiring = allowEndNotifications,
+                    episodeCount = details?.basicMediaDetails?.episodes
                 )
             }
         }
@@ -160,9 +189,11 @@ class MediaDetailsViewModel(
                             uiState.copy(
                                 isSuccessStats = true,
                                 mediaStatusDistribution = result.data?.stats?.statusDistribution
-                                    ?.mapNotNull { it?.asStat() }.orEmpty(),
+                                    ?.mapNotNull { it?.asStat() }?.toImmutableList()
+                                    ?: persistentListOf(),
                                 mediaScoreDistribution = result.data?.stats?.scoreDistribution
-                                    ?.mapNotNull { it?.asStat() }.orEmpty(),
+                                    ?.mapNotNull { it?.asStat() }?.toImmutableList()
+                                    ?: persistentListOf(),
                                 mediaRankings = result.data?.rankings?.filterNotNull().orEmpty()
                             )
                         }
@@ -240,7 +271,9 @@ class MediaDetailsViewModel(
     override fun showVoiceActorsSheet(character: MediaCharacter) {
         mutableUiState.update { uiState ->
             uiState.copy(
-                selectedCharacterVoiceActors = character.voiceActors?.mapNotNull { it?.commonVoiceActor },
+                selectedCharacterVoiceActors = character.voiceActors
+                    ?.mapNotNull { it?.commonVoiceActor }
+                    ?.toImmutableList(),
                 showVoiceActorsSheet = true
             )
         }
@@ -250,17 +283,24 @@ class MediaDetailsViewModel(
         mutableUiState.update { it.copy(showVoiceActorsSheet = false) }
     }
 
-    override fun onVoteClick(recommendedMediaId: Int, recommendationId: Int, rating: RecommendationRating) {
+    override fun onVoteClick(
+        recommendedMediaId: Int,
+        recommendationId: Int,
+        rating: RecommendationRating
+    ) {
         if (!arguments.isLoggedIn) {
             mutableUiState.update { it.copy(errorId = R.string.not_logged_text) }
             return
         }
 
         val recommendations = mutableUiState.value.relationsAndRecommendations?.recommendations
-        val targetNode = recommendations?.find { it.mediaRecommended.id == recommendationId } ?: return
+        val targetNode =
+            recommendations?.find { it.mediaRecommended.id == recommendationId } ?: return
 
         val previousUserRating = targetNode.mediaRecommended.userRating
-        val newRating = if (previousUserRating == rating) RecommendationRating.NO_RATING else rating // if the new rating is the same as the old one remove the rating
+        // if the new rating is the same as the old one remove the rating
+        val newRating =
+            if (previousUserRating == rating) RecommendationRating.NO_RATING else rating
 
         mediaRepository.saveRecommendation(
             mediaId = arguments.id, // base media id
@@ -274,10 +314,8 @@ class MediaDetailsViewModel(
                         if (node.mediaRecommended.id == recommendationId) {
                             node.copy(
                                 mediaRecommended = node.mediaRecommended.copy(
-                                    rating = result.data.SaveRecommendation?.rating
-                                        ?: node.mediaRecommended.rating,
-                                    userRating = result.data.SaveRecommendation?.userRating
-                                        ?: newRating
+                                    rating = result.data?.rating ?: node.mediaRecommended.rating,
+                                    userRating = result.data?.userRating ?: newRating
                                 )
                             )
                         } else node
@@ -290,6 +328,25 @@ class MediaDetailsViewModel(
                 }
             }
         }.launchIn(viewModelScope)
+    }
+
+    override fun addRecommendation(media: MediaRecommended) {
+        val newRecommendation = MediaRelationsAndRecommendationsQuery.Node(
+            __typename = "MediaRelationsAndRecommendationsQuery.Node",
+            id = media.id,
+            mediaRecommended = media
+        )
+
+        mutableUiState.update { state ->
+            val currentRelAndRecs = state.relationsAndRecommendations
+            if (currentRelAndRecs != null) {
+                val updatedRecs = listOf(newRecommendation) + currentRelAndRecs.recommendations
+                    .filterNot { media.mediaRecommendation?.id == it.mediaRecommended.mediaRecommendation?.id }
+                state.copy(relationsAndRecommendations = currentRelAndRecs.copy(recommendations = updatedRecs))
+            } else {
+                state
+            }
+        }
     }
 
     private suspend fun fetchAnimeThemes(idMal: Int) {
@@ -415,6 +472,12 @@ class MediaDetailsViewModel(
         defaultPreferencesRepository.translatorApp
             .onEach { value ->
                 mutableUiState.update { it.copy(translatorApp = value) }
+            }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.isNotificationsEnabled
+            .onEach { value ->
+                mutableUiState.update { it.copy(notificationsEnabled = value) }
             }
             .launchIn(viewModelScope)
 

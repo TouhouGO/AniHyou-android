@@ -2,6 +2,7 @@ package com.axiel7.anihyou.feature.calendar
 
 import androidx.compose.runtime.Stable
 import com.axiel7.anihyou.core.base.state.PagedUiState
+import com.axiel7.anihyou.core.model.ListStyle
 import com.axiel7.anihyou.core.network.fragment.ExploreMedia
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -9,8 +10,10 @@ import java.time.LocalDateTime
 @Stable
 data class CalendarUiState(
     val onMyList: Boolean? = null,
+    val listStyle: ListStyle? = null,
     val selectedItem: ExploreMedia? = null,
-    val day: LocalDateTime = LocalDateTime.now(),
+    val todayFirstItemIndex: Int = 0,
+    val day: LocalDateTime = LocalDateTime.now().minusDays(1),
     val weeklyAnime: MutableMap<LocalDate, List<ExploreMedia>> = mutableMapOf(),
     val fetchFromNetwork: Boolean = false,
     override val page: Int = 1,

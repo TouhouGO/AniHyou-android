@@ -67,6 +67,7 @@ import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.secondsToLegibleText
 import com.axiel7.anihyou.feature.editmedia.EditMediaSheet
 import com.axiel7.anihyou.feature.explore.season.composables.SeasonChartFilterSheet
+import kotlinx.collections.immutable.toImmutableList
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -188,7 +189,7 @@ private fun SeasonAnimeContent(
             )
         }
         AnimatedVisibility(
-            visible = uiState.listStyle != ListStyle.STANDARD,
+            visible = uiState.listStyle == ListStyle.GRID,
             enter = fadeIn(animationSpec = tween()),
             exit = fadeOut(animationSpec = tween()),
         ) {
@@ -285,32 +286,15 @@ private fun SeasonalList(
                 title = item.basicMediaDetails.title?.userPreferred.orEmpty(),
                 imageUrl = item.coverImage?.large,
                 blurImage = blurAdult && item.basicMediaDetails.isAdult == true,
-                subtitle1 = {
-                    item.nextAiringEpisode?.let { nextAiringEpisode ->
-                        Text(
-                            text = stringResource(
-                                R.string.episode_in_time,
-                                nextAiringEpisode.episode,
-                                nextAiringEpisode.timeUntilAiring.toLong().secondsToLegibleText()
-                            ),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-                subtitle2 = {
-                    item.averageScore?.let { score ->
-                        SmallScoreIndicator(score = score)
-                    }
-                    if (!item.genres.isNullOrEmpty()) {
-                        Text(
-                            text = item.genres!!.take(3)
-                                .mapNotNull { it?.genreTagLocalized() }
-                                .joinToString(),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
                 status = item.mediaListEntry?.basicMediaListEntry?.status,
+                episodes = item.basicMediaDetails.episodes,
+                chapters = item.basicMediaDetails.chapters,
+                duration = item.basicMediaDetails.duration,
+                score = item.averageScore,
+                format = item.basicMediaDetails.format,
+                year = null,
+                genres = item.genres?.filterNotNull()?.toImmutableList(),
+                mediaStatus = item.status,
                 onClick = { onClickItem(item) },
                 onLongClick = { onLongClickItem(item) },
             )

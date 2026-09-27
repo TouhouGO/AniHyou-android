@@ -17,6 +17,11 @@ import com.axiel7.anihyou.core.network.fragment.MediaCharacter
 import com.axiel7.anihyou.core.network.fragment.MediaStaff
 import com.axiel7.anihyou.core.base.state.UiState
 import com.axiel7.anihyou.core.model.TranslatorApp
+import com.axiel7.anihyou.core.network.type.MediaStatus
+import com.axiel7.anihyou.core.network.type.MediaType
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 @Immutable
 data class MediaDetailsUiState(
@@ -31,14 +36,19 @@ data class MediaDetailsUiState(
 
     val staff: List<MediaStaff>? = null,
     val characters: List<MediaCharacter>? = null,
-    val selectedCharacterVoiceActors: List<CommonVoiceActor>? = null,
+    val selectedCharacterVoiceActors: ImmutableList<CommonVoiceActor>? = null,
     val showVoiceActorsSheet: Boolean = false,
+
+    val notificationsEnabled: Boolean = false,
+    val allowStartNotifications: Boolean = true,
+    val allowAiringNotifications: Boolean = true,
+    val allowEndNotifications: Boolean = false,
 
     val relationsAndRecommendations: MediaRelationsAndRecommendations? = null,
 
     val isSuccessStats: Boolean = false,
-    val mediaStatusDistribution: List<Stat<StatusDistribution>> = emptyList(),
-    val mediaScoreDistribution: List<Stat<ScoreDistribution>> = emptyList(),
+    val mediaStatusDistribution: ImmutableList<Stat<StatusDistribution>> = persistentListOf(),
+    val mediaScoreDistribution: ImmutableList<Stat<ScoreDistribution>> = persistentListOf(),
     val mediaRankings: List<MediaStatsQuery.Ranking> = emptyList(),
     val following: List<MediaFollowingQuery.MediaList> = emptyList(),
 
@@ -56,12 +66,25 @@ data class MediaDetailsUiState(
     override val isLoading: Boolean = true,
 ) : UiState() {
 
-    val studios = details?.studios?.nodes?.filterNotNull()?.filter { it.isAnimationStudio }
+    val studios =
+        details?.studios?.nodes?.filterNotNull()?.filter { it.isAnimationStudio }?.toImmutableList()
     val producers = details?.studios?.nodes?.filterNotNull()?.filter { !it.isAnimationStudio }
+        ?.toImmutableList()
 
     val isNewEntry = details?.mediaListEntry == null
 
     val hasSpoilerTags = details?.tags?.any { it?.isMediaSpoiler == true } ?: false
+
+    val showNotificationSettings = isLoggedIn
+            && notificationsEnabled
+            && details?.basicMediaDetails?.type == MediaType.ANIME
+            && (details.status == MediaStatus.RELEASING || details.status == MediaStatus.NOT_YET_RELEASED)
+
+    fun allowNotifications(type: AiringNotificationType) = when (type) {
+        AiringNotificationType.START -> allowStartNotifications
+        AiringNotificationType.AIRING -> allowAiringNotifications
+        AiringNotificationType.END -> allowEndNotifications
+    }
 
     override fun setError(value: String?) = copy(error = value)
     override fun setLoading(value: Boolean) = copy(isLoading = value)

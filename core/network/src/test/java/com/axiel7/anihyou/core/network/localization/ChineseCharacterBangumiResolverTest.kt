@@ -106,6 +106,7 @@ class ChineseCharacterBangumiResolverTest {
         val provider = ChineseCharacterProvider(manager, ChineseConverter(manager), client)
         val input = MediaCharacter(
             __typename = "CharacterEdge",
+            id = 9_000_000,
             role = null,
             node = MediaCharacter.Node(
                 __typename = "Character",

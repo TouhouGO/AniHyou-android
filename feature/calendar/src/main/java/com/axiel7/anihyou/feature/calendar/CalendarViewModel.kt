@@ -5,7 +5,9 @@ import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.common.utils.DateUtils.toTimestamp
 import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
+import com.axiel7.anihyou.core.domain.repository.ListPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.MediaRepository
+import com.axiel7.anihyou.core.model.ListStyle
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
 import com.axiel7.anihyou.core.network.fragment.ExploreMedia
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -26,16 +29,28 @@ import java.time.LocalDateTime
 @OptIn(ExperimentalCoroutinesApi::class)
 class CalendarViewModel(
     private val mediaRepository: MediaRepository,
-    private val defaultPreferencesRepository: DefaultPreferencesRepository
+    private val defaultPreferencesRepository: DefaultPreferencesRepository,
+    private val listPreferencesRepository: ListPreferencesRepository,
 ) : PagedUiStateViewModel<CalendarUiState>(), CalendarEvent {
 
     override val initialState = CalendarUiState()
 
-    val onMyList = defaultPreferencesRepository.calendarOnMyList
+    private val onMyList = defaultPreferencesRepository.calendarOnMyList
     private val displayAdult = defaultPreferencesRepository.displayAdult
 
-    fun onMyListChanged(value: Boolean?) = viewModelScope.launch {
-        defaultPreferencesRepository.setCalendarOnMyList(value)
+    private val today = LocalDate.now()
+    private var itemCount = 0
+
+    override fun onMyListChanged(value: Boolean?) {
+        viewModelScope.launch {
+            defaultPreferencesRepository.setCalendarOnMyList(value)
+        }
+    }
+
+    override fun onChangeListStyle(value: ListStyle) {
+        viewModelScope.launch {
+            listPreferencesRepository.setCalendarListStyle(value)
+        }
     }
 
     override fun onUpdateListEntry(viewListEntry: BasicMediaListEntry?) {
@@ -82,7 +97,7 @@ class CalendarViewModel(
     override fun nextDay() {
         mutableUiState.update {
             it.copy(
-                day = uiState.value.day.plusDays(1),
+                day = it.day.plusDays(1),
                 page = 1,
                 hasNextPage = true,
                 isLoading = true,
@@ -94,7 +109,7 @@ class CalendarViewModel(
         mutableUiState.update {
             it.copy(
                 fetchFromNetwork = true,
-                day = LocalDateTime.now(),
+                day = LocalDateTime.now().minusDays(1),
                 weeklyAnime = mutableMapOf(),
                 page = 1,
                 hasNextPage = true,
@@ -156,14 +171,25 @@ class CalendarViewModel(
         }
     }
 
+    override fun onAutoScrolled() {
+        //fix so the list doesn't get scrolled on recompositions
+        mutableUiState.update { it.copy(todayFirstItemIndex = -1) }
+    }
+
     init {
+        listPreferencesRepository.calendarListStyle
+            .onEach { value ->
+                mutableUiState.update { it.copy(listStyle = value) }
+            }
+            .launchIn(viewModelScope)
+
         onMyList.onEach { onMyListVal ->
             if (mutableUiState.value.onMyList != onMyListVal) {
                 mutableUiState.update {
                     it.copy(
                         onMyList = onMyListVal,
                         weeklyAnime = mutableMapOf(),
-                        day = LocalDateTime.now(),
+                        day = LocalDateTime.now().minusDays(1),
                         page = 1,
                         hasNextPage = true,
                         isLoading = true,
@@ -213,21 +239,33 @@ class CalendarViewModel(
             }
             .onEach { result ->
                 if (result is PagedResult.Success) {
-                    mutableUiState.update { state ->
-                        val localeDate = state.day.toLocalDate()
-                        val currentList = state.weeklyAnime[localeDate]
+                    mutableUiState.updateAndGet { state ->
+                        val localDate = state.day.toLocalDate()
+                        val currentList = state.weeklyAnime[localDate]
                             .takeIf { state.page > 1 }
                             .orEmpty()
                         val updatedList = currentList + result.list
                         val updatedMap = state.weeklyAnime.toMutableMap()
-                        updatedMap[localeDate] = updatedList
+                        updatedMap[localDate] = updatedList
+
+                        var todayFirstItemIndex = state.todayFirstItemIndex
+                        if (state.todayFirstItemIndex != -1) {
+                            if (localDate < today) {
+                                itemCount += updatedList.size
+                            } else if (localDate == today) {
+                                todayFirstItemIndex = itemCount - 1
+                            }
+                        }
 
                         state.copy(
                             weeklyAnime = updatedMap,
+                            todayFirstItemIndex = todayFirstItemIndex,
                             hasNextPage = result.hasNextPage,
                             isLoading = false,
                             fetchFromNetwork = false,
                         )
+                    }.also {
+                        if (it.day.toLocalDate() < today) onLoadMore()
                     }
                 } else if (result is PagedResult.Loading) {
                     if (mutableUiState.value.page == 1) {
