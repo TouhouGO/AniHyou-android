@@ -51,7 +51,7 @@ This document catalogs every surface in AniHyou that consumes localized GraphQL 
 
 ## 4. 内置资源基线维护 (Built-in Resource Baseline Maintenance)
 
-- **自动回填机制 (Automated Backfill)**：在 GitHub Actions OTA 发布流程（`.github/workflows/release-localization-bundle.yaml`）中，当发布确认（`publish_release == 'true'` 或 tag push）且完成远端 SHA-256 校验后，工作流会自动解包本地构建产物 `localization_bundle.zip`，将其中的 5 个资源文件（`bundle_manifest.json`、`titles_zh_cn.json`、`tags_zh_cn.json`、`staff_characters_zh_cn.json`、`t2s_char_map.json`）原始字节回填至 `core/network/src/main/resources/`。回填提交固定在 `master` 分支；针对 tag 事件触发下的游离 HEAD，流程采用"先在游离 HEAD 暂存提交，再切换到 master 执行 cherry-pick"的两段式设计，因为未提交改动无法携带过分支切换，以此确保可靠提交并保持 master 线性历史；推送环节若遇远端并发提交，会自动执行一次 fetch + rebase 重试。
+- **自动回填机制 (Automated Backfill)**：在 GitHub Actions OTA 发布流程（`.github/workflows/release-localization-bundle.yaml`）中，当发布确认（`publish_release == 'true'` 或 tag push）且完成远端 SHA-256 校验后，工作流会自动解包本地构建产物 `localization_bundle.zip`，将其中的 5 个资源文件（`bundle_manifest.json`、`titles_zh_cn.json`、`tags_zh_cn.json`、`staff_characters_zh_cn.json`、`t2s_char_map.json`）原始字节回填至 `core/network/src/main/resources/`。回填提交固定在 `master` 分支；流程切换到最新 `master` 后直接覆盖回填并提交，而非使用 `cherry-pick`（避免 tag 的旧基线与已前进的 master 发生三方合并内容冲突）；回填提交仅涉及 5 个资源文件，与代码改动零交互；推送环节若遇远端并发提交，会自动执行一次 fetch + rebase 重试。
 - **杜绝手工维护与校验和漂移 (Zero Manual Drift)**：内置资源基线不再依赖开发者手工计算或维护 checksum，始终严格等价于最近一次实际发布的 OTA 语言包内容。以此根治了历史上手工维护与自动校准之间反复出现的 `bundle_manifest.json` 校验和漂移问题。
 - **版本一致性保证 (Version Parity)**：APK 构建内置的资源版本与已发布的最新 OTA 语言包完全同步，确保终端用户仅在真正存在更高版本的新发布时才会收到 OTA 更新提示。
 

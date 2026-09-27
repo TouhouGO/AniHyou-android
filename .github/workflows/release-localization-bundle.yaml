@@ -164,17 +164,23 @@ jobs:
           BACKFILL_DIR=$(mktemp -d)
           trap 'rm -rf "${BACKFILL_DIR}"' EXIT
 
-          # 1. 解包本地构建产物（已与远端通过 SHA-256 校验一致）
+          # 1. 切到最新 master 分支并配置 Git
+          #    不用 cherry-pick：tag 的旧基线与已前进的 master 做三方合并会冲突，
+          #    而回填只触碰 5 个资源文件，直接在最新 master 上重做拷贝最可靠。
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin master
+          git checkout -B master origin/master
+
+          # 2. 解包本地构建产物（已与远端通过 SHA-256 校验一致）并回填 5 个资源文件
           unzip -q core/network/build/outputs/localization/localization_bundle.zip \
             -d "${BACKFILL_DIR}"
-
-          # 2. 回填 5 个文件（原始字节，不重新计算）
           for f in bundle_manifest.json titles_zh_cn.json tags_zh_cn.json \
                    staff_characters_zh_cn.json t2s_char_map.json; do
             cp "${BACKFILL_DIR}/${f}" core/network/src/main/resources/${f}
           done
 
-          # 3. 校验回填后内置清单与实际文件严格一致（size + sha256）
+          # 3. 校验回填后内置清单与实际文件严格一致（size + sha256/md5 + 完整性）
           python3 - <<'PYEOF'
           import json, hashlib, sys, os
           res = "core/network/src/main/resources"
@@ -194,7 +200,9 @@ jobs:
               actual = hashlib.new(algo, data).hexdigest()
               if actual.lower() != entry[algo].lower():
                   print(f"{algo.upper()} MISMATCH {name}: {actual} != {entry[algo]}"); ok = False
-          declared = set(m["files"])
+          # 注意：bundle_manifest.json 按设计不在 m["files"] 中（清单不声明自身），
+          # 必须显式加入 declared，否则 present - declared 恒为非空导致误报。
+          declared = set(m["files"]) | {"bundle_manifest.json"}
           present = {f for f in os.listdir(res) if f.endswith(".json")}
           extra = present - declared
           if extra:
@@ -202,42 +210,16 @@ jobs:
           sys.exit(0 if ok else 1)
           PYEOF
 
-          # 4. 暂存回填结果并提交到当前 HEAD
-          #    注意：tag 事件下 HEAD 是游离 commit，此处提交只是为了让改动
-          #    可被携带切换分支，最终会以 cherry-pick 形式落到 master。
-          #    先在游离 HEAD 上提交，是因为未提交的改动无法携带过 checkout。
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
+          # 4. 提交；无变化则正常跳过
           git add core/network/src/main/resources/
           if git diff --cached --quiet; then
             echo "Built-in baseline already matches published bundle; nothing to backfill."
             exit 0
           fi
-
           # [skip ci] 用于避免每次 OTA 发布都空跑一次 debug APK 构建；若希望新内置资源经过 APK 构建验证，可移除该标记。
-          BACKFILL_MSG="chore(data): backfill built-in baseline from localization bundle ${TAG} [skip ci]"
-          git commit -m "${BACKFILL_MSG}"
-          BACKFILL_SHA=$(git rev-parse HEAD)
+          git commit -m "chore(data): backfill built-in baseline from localization bundle ${TAG} [skip ci]"
 
-          # 5. 切到最新 master 并应用该提交（用 cherry-pick 保证 master 线性历史，避免 merge commit）
-          #    cherry-pick 冲突时选择 fail loudly（exit 1）而非强行 --ours/--theirs，
-          #    因为静默丢弃回填会让内置资源与 OTA 不一致且无人知晓。
-          git fetch origin master
-          git checkout -B master origin/master
-          if git cherry-pick "${BACKFILL_SHA}"; then
-            echo "Backfill commit applied onto master."
-          else
-            echo "cherry-pick conflict; master may already contain equivalent changes."
-            git status --short
-            # 若冲突源自内容已等价，则放弃本次 cherry-pick 并继续
-            git cherry-pick --abort
-            echo "Skipping backfill due to conflict; manual review required." >&2
-            exit 1
-          fi
-
-          # 6. 推送；若远端在 cherry-pick 与 push 之间前进了，则
-          #    fetch + rebase 后重试一次（不使用 force push）
+          # 5. 推送；若远端并发前进则 fetch + rebase 后重试一次（不用 force push）
           if ! git push origin HEAD:master; then
             echo "Push rejected; origin/master advanced during this run. Rebasing and retrying once."
             git fetch origin master
