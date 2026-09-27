@@ -18,9 +18,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.koin.core.annotation.Single
 
-@Single
 class ChineseCharacterProvider(
     private val bundleManager: LocalizationBundleManager,
     private val chineseConverter: ChineseConverter,

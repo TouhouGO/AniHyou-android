@@ -8,7 +8,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.koin.core.annotation.Single
 
 sealed interface BundleUpdateCheckResult {
     data class UpdateAvailable(val info: RemoteBundleUpdateInfo) : BundleUpdateCheckResult
@@ -23,7 +22,6 @@ sealed interface BundleUpdateCheckResult {
     }
 }
 
-@Single
 class BundleUpdateManager(
     private val bundleManager: LocalizationBundleManager,
     private val bundleService: LocalizationBundleService? = null,

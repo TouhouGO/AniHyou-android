@@ -45,7 +45,7 @@ val networkModule = module {
     single { ChineseEntityNameResolver(get(), get(), get(), get()) }
     single { ChineseTagProvider(get()) }
     single { ChineseCharacterProvider(get(), get(), entityNameResolver = get()) }
-    single { ChineseTitleProvider(get()) }
+    single { ChineseTitleProvider(get(), get()) }
     single { BangumiSearchProvider(chineseConverter = get()).apply { prewarmConnection() } }
     single { ChineseDescriptionProvider(get(), get()) }
     single { ChineseTitleInterceptor(get(), get(), get(), get(), get(), get()) }

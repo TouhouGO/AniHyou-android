@@ -13,7 +13,6 @@ import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import org.koin.core.annotation.Single
 
 data class BangumiSearchResult(
     val bangumiId: Int,
@@ -23,7 +22,6 @@ data class BangumiSearchResult(
     val airDate: String? = null,
 )
 
-@Single
 class BangumiSearchProvider(
     private val chineseConverter: ChineseConverter? = null,
     private val customHttpClient: OkHttpClient? = null,

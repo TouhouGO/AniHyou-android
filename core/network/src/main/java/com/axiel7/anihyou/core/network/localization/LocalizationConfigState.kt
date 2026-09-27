@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import org.koin.core.annotation.Single
 
 enum class LocalizationChangeReason { CONFIG, BUNDLE_INSTALL, BUNDLE_RESET }
 
@@ -24,7 +23,6 @@ data class LocalizationConfigSnapshot(
     val lastChangeReason: LocalizationChangeReason = LocalizationChangeReason.CONFIG
 )
 
-@Single
 class LocalizationConfigState {
     private val _snapshot = MutableStateFlow(LocalizationConfigSnapshot())
     val snapshot: StateFlow<LocalizationConfigSnapshot> = _snapshot.asStateFlow()

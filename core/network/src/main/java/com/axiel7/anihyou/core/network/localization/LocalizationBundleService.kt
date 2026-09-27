@@ -4,14 +4,12 @@ import java.io.InputStream
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.koin.core.annotation.Single
 
 data class BundleStatus(
     val currentVersion: String,
     val isOverlayActive: Boolean
 )
 
-@Single
 class LocalizationBundleService(
     private val bundleManager: LocalizationBundleManager,
     private val invalidationCoordinator: LocalizationInvalidationCoordinator

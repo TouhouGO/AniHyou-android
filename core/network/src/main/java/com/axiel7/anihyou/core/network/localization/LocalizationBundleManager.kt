@@ -8,9 +8,7 @@ import java.security.MessageDigest
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.zip.ZipInputStream
 import kotlinx.serialization.json.Json
-import org.koin.core.annotation.Single
 
-@Single
 class LocalizationBundleManager(
     private val fileOps: BundleFileOps = DefaultBundleFileOps()
 ) {

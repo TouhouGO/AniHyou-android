@@ -10,7 +10,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.koin.core.annotation.Single
 
 data class EntitySourceResult(
     val names: Map<Int, String> = emptyMap(),
@@ -18,7 +17,6 @@ data class EntitySourceResult(
     val hasError: Boolean = false
 )
 
-@Single
 class WikidataEntityNameSource(
     private val customHttpClient: OkHttpClient? = null,
     private val chineseConverter: ChineseConverter? = null

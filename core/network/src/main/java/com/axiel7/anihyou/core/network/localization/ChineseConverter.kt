@@ -3,9 +3,7 @@ package com.axiel7.anihyou.core.network.localization
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import org.koin.core.annotation.Single
 
-@Single
 class ChineseConverter(
     private val bundleManager: LocalizationBundleManager
 ) {

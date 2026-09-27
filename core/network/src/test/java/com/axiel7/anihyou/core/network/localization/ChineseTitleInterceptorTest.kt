@@ -24,7 +24,7 @@ class ChineseTitleInterceptorTest {
     private val converter = ChineseConverter(bundleManager)
     private val tagProvider = ChineseTagProvider(bundleManager)
     private val characterProvider = ChineseCharacterProvider(bundleManager, converter)
-    private val titleProvider = ChineseTitleProvider(bundleManager)
+    private val titleProvider = ChineseTitleProvider(bundleManager, converter)
     private val descProvider = ChineseDescriptionProvider(converter)
 
     @Test

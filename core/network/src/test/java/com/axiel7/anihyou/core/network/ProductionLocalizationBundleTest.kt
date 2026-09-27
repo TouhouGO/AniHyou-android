@@ -88,7 +88,8 @@ class ProductionLocalizationBundleTest {
             assertEquals("2099.01.01", result.installedVersion)
 
             // Instantiate ChineseTitleProvider against installed directory
-            val titleProvider = ChineseTitleProvider(bundleManager)
+            val converter = ChineseConverter(bundleManager)
+            val titleProvider = ChineseTitleProvider(bundleManager, converter)
 
             // Test numeric ID lookup (e.g. ID 1 is Cowboy Bebop / 星际牛仔)
             val idTitle = titleProvider.getTitle(1, "Cowboy Bebop")
@@ -104,7 +105,6 @@ class ProductionLocalizationBundleTest {
                 "Numeric dictionary values carry a |bgmId suffix that getTitle must strip",
                 autoSyncedTitle?.contains('|') == false
             )
-            val converter = ChineseConverter(bundleManager)
             assertEquals(
                 "Auto-synced title must already be Simplified Chinese",
                 autoSyncedTitle,

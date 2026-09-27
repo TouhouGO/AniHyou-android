@@ -3,9 +3,7 @@ package com.axiel7.anihyou.core.network.localization
 import com.axiel7.anihyou.core.network.cache.ApolloCacheManager
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.koin.core.annotation.Single
 
-@Single
 class LocalizationInvalidationCoordinator(
     private val apolloCacheManager: ApolloCacheManager,
     private val configState: LocalizationConfigState,

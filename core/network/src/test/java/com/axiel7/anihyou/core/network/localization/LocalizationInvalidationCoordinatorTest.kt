@@ -34,7 +34,7 @@ class LocalizationInvalidationCoordinatorTest {
         configState = LocalizationConfigState()
         val bundleManager = LocalizationBundleManager()
         val converter = ChineseConverter(bundleManager)
-        titleProvider = ChineseTitleProvider(bundleManager)
+        titleProvider = ChineseTitleProvider(bundleManager, converter)
         tagProvider = ChineseTagProvider(bundleManager)
         characterProvider = ChineseCharacterProvider(bundleManager, converter)
         descriptionProvider = ChineseDescriptionProvider(converter)

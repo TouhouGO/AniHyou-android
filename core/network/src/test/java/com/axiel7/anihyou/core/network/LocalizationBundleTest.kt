@@ -52,9 +52,9 @@ class LocalizationBundleTest {
         assertNotNull("Built-in manifest should be loadable", manifest)
         assertTrue("Files should be defined in manifest", manifest!!.files.isNotEmpty())
 
-        val titleProvider = ChineseTitleProvider(bundleManager)
-        val tagProvider = ChineseTagProvider(bundleManager)
         val converter = ChineseConverter(bundleManager)
+        val titleProvider = ChineseTitleProvider(bundleManager, converter)
+        val tagProvider = ChineseTagProvider(bundleManager)
         val charProvider = ChineseCharacterProvider(bundleManager, converter)
 
         // Built-in tags should work
@@ -71,9 +71,9 @@ class LocalizationBundleTest {
             val bundleManager = LocalizationBundleManager()
             bundleManager.setStorageDirectory(tempDir)
 
-            val titleProvider = ChineseTitleProvider(bundleManager)
-            val tagProvider = ChineseTagProvider(bundleManager)
             val converter = ChineseConverter(bundleManager)
+            val titleProvider = ChineseTitleProvider(bundleManager, converter)
+            val tagProvider = ChineseTagProvider(bundleManager)
             val charProvider = ChineseCharacterProvider(bundleManager, converter)
 
             var reloaded = false

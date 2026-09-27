@@ -4,7 +4,6 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.koin.core.annotation.Single
 
 @Serializable
 internal data class CachedEntityEntry(
@@ -18,7 +17,6 @@ internal data class EntityNameCachePayload(
     val entries: Map<String, CachedEntityEntry> = emptyMap()
 )
 
-@Single
 class EntityNameCache {
 
     private val json = Json { ignoreUnknownKeys = true }

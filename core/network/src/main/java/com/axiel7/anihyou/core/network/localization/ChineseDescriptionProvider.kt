@@ -11,7 +11,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.koin.core.annotation.Single
 
 enum class BangumiMatchSource {
     EXPLICIT_ID,           // From explicit ID in title dictionary (trusted)
@@ -19,9 +18,8 @@ enum class BangumiMatchSource {
     NONE                   // Failed or ambiguous match
 }
 
-@Single
 class ChineseDescriptionProvider(
-    private val chineseConverter: ChineseConverter? = null,
+    private val chineseConverter: ChineseConverter,
     private val bundleManager: LocalizationBundleManager? = null,
     private val customHttpClient: OkHttpClient? = null
 ) {
@@ -110,10 +108,10 @@ class ChineseDescriptionProvider(
                         if (!bodyString.isNullOrBlank()) {
                             val parsed = json.parseToJsonElement(bodyString).jsonObject
                             val rawNameCn = parsed["name_cn"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
-                            val simplifiedNameCn = rawNameCn?.let { chineseConverter?.toSimplified(it) ?: it }
+                            val simplifiedNameCn = rawNameCn?.let { chineseConverter.toSimplified(it) ?: it }
 
                             val rawSummary = parsed["summary"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
-                            val simplifiedSummary = rawSummary?.let { chineseConverter?.toSimplified(it) ?: it }
+                            val simplifiedSummary = rawSummary?.let { chineseConverter.toSimplified(it) ?: it }
 
                             val formattedSummary = simplifiedSummary?.let { raw ->
                                 raw.replace("\r\n", "\n")

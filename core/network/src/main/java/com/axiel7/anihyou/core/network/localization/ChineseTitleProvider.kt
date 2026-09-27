@@ -4,12 +4,16 @@ import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
-import org.koin.core.annotation.Single
 
-@Single
+// NOTE(2026-09-28): This provider deliberately holds no hand-maintained title overrides.
+// Titles come solely from titles_zh_cn.json, which the userscript pipeline regenerates.
+// A previous TITLE_OVERRIDES map hardcoded 7 AniList IDs here and silently overrode the
+// pipeline for every release; it was removed so the data source is the single truth.
+// Search behaviour for keywords like "重启" is unaffected: ChineseTitleInterceptor
+// injects those IDs via extraRestartIds, independent of any title dictionary.
 class ChineseTitleProvider(
-    private val bundleManager: LocalizationBundleManager? = null,
-    private val chineseConverter: ChineseConverter? = null,
+    private val bundleManager: LocalizationBundleManager,
+    private val chineseConverter: ChineseConverter,
 ) {
 
     private val titlesById = ConcurrentHashMap<Int, String>()
@@ -23,9 +27,6 @@ class ChineseTitleProvider(
 
     @Volatile
     private var normalizedIdEntries: List<TitleIdEntry> = emptyList()
-
-    private val effectiveConverter: ChineseConverter? = chineseConverter
-        ?: bundleManager?.let { ChineseConverter(it) }
 
     @Volatile
     var isEnabled: Boolean = true
@@ -48,7 +49,7 @@ class ChineseTitleProvider(
 
     fun normalizeTitle(text: String?): String {
         if (text.isNullOrBlank()) return ""
-        val simplified = effectiveConverter?.toSimplified(text) ?: text
+        val simplified = chineseConverter.toSimplified(text) ?: text
         val sb = StringBuilder(simplified.length)
         for (i in 0 until simplified.length) {
             val codePoint = simplified.codePointAt(i)
@@ -103,21 +104,6 @@ class ChineseTitleProvider(
                     }
                 }
             }
-            for ((id, title) in TITLE_OVERRIDES) {
-                val pipeIndex = title.indexOf('|')
-                val cleanTitle = if (pipeIndex >= 0) title.substring(0, pipeIndex) else title
-                val bgmId = if (pipeIndex >= 0) title.substring(pipeIndex + 1).toIntOrNull() else null
-                titlesById[id] = cleanTitle
-                if (bgmId != null) {
-                    bangumiIdsById[id] = bgmId
-                    anilistIdsByBangumiId.computeIfAbsent(bgmId) { CopyOnWriteArrayList() }.add(id)
-                }
-                val normTitle = normalizeTitle(cleanTitle)
-                if (normTitle.isNotEmpty()) {
-                    chineseToIds.computeIfAbsent(normTitle) { CopyOnWriteArrayList() }.add(id)
-                }
-            }
-            rebuildNormalizedIdEntries()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -167,7 +153,7 @@ class ChineseTitleProvider(
         if (existing != null && existing.contains("重启") && !nameCn.contains("重启")) {
             return
         }
-        val simplified = effectiveConverter?.toSimplified(nameCn) ?: nameCn
+        val simplified = chineseConverter.toSimplified(nameCn) ?: nameCn
         titlesById[anilistId] = simplified
         val norm = normalizeTitle(simplified)
         if (norm.isNotEmpty()) {
@@ -297,16 +283,5 @@ class ChineseTitleProvider(
         val normalizedTitle: String,
         val ids: List<Int>
     )
-
-    companion object {
-        val TITLE_OVERRIDES = mapOf(
-            113425 to "回复术士的重启人生|295017",
-            97660 to "重启咲良田|193378",
-            164299 to "重启人生的千金小姐正在攻略龙帝陛下|432597",
-            120534 to "搏斗运动员们 大运动会 重启！|309331",
-            87487 to "机动警察 REBOOT|198246",
-            160803 to "魔法少女育成计划 restart",
-            203448 to "境界触发者 REBOOT",
-        )
-    }
 }
+
