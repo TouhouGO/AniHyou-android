@@ -236,12 +236,14 @@ jobs:
             exit 1
           fi
 
-          # 6. 推送前再次同步，避免与远端并发提交冲突
-          if ! git merge-base --is-ancestor origin/master HEAD; then
-            echo "origin/master has advanced; rebasing onto it."
-            git pull --rebase origin master
+          # 6. 推送；若远端在 cherry-pick 与 push 之间前进了，则
+          #    fetch + rebase 后重试一次（不使用 force push）
+          if ! git push origin HEAD:master; then
+            echo "Push rejected; origin/master advanced during this run. Rebasing and retrying once."
+            git fetch origin master
+            git rebase origin/master
+            git push origin HEAD:master
           fi
-          git push origin HEAD:master
 
 
 
