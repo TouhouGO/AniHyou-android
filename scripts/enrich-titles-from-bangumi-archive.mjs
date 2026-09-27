@@ -1,6 +1,25 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import path from 'node:path';
 import readline from 'node:readline';
+import { fileURLToPath } from 'node:url';
+
+export function toSimplified(text, t2sMap, onCharReplaced) {
+  if (!text) return '';
+  let result = '';
+  for (const char of text) {
+    const mapped = t2sMap && t2sMap[char];
+    if (mapped) {
+      result += mapped;
+      if (typeof onCharReplaced === 'function') {
+        onCharReplaced(char, mapped);
+      }
+    } else {
+      result += char;
+    }
+  }
+  return result;
+}
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -22,6 +41,17 @@ function parseArgs() {
 
 async function main() {
   const { titles: titlesPath, archive: archivePath, output: outputPath, 'media-types': mediaTypesPath, report: reportPath } = parseArgs();
+
+  // Load traditional-to-simplified character map
+  const t2sMapPath = new URL('../core/network/src/main/resources/t2s_char_map.json', import.meta.url);
+  let t2sMap;
+  try {
+    const rawT2s = fs.readFileSync(t2sMapPath, 'utf8');
+    t2sMap = JSON.parse(rawT2s);
+  } catch (err) {
+    console.error(`Fatal error: Failed to read or parse t2s_char_map.json from ${t2sMapPath}:`, err.message);
+    process.exit(1);
+  }
 
   // 1. Read input titles
   const rawTitles = fs.readFileSync(titlesPath, 'utf8');
@@ -136,6 +166,7 @@ async function main() {
 
   // 4. Enrich titles according to strict type & identity contract
   let replacedCount = 0;
+  let simplifiedCharCount = 0;
   let matchedCount = 0;
   let missingCount = 0;
   let typeMismatchCount = 0;
@@ -175,7 +206,10 @@ async function main() {
         const oldVal = titles[anilistId];
         const firstPipe = oldVal.indexOf('|');
         const suffix = firstPipe !== -1 ? oldVal.substring(firstPipe) : `|${bgmId}`;
-        const newVal = `${candidate.nameCn}${suffix}`;
+        const simplifiedNameCn = toSimplified(candidate.nameCn, t2sMap, () => {
+          simplifiedCharCount++;
+        });
+        const newVal = `${simplifiedNameCn}${suffix}`;
         if (oldVal !== newVal) {
           titles[anilistId] = newVal;
           replacedCount++;
@@ -188,6 +222,7 @@ async function main() {
     Input: ${inputCount}
     Matched: ${matchedCount}
     Replaced: ${replacedCount}
+    Simplified: ${simplifiedCharCount}
     Missing: ${missingCount}
     Type Mismatch: ${typeMismatchCount}
     Duplicate / Conflict: ${duplicateCount}
@@ -216,7 +251,11 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error('Fatal error during title enrichment:', err);
-  process.exit(1);
-});
+const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isMain) {
+  main().catch((err) => {
+    console.error('Fatal error during title enrichment:', err);
+    process.exit(1);
+  });
+}
