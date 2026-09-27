@@ -202,15 +202,27 @@ jobs:
           sys.exit(0 if ok else 1)
           PYEOF
 
-          # 4. 提交并推送；无变化则正常跳过，不得失败
-          # [skip ci] 用于避免每次 OTA 发布都空跑一次 debug APK 构建；若希望新内置资源经过 APK 构建验证，可移除该标记。
+          # 4. 在 master 分支上提交（tag 事件下工作区为 detached HEAD）
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # tag 事件下 checkout 处于 detached HEAD，必须显式切到 master
+          git fetch origin master
+          git checkout -B master origin/master
           git add core/network/src/main/resources/
+
           if git diff --cached --quiet; then
             echo "Built-in baseline already matches published bundle; nothing to backfill."
             exit 0
           fi
+
+          # [skip ci] 用于避免每次 OTA 发布都空跑一次 debug APK 构建；若希望新内置资源经过 APK 构建验证，可移除该标记。
           git commit -m "chore(data): backfill built-in baseline from localization bundle ${TAG} [skip ci]"
-          git push
+
+          # 5. 推送前再次同步，避免与远端并发提交冲突
+          if ! git merge-base --is-ancestor origin/master HEAD; then
+            echo "origin/master has advanced; rebasing onto it."
+            git pull --rebase origin master
+          fi
+          git push origin HEAD:master
+
 

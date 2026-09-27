@@ -51,7 +51,7 @@ This document catalogs every surface in AniHyou that consumes localized GraphQL 
 
 ## 4. 内置资源基线维护 (Built-in Resource Baseline Maintenance)
 
-- **自动回填机制 (Automated Backfill)**：在 GitHub Actions OTA 发布流程（`.github/workflows/release-localization-bundle.yaml`）中，当发布确认（`publish_release == 'true'` 或 tag push）且完成远端 SHA-256 校验后，工作流会自动解包本地构建产物 `localization_bundle.zip`，将其中的 5 个资源文件（`bundle_manifest.json`、`titles_zh_cn.json`、`tags_zh_cn.json`、`staff_characters_zh_cn.json`、`t2s_char_map.json`）原始字节回填至 `core/network/src/main/resources/` 并提交推送回分支。
+- **自动回填机制 (Automated Backfill)**：在 GitHub Actions OTA 发布流程（`.github/workflows/release-localization-bundle.yaml`）中，当发布确认（`publish_release == 'true'` 或 tag push）且完成远端 SHA-256 校验后，工作流会自动解包本地构建产物 `localization_bundle.zip`，将其中的 5 个资源文件（`bundle_manifest.json`、`titles_zh_cn.json`、`tags_zh_cn.json`、`staff_characters_zh_cn.json`、`t2s_char_map.json`）原始字节回填至 `core/network/src/main/resources/`。回填提交固定在 `master` 分支（tag 事件触发下工作区处于 detached HEAD，工作流会显式检出 `master` 后再执行提交与推送）。
 - **杜绝手工维护与校验和漂移 (Zero Manual Drift)**：内置资源基线不再依赖开发者手工计算或维护 checksum，始终严格等价于最近一次实际发布的 OTA 语言包内容。以此根治了历史上手工维护与自动校准之间反复出现的 `bundle_manifest.json` 校验和漂移问题。
 - **版本一致性保证 (Version Parity)**：APK 构建内置的资源版本与已发布的最新 OTA 语言包完全同步，确保终端用户仅在真正存在更高版本的新发布时才会收到 OTA 更新提示。
 
