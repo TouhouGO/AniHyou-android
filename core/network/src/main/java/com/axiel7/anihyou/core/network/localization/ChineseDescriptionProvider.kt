@@ -29,6 +29,8 @@ class ChineseDescriptionProvider(
 
     private val infoCache = ConcurrentHashMap<BangumiCacheKey, BangumiMediaInfo>()
 
+    private val summaryByMediaId = ConcurrentHashMap<Int, String>()
+
     init {
         bundleManager?.registerReloadListener {
             clearCache()
@@ -53,10 +55,11 @@ class ChineseDescriptionProvider(
 
     fun clearCache() {
         infoCache.clear()
+        summaryByMediaId.clear()
     }
 
     fun getCachedSummary(mediaId: Int): String? {
-        return infoCache.entries.firstOrNull { it.key.mediaId == mediaId }?.value?.summary
+        return summaryByMediaId[mediaId]
     }
 
     fun getOrFetchInfo(
@@ -129,6 +132,7 @@ class ChineseDescriptionProvider(
                                 source = source
                             )
                             infoCache[cacheKey] = result
+                            result.summary?.let { summaryByMediaId[cacheKey.mediaId] = it }
                             return result
                         }
                     }

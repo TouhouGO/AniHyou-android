@@ -33,7 +33,7 @@ class ChineseTitleProvider(
 
     init {
         loadDefaultTitles()
-        bundleManager?.registerReloadListener { reload() }
+        bundleManager.registerReloadListener { reload() }
     }
 
     fun reload() {
@@ -62,7 +62,7 @@ class ChineseTitleProvider(
 
     private fun loadDefaultTitles() {
         try {
-            val stream: InputStream? = bundleManager?.openResource("titles_zh_cn.json")
+            val stream: InputStream? = bundleManager.openResource("titles_zh_cn.json")
                 ?: javaClass.classLoader?.getResourceAsStream("titles_zh_cn.json")
                 ?: Thread.currentThread().contextClassLoader?.getResourceAsStream("titles_zh_cn.json")
 

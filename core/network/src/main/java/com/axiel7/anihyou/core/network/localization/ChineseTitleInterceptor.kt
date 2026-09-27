@@ -129,7 +129,7 @@ class ChineseTitleInterceptor(
                 !rawJson.contains("\"characters\"") &&
                 !rawJson.contains("\"staff\"") &&
                 !rawJson.contains("\"voiceActors\"")) {
-                println("INTERCEPTOR_PERF: SKIPPED - network: ${tNetwork}ms, readString: ${tString}ms, size: ${rawJson.length}, body: $rawJson")
+                println("INTERCEPTOR_PERF: SKIPPED - network: ${tNetwork}ms, readString: ${tString}ms, size: ${rawJson.length}")
                 return response.newBuilder()
                     .body(rawJson.toResponseBody(contentType))
                     .build()
