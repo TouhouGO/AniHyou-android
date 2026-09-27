@@ -73,24 +73,60 @@ object BundleHashUtils {
     }
 }
 
+tasks.register("stageLocalizationBundle") {
+    group = "localization"
+    description = "Stages localization bundle data files, preferring enriched titles if available"
+
+    val srcDir = layout.projectDirectory.dir("src/main/resources")
+    val enrichedTitlesFile = layout.buildDirectory.file("outputs/localization/titles_enriched.json")
+    val stageDir = layout.buildDirectory.dir("intermediates/localization/bundle")
+
+    inputs.file(srcDir.file("titles_zh_cn.json"))
+    inputs.file(srcDir.file("tags_zh_cn.json"))
+    inputs.file(srcDir.file("staff_characters_zh_cn.json"))
+    inputs.file(srcDir.file("t2s_char_map.json"))
+    inputs.files(enrichedTitlesFile).optional(true)
+
+    outputs.dir(stageDir)
+
+    doLast {
+        val targetDir = stageDir.get().asFile
+        targetDir.mkdirs()
+
+        val filesToCopy = listOf(
+            "titles_zh_cn.json",
+            "tags_zh_cn.json",
+            "staff_characters_zh_cn.json",
+            "t2s_char_map.json"
+        )
+        for (fileName in filesToCopy) {
+            val srcFile = srcDir.file(fileName).asFile
+            val destFile = File(targetDir, fileName)
+            srcFile.copyTo(destFile, overwrite = true)
+        }
+
+        val enriched = enrichedTitlesFile.get().asFile
+        if (enriched.exists()) {
+            val destTitles = File(targetDir, "titles_zh_cn.json")
+            enriched.copyTo(destTitles, overwrite = true)
+            println("Using enriched titles from ${enriched.absolutePath}")
+        }
+    }
+}
+
 tasks.register("generateInternalBundleManifest") {
     group = "localization"
     description = "Generates internal bundle_manifest.json with SHA-256 from resources"
+    dependsOn("stageLocalizationBundle")
 
-    val titlesFileInput = layout.projectDirectory.file("src/main/resources/titles_zh_cn.json")
-    val tagsFileInput = layout.projectDirectory.file("src/main/resources/tags_zh_cn.json")
-    val staffFileInput = layout.projectDirectory.file("src/main/resources/staff_characters_zh_cn.json")
-    val t2sFileInput = layout.projectDirectory.file("src/main/resources/t2s_char_map.json")
+    val stagedDir = layout.buildDirectory.dir("intermediates/localization/bundle")
     val baselineManifestFileInput = layout.projectDirectory.file("src/main/resources/bundle_manifest.json")
 
     val outputManifestFile = layout.buildDirectory.file("intermediates/localization/bundle_manifest.json")
     val bundleReleaseTagProp = providers.gradleProperty("bundleReleaseTag")
     val bundleBuildTimestampProp = providers.gradleProperty("bundleBuildTimestamp")
 
-    inputs.file(titlesFileInput)
-    inputs.file(tagsFileInput)
-    inputs.file(staffFileInput)
-    inputs.file(t2sFileInput)
+    inputs.dir(stagedDir)
     inputs.file(baselineManifestFileInput)
     inputs.property("bundleReleaseTag", bundleReleaseTagProp).optional(true)
     inputs.property("bundleBuildTimestamp", bundleBuildTimestampProp).optional(true)
@@ -114,10 +150,11 @@ tasks.register("generateInternalBundleManifest") {
             "sha256" to BundleHashUtils.sha256(f)
         )
 
-        val titlesFile = titlesFileInput.asFile
-        val tagsFile = tagsFileInput.asFile
-        val staffFile = staffFileInput.asFile
-        val t2sFile = t2sFileInput.asFile
+        val bundleDir = stagedDir.get().asFile
+        val titlesFile = File(bundleDir, "titles_zh_cn.json")
+        val tagsFile = File(bundleDir, "tags_zh_cn.json")
+        val staffFile = File(bundleDir, "staff_characters_zh_cn.json")
+        val t2sFile = File(bundleDir, "t2s_char_map.json")
 
         val manifestMap = linkedMapOf<String, Any>(
             "formatVersion" to 1,
@@ -141,7 +178,7 @@ tasks.register("generateInternalBundleManifest") {
 tasks.register<Zip>("packageLocalizationBundle") {
     group = "localization"
     description = "Packages localization resources into localization_bundle.zip"
-    dependsOn("generateInternalBundleManifest")
+    dependsOn("generateInternalBundleManifest", "stageLocalizationBundle")
 
     destinationDirectory.set(layout.buildDirectory.dir("outputs/localization"))
     archiveFileName.set("localization_bundle.zip")
@@ -149,7 +186,7 @@ tasks.register<Zip>("packageLocalizationBundle") {
     isReproducibleFileOrder = true
 
     from(layout.buildDirectory.file("intermediates/localization/bundle_manifest.json"))
-    from(layout.projectDirectory.dir("src/main/resources")) {
+    from(layout.buildDirectory.dir("intermediates/localization/bundle")) {
         include("titles_zh_cn.json")
         include("tags_zh_cn.json")
         include("staff_characters_zh_cn.json")

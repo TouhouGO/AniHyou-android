@@ -4,7 +4,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 TARGET_TITLES="${ROOT_DIR}/core/network/src/main/resources/titles_zh_cn.json"
+OUTPUT_TITLES="${ROOT_DIR}/core/network/build/outputs/localization/titles_enriched.json"
 REPORT_OUTPUT="${1:-${ROOT_DIR}/core/network/build/outputs/localization/bangumi_enrichment_report.json}"
+
+mkdir -p "$(dirname "${OUTPUT_TITLES}")"
 
 WORK_DIR=$(mktemp -d)
 trap 'rm -rf "${WORK_DIR}"' EXIT
@@ -45,5 +48,5 @@ jq --arg url "${DOWNLOAD_URL}" \
    '. + {archiveUrl: $url, archiveSha256: $sha, archiveDate: $date}' \
    "${INTERMEDIATE_REPORT}" > "${REPORT_OUTPUT}"
 
-mv "${WORK_DIR}/titles_calibrated.json" "${TARGET_TITLES}"
-echo "Successfully enriched ${TARGET_TITLES} with latest Bangumi archive. Report saved to ${REPORT_OUTPUT}."
+mv "${WORK_DIR}/titles_calibrated.json" "${OUTPUT_TITLES}"
+echo "Successfully enriched ${OUTPUT_TITLES} with latest Bangumi archive. Report saved to ${REPORT_OUTPUT}."
