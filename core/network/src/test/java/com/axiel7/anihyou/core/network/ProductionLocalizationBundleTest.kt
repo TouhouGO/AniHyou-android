@@ -2,6 +2,7 @@ package com.axiel7.anihyou.core.network
 
 import com.axiel7.anihyou.core.network.localization.BundleFileEntry
 import com.axiel7.anihyou.core.network.localization.BundleManifest
+import com.axiel7.anihyou.core.network.localization.ChineseConverter
 import com.axiel7.anihyou.core.network.localization.ChineseTitleProvider
 import com.axiel7.anihyou.core.network.localization.LocalizationBundleManager
 import java.io.ByteArrayInputStream
@@ -93,10 +94,21 @@ class ProductionLocalizationBundleTest {
             val idTitle = titleProvider.getTitle(1, "Cowboy Bebop")
             assertEquals("星际牛仔", idTitle)
 
-            // AniList 169582 upstream translation from automatic dictionary
+            // AniList 169582: the dictionary is auto-synced, so assert the behavioural
+            // contract (hit + pipe-stripped + Simplified) instead of a pinned literal that
+            // any upstream re-enrichment would invalidate.
+            val autoSyncedTitle = titleProvider.getTitle(169582, "最強出涸らし皇子の暗躍帝位争い")
+            assertNotNull("Id 169582 must hit the auto-synced dictionary", autoSyncedTitle)
+            assertTrue("Dictionary hit must not be blank", !autoSyncedTitle.isNullOrBlank())
+            assertTrue(
+                "Numeric dictionary values carry a |bgmId suffix that getTitle must strip",
+                autoSyncedTitle?.contains('|') == false
+            )
+            val converter = ChineseConverter(bundleManager)
             assertEquals(
-                "最强出涸皇子的暗跃帝位争夺",
-                titleProvider.getTitle(169582, "最強出涸らし皇子の暗躍帝位争い")
+                "Auto-synced title must already be Simplified Chinese",
+                autoSyncedTitle,
+                converter.toSimplified(autoSyncedTitle)
             )
 
             // Test exact title-name fallback lookup (e.g. "白蛇伝" -> "白蛇传")
