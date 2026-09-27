@@ -48,6 +48,17 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # 同步远端最新状态，避免与并发推送（如 OTA 回填提交）冲突
+          git fetch origin master
+
           git add core/network/src/main/resources/titles_zh_cn.json
           git commit -m "chore(data): auto-sync titles from anilist-zh-cn-userscript [skip ci]"
-          git push origin HEAD:master
+
+          # push 被拒说明远端在 fetch 与 push 之间前进了，rebase 后重试一次
+          if ! git push origin HEAD:master; then
+            echo "Push rejected; origin/master advanced during this run. Rebasing and retrying once."
+            git fetch origin master
+            git rebase origin/master
+            git push origin HEAD:master
+          fi
