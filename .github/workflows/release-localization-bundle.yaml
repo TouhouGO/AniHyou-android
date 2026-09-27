@@ -202,27 +202,46 @@ jobs:
           sys.exit(0 if ok else 1)
           PYEOF
 
-          # 4. 在 master 分支上提交（tag 事件下工作区为 detached HEAD）
+          # 4. 暂存回填结果并提交到当前 HEAD
+          #    注意：tag 事件下 HEAD 是游离 commit，此处提交只是为了让改动
+          #    可被携带切换分支，最终会以 cherry-pick 形式落到 master。
+          #    先在游离 HEAD 上提交，是因为未提交的改动无法携带过 checkout。
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # tag 事件下 checkout 处于 detached HEAD，必须显式切到 master
-          git fetch origin master
-          git checkout -B master origin/master
-          git add core/network/src/main/resources/
 
+          git add core/network/src/main/resources/
           if git diff --cached --quiet; then
             echo "Built-in baseline already matches published bundle; nothing to backfill."
             exit 0
           fi
 
           # [skip ci] 用于避免每次 OTA 发布都空跑一次 debug APK 构建；若希望新内置资源经过 APK 构建验证，可移除该标记。
-          git commit -m "chore(data): backfill built-in baseline from localization bundle ${TAG} [skip ci]"
+          BACKFILL_MSG="chore(data): backfill built-in baseline from localization bundle ${TAG} [skip ci]"
+          git commit -m "${BACKFILL_MSG}"
+          BACKFILL_SHA=$(git rev-parse HEAD)
 
-          # 5. 推送前再次同步，避免与远端并发提交冲突
+          # 5. 切到最新 master 并应用该提交（用 cherry-pick 保证 master 线性历史，避免 merge commit）
+          #    cherry-pick 冲突时选择 fail loudly（exit 1）而非强行 --ours/--theirs，
+          #    因为静默丢弃回填会让内置资源与 OTA 不一致且无人知晓。
+          git fetch origin master
+          git checkout -B master origin/master
+          if git cherry-pick "${BACKFILL_SHA}"; then
+            echo "Backfill commit applied onto master."
+          else
+            echo "cherry-pick conflict; master may already contain equivalent changes."
+            git status --short
+            # 若冲突源自内容已等价，则放弃本次 cherry-pick 并继续
+            git cherry-pick --abort
+            echo "Skipping backfill due to conflict; manual review required." >&2
+            exit 1
+          fi
+
+          # 6. 推送前再次同步，避免与远端并发提交冲突
           if ! git merge-base --is-ancestor origin/master HEAD; then
             echo "origin/master has advanced; rebasing onto it."
             git pull --rebase origin master
           fi
           git push origin HEAD:master
+
 
 
