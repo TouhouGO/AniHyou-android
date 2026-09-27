@@ -85,7 +85,7 @@ class ProfileLocalizationRefreshTest {
 
     @Test
     fun testUserFavoritesViewModelRefreshesOnLocalizationBump() = runTest(testDispatcher) {
-        val dummyAnime = mockk<UserFavoritesAnimeQuery.Node>(relaxed = true)
+        val dummyAnime = mockk<UserFavoritesAnimeQuery.Edge>(relaxed = true)
         every {
             favoriteRepository.getFavoriteAnime(userId = any(), page = any(), fetchFromNetwork = any())
         } returns flowOf(PagedResult.Success(listOf(dummyAnime), currentPage = 1, hasNextPage = false))

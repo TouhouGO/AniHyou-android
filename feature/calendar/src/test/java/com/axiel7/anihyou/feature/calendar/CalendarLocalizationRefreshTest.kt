@@ -2,6 +2,7 @@ package com.axiel7.anihyou.feature.calendar
 
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
+import com.axiel7.anihyou.core.domain.repository.ListPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.MediaRepository
 import com.axiel7.anihyou.core.network.fragment.ExploreMedia
 import com.axiel7.anihyou.core.network.localization.LocalizationConfigSnapshot
@@ -26,6 +27,7 @@ class CalendarLocalizationRefreshTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private val defaultPreferencesRepository: DefaultPreferencesRepository = mockk(relaxed = true)
+    private val listPreferencesRepository: ListPreferencesRepository = mockk(relaxed = true)
     private val mediaRepository: MediaRepository = mockk(relaxed = true)
     private val localizationConfigFlow = MutableStateFlow(LocalizationConfigSnapshot(configVersion = 0L))
 
@@ -59,7 +61,8 @@ class CalendarLocalizationRefreshTest {
 
         val viewModel = CalendarViewModel(
             mediaRepository = mediaRepository,
-            defaultPreferencesRepository = defaultPreferencesRepository
+            defaultPreferencesRepository = defaultPreferencesRepository,
+            listPreferencesRepository = listPreferencesRepository,
         )
 
         advanceUntilIdle()
