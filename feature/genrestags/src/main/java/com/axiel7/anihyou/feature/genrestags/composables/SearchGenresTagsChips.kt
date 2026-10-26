@@ -1,7 +1,6 @@
 package com.axiel7.anihyou.feature.genrestags.composables
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -32,13 +31,13 @@ import com.axiel7.anihyou.feature.genrestags.GenresTagsSheet
 import com.axiel7.anihyou.feature.genrestags.GenresTagsViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchGenresTagsChips(
     modifier: Modifier = Modifier,
-    viewModel: GenresTagsViewModel = koinViewModel { parametersOf(GenresAndTagsForSearch()) },
+    externalGenresAndTagsForSearch: GenresAndTagsForSearch,
+    viewModel: GenresTagsViewModel = koinViewModel(),
     clearedFilters: Boolean,
     onGenreTagStateChanged: (GenresAndTagsForSearch) -> Unit
 ) {
@@ -53,6 +52,10 @@ fun SearchGenresTagsChips(
 
     SideEffect(clearedFilters) {
         if (clearedFilters) viewModel.resetData()
+    }
+
+    SideEffect(externalGenresAndTagsForSearch) {
+        viewModel.setGenresAndTagsForSearch(externalGenresAndTagsForSearch)
     }
 
     val selectedGenres = uiState.genresAndTagsForSearch.genreIn

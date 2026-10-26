@@ -3,7 +3,9 @@ package com.axiel7.anihyou.feature.explore.search
 import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.common.viewmodel.PagedUiStateViewModel
+import com.axiel7.anihyou.core.domain.model.SavedFilter
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
+import com.axiel7.anihyou.core.domain.repository.SavedFiltersRepository
 import com.axiel7.anihyou.core.domain.repository.SearchRepository
 import com.axiel7.anihyou.core.model.SearchType
 import com.axiel7.anihyou.core.model.genre.GenresAndTagsForSearch
@@ -20,6 +22,7 @@ import com.axiel7.anihyou.core.ui.common.navigation.Route
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.drop
@@ -31,6 +34,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import org.koin.core.annotation.InjectedParam
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -38,16 +42,17 @@ class SearchViewModel(
     @InjectedParam arguments: Route.Search,
     @InjectedParam isLoggedIn: Boolean,
     private val searchRepository: SearchRepository,
+    private val savedFiltersRepository: SavedFiltersRepository,
     defaultPreferencesRepository: DefaultPreferencesRepository,
 ) : PagedUiStateViewModel<SearchUiState>(), SearchEvent {
 
-    private val mediaType = arguments.mediaType?.let { MediaType.safeValueOf(it) }
-    private val mediaSort = arguments.mediaSort?.let { MediaSort.safeValueOf(it) }
-
     override val initialState =
         SearchUiState(
-            searchType = if (mediaType == MediaType.MANGA) SearchType.MANGA else SearchType.ANIME,
-            mediaSort = mediaSort ?: MediaSort.SEARCH_MATCH,
+            searchType = if (arguments.mediaType == MediaType.MANGA) SearchType.MANGA else SearchType.ANIME,
+            mediaSort = arguments.mediaSort ?: MediaSort.SEARCH_MATCH,
+            season = arguments.season,
+            startYear = arguments.year,
+            endYear = arguments.year,
             onMyList = arguments.onList,
             isLoggedIn = isLoggedIn,
             isAdult = if (isLoggedIn) null else false,
@@ -147,6 +152,7 @@ class SearchViewModel(
 
     override fun onGenreTagStateChanged(genresAndTagsForSearch: GenresAndTagsForSearch) =
         mutableUiState.update {
+            if (it.genresAndTagsForSearch == genresAndTagsForSearch) return@update it
             it.copy(
                 genresAndTagsForSearch = genresAndTagsForSearch,
                 genresOrTagsChanged = true,
@@ -202,6 +208,96 @@ class SearchViewModel(
     }
 
     private val refreshTrigger = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    override fun onShowSavedFilters() {
+        if (uiState.value.savedFilters.isEmpty()) {
+            viewModelScope.launch {
+                savedFiltersRepository.getAllFilters().collectLatest { filters ->
+                    mutableUiState.update {
+                        it.copy(savedFilters = filters.toImmutableList())
+                    }
+                }
+            }
+        }
+    }
+
+    override fun saveCurrentFilter(name: String) {
+        viewModelScope.launch {
+            with(uiState.value) {
+                val filter = SavedFilter(
+                    id = 0,
+                    name = name,
+                    searchType = searchType,
+                    mediaSort = mediaSort,
+                    genreIn = genresAndTagsForSearch.genreIn.toList().takeIf { it.isNotEmpty() },
+                    genreNot = genresAndTagsForSearch.genreNot.toList().takeIf { it.isNotEmpty() },
+                    tagIn = genresAndTagsForSearch.tagIn.toList().takeIf { it.isNotEmpty() },
+                    tagNot = genresAndTagsForSearch.tagNot.toList().takeIf { it.isNotEmpty() },
+                    minimumTagPercentage = genresAndTagsForSearch.minimumTagPercentage,
+                    mediaFormats = selectedMediaFormats.map { it.value }.takeIf { it.isNotEmpty() },
+                    mediaStatuses = selectedMediaStatuses.map { it.value }.takeIf { it.isNotEmpty() },
+                    startYear = startYear,
+                    endYear = endYear,
+                    season = season,
+                    episodesChaptersRange = episodesChaptersRange,
+                    durationVolumesRange = durationVolumesRange,
+                    onMyList = onMyList,
+                    isDoujin = isDoujin,
+                    isAdult = isAdult,
+                    country = country,
+                    sources = selectedSources.map { it.value }.takeIf { it.isNotEmpty() },
+                )
+                savedFiltersRepository.insertFilter(filter)
+            }
+        }
+    }
+
+    override fun deleteFilter(id: Int) {
+        viewModelScope.launch {
+            savedFiltersRepository.deleteFilter(id)
+        }
+    }
+
+    override fun applySavedFilter(filter: SavedFilter) {
+        mutableUiState.update {
+            it.copy(
+                searchType = filter.searchType,
+                mediaSort = filter.mediaSort ?: it.mediaSort,
+                genresAndTagsForSearch = GenresAndTagsForSearch(
+                    genreIn = filter.genreIn?.toSet().orEmpty(),
+                    genreNot = filter.genreNot?.toSet().orEmpty(),
+                    tagIn = filter.tagIn?.toSet().orEmpty(),
+                    tagNot = filter.tagNot?.toSet().orEmpty(),
+                    minimumTagPercentage = filter.minimumTagPercentage,
+                ),
+                genresOrTagsChanged = true,
+                selectedMediaFormats = filter.mediaFormats
+                    ?.mapNotNull { value -> MediaFormatLocalizable.findValue(value) }
+                    ?.toImmutableList() ?: persistentListOf(),
+                mediaFormatsChanged = true,
+                selectedMediaStatuses = filter.mediaStatuses
+                    ?.mapNotNull { value -> MediaStatusLocalizable.findValue(value) }
+                    ?.toImmutableList() ?: persistentListOf(),
+                mediaStatusesChanged = true,
+                startYear = filter.startYear,
+                endYear = filter.endYear,
+                season = filter.season,
+                episodesChaptersRange = filter.episodesChaptersRange,
+                durationVolumesRange = filter.durationVolumesRange,
+                onMyList = filter.onMyList,
+                isDoujin = filter.isDoujin,
+                isAdult = filter.isAdult,
+                country = filter.country,
+                selectedSources = filter.sources
+                    ?.mapNotNull { value -> MediaSourceLocalizable.findValue(value) }
+                    ?.toImmutableList() ?: persistentListOf(),
+                sourcesChanged = true,
+                clearedFilters = true,
+                page = 1,
+                hasNextPage = true,
+                isLoading = true,
+            )
+        }
+    }
 
     init {
         defaultPreferencesRepository.titleLanguage

@@ -20,7 +20,6 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -59,7 +58,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFilterNotNull
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.axiel7.anihyou.core.model.SearchType
-import com.axiel7.anihyou.core.model.genre.GenresAndTagsForSearch
 import com.axiel7.anihyou.core.model.media.MediaSortSearch
 import com.axiel7.anihyou.core.network.type.MediaFormat
 import com.axiel7.anihyou.core.network.type.MediaSort
@@ -74,6 +72,7 @@ import com.axiel7.anihyou.core.ui.composables.chip.MediaSearchEpisodesChaptersCh
 import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.ErrorTextButton
 import com.axiel7.anihyou.core.ui.composables.common.FilterSelectionChip
+import com.axiel7.anihyou.core.ui.composables.common.MoreLessButton
 import com.axiel7.anihyou.core.ui.composables.common.TriFilterChip
 import com.axiel7.anihyou.core.ui.composables.common.singleClick
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
@@ -90,13 +89,13 @@ import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchFormatCh
 import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchSortChip
 import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchSourcesChip
 import com.axiel7.anihyou.feature.explore.search.composables.MediaSearchStatusChip
+import com.axiel7.anihyou.feature.explore.search.composables.SavedFiltersSheet
 import com.axiel7.anihyou.feature.genrestags.composables.SearchGenresTagsChips
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchView(
     arguments: Route.Search,
@@ -180,8 +179,6 @@ fun SearchView(
             SearchContentView(
                 textFieldState = textFieldState,
                 performSearch = performSearch,
-                initialGenre = arguments.genre,
-                initialTag = arguments.tag,
                 uiState = uiState,
                 event = viewModel,
             )
@@ -189,16 +186,14 @@ fun SearchView(
     }//:Surface
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchContentView(
     textFieldState: TextFieldState,
     performSearch: MutableState<Boolean>,
-    initialGenre: String?,
-    initialTag: String?,
     uiState: SearchUiState,
     event: SearchEvent?,
 ) {
+    val haptic = LocalHapticFeedback.current
     val navActionManager = LocalNavActionManager.current
     val blurAdult = LocalBlurAdult.current
     val scope = rememberCoroutineScope()
@@ -214,8 +209,7 @@ fun SearchContentView(
     }
 
     var showMoreFilters by rememberSaveable { mutableStateOf(false) }
-
-    val haptic = LocalHapticFeedback.current
+    var showSavedFilters by rememberSaveable { mutableStateOf(false) }
     var showEditSheet by rememberSaveable { mutableStateOf(false) }
 
     ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
@@ -226,6 +220,14 @@ fun SearchContentView(
             event?.setQuery(textFieldState.text.toString())
             performSearch.value = false
         }
+    }
+
+    if (showSavedFilters) {
+        SavedFiltersSheet(
+            uiState = uiState,
+            event = event,
+            onDismissed = { showSavedFilters = false },
+        )
     }
 
     if (showEditSheet && uiState.selectedMediaItem != null) {
@@ -294,20 +296,19 @@ fun SearchContentView(
                         )
                         AnimatedVisibility(showMoreFilters) {
                             Column {
-                                MoreFilters(uiState, event, initialGenre, initialTag)
+                                MoreFilters(uiState, event)
                             }
                         }
                         Row(
-                            modifier = Modifier.padding(horizontal = 8.dp),
+                            modifier = Modifier.padding(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            TextButton(onClick = { showMoreFilters = !showMoreFilters }) {
-                                Text(
-                                    text = stringResource(
-                                        if (showMoreFilters) R.string.hide_filters
-                                        else R.string.more_filters
-                                    )
-                                )
+                            MoreLessButton(
+                                isExpanded = showMoreFilters,
+                                onClick = { showMoreFilters = !showMoreFilters }
+                            )
+                            TextButton(onClick = { showSavedFilters = !showSavedFilters }) {
+                                Text(text = stringResource(R.string.saved_filters))
                             }
                             ErrorTextButton(
                                 text = stringResource(R.string.clear),
@@ -464,8 +465,6 @@ fun SearchContentView(
 private fun MoreFilters(
     uiState: SearchUiState,
     event: SearchEvent?,
-    initialGenre: String?,
-    initialTag: String?,
 ) {
     Row(
         modifier = Modifier
@@ -526,14 +525,7 @@ private fun MoreFilters(
     }
     SearchGenresTagsChips(
         modifier = Modifier.padding(horizontal = 16.dp),
-        viewModel = koinViewModel {
-            parametersOf(
-                GenresAndTagsForSearch(
-                    genreIn = setOfNotNull(initialGenre),
-                    tagIn = setOfNotNull(initialTag)
-                )
-            )
-        },
+        externalGenresAndTagsForSearch = uiState.genresAndTagsForSearch,
         clearedFilters = uiState.clearedFilters,
         onGenreTagStateChanged = { event?.onGenreTagStateChanged(it) },
     )
@@ -563,8 +555,6 @@ private fun SearchPreview() {
             SearchContentView(
                 textFieldState = rememberTextFieldState(),
                 performSearch = remember { mutableStateOf(false) },
-                initialGenre = null,
-                initialTag = null,
                 uiState = SearchUiState(
                     searchType = SearchType.ANIME,
                     mediaSort = MediaSort.SEARCH_MATCH,

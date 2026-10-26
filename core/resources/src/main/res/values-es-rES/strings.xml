@@ -172,6 +172,7 @@
     <string name="logout">Cerrar sesión</string>
     <string name="character_media">Medios</string>
     <string name="birthday">Cumpleaños</string>
+    <string name="death">Fallecimiento</string>
     <string name="age">Edad</string>
     <string name="gender">Género</string>
     <string name="blood_type">Grupo sanguíneo</string>
@@ -605,6 +606,7 @@
     <string name="openings">Openings</string>
     <string name="endings">Endings</string>
     <string name="list_name">Nombre de la lista</string>
+    <string name="link_name">Nombre</string>
     <string name="anime_behind">Anime Atrasado</string>
     <string name="default_tab">Pestaña por defecto</string>
     <string name="last_used">Último usado</string>
@@ -669,6 +671,8 @@
         <item quantity="one">Se emitió el episodio %1$d de %2$s.</item>
         <item quantity="other">Se emitió el episodio %1$d de %2$s.</item>
     </plurals>
+    <string name="notification_start_episode_aired">%1$s comenzó a emitirse</string>
+    <string name="notification_end_episode_aired">%1$s ha terminado de emitirse.</string>
     <string name="notification_activity_liked">A %s le gustó tu actividad.</string>
     <string name="notification_activity_reply_liked">A %s le gustó tu respuesta a la actividad.</string>
     <string name="notification_activity_reply">%s respondió a tu actividad.</string>
@@ -682,4 +686,10 @@
     <string name="widget_config_title">Configuración del widget</string>
     <string name="style_colored">Colorido</string>
     <string name="style_monochrome">Monocromático</string>
+    <string name="allow_start_notification">Permitir notificación de inicio de emisión</string>
+    <string name="allow_airing_notification">Permitir notificaciones de emisión de episodios</string>
+    <string name="allow_end_notification">Permitir notificación de finalización de emisión</string>
+    <string name="saved_filters">Filtros guardados</string>
+    <string name="filter_name">Nombre del filtro</string>
+    <string name="save_current_filters">Guardar filtros actuales</string>
 </resources>

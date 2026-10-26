@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.mediadetails
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -7,7 +8,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
@@ -29,7 +29,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,9 +69,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.axiel7.anihyou.core.base.CUSTOM_URL_NAME_PLACEHOLDER
 import com.axiel7.anihyou.core.common.utils.ContextUtils.copyToClipBoard
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openShareSheet
@@ -80,8 +77,10 @@ import com.axiel7.anihyou.core.common.utils.NumberUtils.format
 import com.axiel7.anihyou.core.common.utils.NumberUtils.isGreaterThanZero
 import com.axiel7.anihyou.core.common.utils.StringUtils.htmlStripped
 import com.axiel7.anihyou.core.common.utils.StringUtils.orUnknown
+import com.axiel7.anihyou.core.domain.model.CustomLink
 import com.axiel7.anihyou.core.model.Theme
 import com.axiel7.anihyou.core.model.genre.SelectableGenre.Companion.genreTagLocalized
+import com.axiel7.anihyou.core.model.media.asMediaSort
 import com.axiel7.anihyou.core.model.media.durationText
 import com.axiel7.anihyou.core.model.media.isAnime
 import com.axiel7.anihyou.core.model.media.localized
@@ -117,6 +116,7 @@ import com.axiel7.anihyou.core.ui.composables.sheet.SelectionSheetItem
 import com.axiel7.anihyou.core.ui.composables.spoilerPlaceholder
 import com.axiel7.anihyou.core.ui.composables.topShape
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.minutesToLegibleText
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.secondsToLegibleText
 import com.axiel7.anihyou.core.ui.utils.StringUtils.htmlDecoded
 import com.axiel7.anihyou.core.ui.utils.StringUtils.toAnnotatedString
@@ -127,8 +127,8 @@ import com.axiel7.anihyou.feature.mediadetails.composables.MediaRelationsView
 import com.axiel7.anihyou.feature.mediadetails.composables.MediaStatsView
 import com.axiel7.anihyou.feature.mediadetails.composables.ReviewThreadListView
 import com.materialkolor.PaletteStyle
-import com.materialkolor.dynamicColorScheme
 import com.materialkolor.dynamiccolor.ColorSpec
+import com.materialkolor.material3.dynamicColorScheme
 import kotlinx.collections.immutable.persistentListOf
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -153,7 +153,7 @@ fun MediaDetailsView(
                     isDark = isDark,
                     isAmoled = blackColors,
                     style = paletteStyle,
-                    specVersion = ColorSpec.SpecVersion.SPEC_2025,
+                    specVersion = ColorSpec.SpecVersion.SPEC_2026,
                 )
             }
         } else null
@@ -167,10 +167,7 @@ fun MediaDetailsView(
     }
 }
 
-@OptIn(
-    ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class,
-    ExperimentalMaterial3Api::class
-)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MediaDetailsContent(
     uiState: MediaDetailsUiState,
@@ -284,7 +281,10 @@ private fun MediaDetailsContent(
                     }
                 },
                 navigationIcon = {
-                    BackIconButton(onClick = navActionManager::goBack)
+                    BackIconButton(
+                        onClick = navActionManager::goBack,
+                        onLongClick = navActionManager::popToTopRoute,
+                    )
                 },
                 actions = {
                     if (uiState.isLoggedIn) {
@@ -421,9 +421,14 @@ private fun MediaDetailsContent(
                             .defaultPlaceholder(visible = uiState.isLoading),
                         style = MaterialTheme.typography.labelLarge,
                     )
+
+                    val durationText = if (uiState.showDurationAsMainInfo) {
+                        uiState.details?.basicMediaDetails?.duration?.toLong()?.minutesToLegibleText()
+                    } else {
+                        uiState.details?.basicMediaDetails?.durationText()
+                    }
                     TextIconHorizontal(
-                        text = uiState.details?.basicMediaDetails?.durationText()
-                            ?: stringResource(R.string.unknown),
+                        text = durationText ?: stringResource(R.string.unknown),
                         icon = R.drawable.timer_20,
                         modifier = Modifier
                             .padding(bottom = 8.dp)
@@ -659,7 +664,16 @@ fun MediaInfoTabs(
                     MediaStatsView(
                         uiState = uiState,
                         fetchData = { event?.fetchStats() },
-                        navigateToUserDetails = navActionManager::toUserDetails
+                        navigateToUserDetails = navActionManager::toUserDetails,
+                        onClickRanking = { ranking ->
+                            navActionManager.toSearch(
+                                mediaType = uiState.details?.basicMediaDetails?.type,
+                                season = ranking.season,
+                                year = ranking.year,
+                                mediaSort = ranking.type.asMediaSort(),
+                                focus = false,
+                            )
+                        }
                     )
 
                 MediaDetailsType.REVIEWS -> {
@@ -685,7 +699,18 @@ private fun CustomLinksButton(
 ) {
     val context = LocalContext.current
     var titleSheetExpanded by remember { mutableStateOf(false) }
-    var selectedLink by remember { mutableStateOf<String?>(null) }
+    var selectedLink by remember { mutableStateOf<CustomLink?>(null) }
+
+    fun openSite(link: CustomLink, title: String) {
+        val finalLink = link.mediaLink(title)
+        if (link.isIntent) {
+            runCatching {
+                context.startActivity(Intent.parseUri(finalLink, 0))
+            }
+        } else {
+            context.openActionView(finalLink)
+        }
+    }
 
     IconButtonWithMenu(
         icon = R.drawable.link_24,
@@ -693,19 +718,16 @@ private fun CustomLinksButton(
     ) { onDismiss ->
         uiState.customLinks.forEachIndexed { index, item ->
             DropdownMenuItem(
-                text = {
-                    val urlString = item.substring(1)
-                    val uri = urlString.toUri()
-                    val scheme = uri.scheme
-                        ?.takeIf { !it.startsWith("http") }
-                        ?.plus("://")
-                    val name = if (uri.host != null) scheme.orEmpty() + uri.host else urlString
-
-                    Text(text = name)
-                },
+                text = { Text(text = item.name) },
                 onClick = {
-                    selectedLink = item
-                    titleSheetExpanded = true
+                    item.titleLanguage?.let { lang ->
+                        uiState.findTitle(lang)?.let { title ->
+                            openSite(item, title)
+                        }
+                    } ?: run {
+                        selectedLink = item
+                        titleSheetExpanded = true
+                    }
                     onDismiss()
                 },
                 shape = when (index) {
@@ -719,16 +741,6 @@ private fun CustomLinksButton(
 
     selectedLink?.let { selectedLink ->
         if (titleSheetExpanded) {
-            fun openSite(title: String) {
-                val separator = selectedLink.first()
-                val link = selectedLink.substring(1)
-                val finalLink = link.replace(
-                    CUSTOM_URL_NAME_PLACEHOLDER,
-                    title.replace(' ', separator)
-                )
-                context.openActionView(finalLink)
-            }
-
             SelectionSheet(
                 onDismiss = { titleSheetExpanded = false },
                 bottomPadding = WindowInsets.navigationBars.asPaddingValues()
@@ -737,19 +749,19 @@ private fun CustomLinksButton(
                 uiState.details?.title?.romaji?.let { title ->
                     SelectionSheetItem(
                         name = title,
-                        onClick = { openSite(title) }
+                        onClick = { openSite(selectedLink, title) }
                     )
                 }
                 uiState.details?.title?.english?.let { title ->
                     SelectionSheetItem(
                         name = title,
-                        onClick = { openSite(title) }
+                        onClick = { openSite(selectedLink, title) }
                     )
                 }
                 uiState.details?.title?.native?.let { title ->
                     SelectionSheetItem(
                         name = title,
-                        onClick = { openSite(title) }
+                        onClick = { openSite(selectedLink, title) }
                     )
                 }
             }

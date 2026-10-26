@@ -3,7 +3,6 @@ package com.axiel7.anihyou.feature.mediadetails.composables
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -33,6 +32,7 @@ import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import com.axiel7.anihyou.core.common.utils.DateUtils.toLocalized
 import com.axiel7.anihyou.core.model.media.AnimeSeason
 import com.axiel7.anihyou.core.model.media.episodeNumber
+import com.axiel7.anihyou.core.model.media.episodesOrChapters
 import com.axiel7.anihyou.core.model.media.externalLinks
 import com.axiel7.anihyou.core.model.media.isAnime
 import com.axiel7.anihyou.core.model.media.languageShort
@@ -59,7 +59,6 @@ import java.time.LocalDateTime
 
 private const val TagLimit = 10
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MediaInformationView(
     uiState: MediaDetailsUiState,
@@ -85,11 +84,27 @@ fun MediaInformationView(
                 modifier = Modifier.defaultPlaceholder(visible = uiState.isLoading)
             )
         }
-        InfoItemView(
-            title = stringResource(R.string.duration),
-            info = uiState.details?.duration?.toLong()?.minutesToLegibleText(),
-            modifier = Modifier.defaultPlaceholder(visible = uiState.isLoading)
-        )
+
+        if (uiState.showDurationAsMainInfo) {
+            InfoItemView(
+                title = stringResource(if (isAnime) R.string.episodes else R.string.chapters),
+                info = uiState.details?.basicMediaDetails?.episodesOrChapters()?.toString(),
+                modifier = Modifier.defaultPlaceholder(visible = uiState.isLoading)
+            )
+        } else if (isAnime) {
+            InfoItemView(
+                title = stringResource(R.string.duration),
+                info = uiState.details.duration?.toLong()?.minutesToLegibleText(),
+                modifier = Modifier.defaultPlaceholder(visible = uiState.isLoading)
+            )
+        }
+        uiState.details?.basicMediaDetails?.volumes?.let { volumes ->
+            InfoItemView(
+                title = stringResource(R.string.volumes),
+                info = volumes.toString(),
+            )
+        }
+
         InfoItemView(
             title = stringResource(R.string.start_date),
             info = uiState.details?.startDate?.fuzzyDate?.formatted(),

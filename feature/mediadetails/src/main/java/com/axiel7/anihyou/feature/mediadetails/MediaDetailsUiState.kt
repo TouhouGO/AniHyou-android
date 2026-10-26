@@ -16,9 +16,12 @@ import com.axiel7.anihyou.core.network.fragment.ListActivityFragment
 import com.axiel7.anihyou.core.network.fragment.MediaCharacter
 import com.axiel7.anihyou.core.network.fragment.MediaStaff
 import com.axiel7.anihyou.core.base.state.UiState
+import com.axiel7.anihyou.core.common.utils.NumberUtils.isGreaterThanZero
+import com.axiel7.anihyou.core.domain.model.CustomLink
 import com.axiel7.anihyou.core.model.TranslatorApp
 import com.axiel7.anihyou.core.network.type.MediaStatus
 import com.axiel7.anihyou.core.network.type.MediaType
+import com.axiel7.anihyou.core.network.type.UserTitleLanguage
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -32,7 +35,7 @@ data class MediaDetailsUiState(
     val details: MediaDetailsQuery.Media? = null,
     val openings: List<AnimeThemes.Theme>? = null,
     val endings: List<AnimeThemes.Theme>? = null,
-    val customLinks: Set<String> = emptySet(),
+    val customLinks: List<CustomLink> = emptyList(),
 
     val staff: List<MediaStaff>? = null,
     val characters: List<MediaCharacter>? = null,
@@ -75,6 +78,9 @@ data class MediaDetailsUiState(
 
     val hasSpoilerTags = details?.tags?.any { it?.isMediaSpoiler == true } ?: false
 
+    val showDurationAsMainInfo = details?.basicMediaDetails?.duration.isGreaterThanZero()
+            && details?.basicMediaDetails?.episodes.let { it == null || it <= 1 }
+
     val showNotificationSettings = isLoggedIn
             && notificationsEnabled
             && details?.basicMediaDetails?.type == MediaType.ANIME
@@ -84,6 +90,13 @@ data class MediaDetailsUiState(
         AiringNotificationType.START -> allowStartNotifications
         AiringNotificationType.AIRING -> allowAiringNotifications
         AiringNotificationType.END -> allowEndNotifications
+    }
+
+    fun findTitle(language: UserTitleLanguage) = when (language) {
+        UserTitleLanguage.ENGLISH -> details?.title?.english ?: details?.title?.userPreferred
+        UserTitleLanguage.ROMAJI -> details?.title?.romaji ?: details?.title?.userPreferred
+        UserTitleLanguage.NATIVE -> details?.title?.native ?: details?.title?.userPreferred
+        else -> details?.title?.userPreferred
     }
 
     override fun setError(value: String?) = copy(error = value)

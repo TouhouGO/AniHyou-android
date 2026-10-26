@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -45,7 +46,7 @@ import com.axiel7.anihyou.core.ui.composables.markdown.SpoilerSheet
 import com.axiel7.anihyou.feature.activitydetails.ActivityDetailsView
 import com.axiel7.anihyou.feature.activitydetails.publish.PublishActivityView
 import com.axiel7.anihyou.feature.addrecommendation.AddRecommendationView
-import com.axiel7.anihyou.feature.calendar.CalendarView
+import com.axiel7.anihyou.feature.calendar.CalendarHostView
 import com.axiel7.anihyou.feature.characterdetails.CharacterDetailsView
 import com.axiel7.anihyou.feature.explore.charts.MediaChartListView
 import com.axiel7.anihyou.feature.explore.explore.ExploreView
@@ -90,7 +91,7 @@ private val topNavigationTransitionSpec = NavDisplay.transitionSpec {
 } + NavDisplay.predictivePopTransitionSpec {
     ContentTransform(
         fadeIn(spring(dampingRatio = 1f, stiffness = 1600f)),
-        fadeOut(spring(dampingRatio = 1f, stiffness = 1600f))
+        scaleOut(targetScale = 0.7f),
     )
 }
 
@@ -309,7 +310,7 @@ fun MainNavigation(
         }
 
         entry<Route.Calendar> {
-            CalendarView(
+            CalendarHostView(
                 isLoggedIn = isLoggedIn,
             )
         }

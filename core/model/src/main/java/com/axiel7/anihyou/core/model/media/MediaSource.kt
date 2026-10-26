@@ -42,9 +42,12 @@ enum class MediaSourceLocalizable(val value: MediaSource): Localizable {
     COMIC(MediaSource.COMIC),
     MULTIMEDIA_PROJECT(MediaSource.MULTIMEDIA_PROJECT),
     PICTURE_BOOK(MediaSource.PICTURE_BOOK),
-    UNKNOWN(MediaSource.UNKNOWN__),
     ;
 
     @Composable
     override fun localized() = value.localized()
+
+    companion object {
+        fun findValue(value: MediaSource) = entries.find { it.value == value }
+    }
 }
