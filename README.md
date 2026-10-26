@@ -4,11 +4,11 @@
 
 本仓库是 TouhouGO 维护的社区分支。原版 AniHyou 由 axiel7 及其贡献者开发；本分支的 APK 和语言包通过本仓库的 GitHub Releases 分发。
 
-[下载 APK](https://github.com/TouhouGO/AniHyou-android/releases/tag/v1.7.0) · [全部发布](https://github.com/TouhouGO/AniHyou-android/releases) · [反馈问题](https://github.com/TouhouGO/AniHyou-android/issues) · [原版项目](https://github.com/axiel7/AniHyou-android)
+[下载 APK](https://github.com/TouhouGO/AniHyou-android/releases/tag/v1.7.1) · [全部发布](https://github.com/TouhouGO/AniHyou-android/releases) · [反馈问题](https://github.com/TouhouGO/AniHyou-android/issues) · [原版项目](https://github.com/axiel7/AniHyou-android)
 
 ## 安装与使用
 
-需要 **Android 7.0（API 24）或更新版本**。当前应用版本为 **1.7.0（versionCode 138）**，正式发布渠道为 FOSS APK。
+需要 **Android 7.0（API 24）或更新版本**。当前应用版本为 **1.7.1（versionCode 139）**，正式发布渠道为 FOSS APK。
 
 在 [Releases](https://github.com/TouhouGO/AniHyou-android/releases) 中选择标题为「AniHyou 中文增强版」的应用版本，下载对应 APK。语言包发布条目包含 ZIP 和 JSON 文件，通过应用内更新入口安装。
 

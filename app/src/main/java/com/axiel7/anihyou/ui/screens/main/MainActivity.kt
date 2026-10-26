@@ -42,7 +42,6 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetManager.Companion.SET_WIDGET_PREVIEWS_RESULT_RATE_LIMITED
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import com.axiel7.anihyou.core.base.extensions.firstBlocking
 import com.axiel7.anihyou.core.model.DeepLink
 import com.axiel7.anihyou.core.model.ExploreTab
 import com.axiel7.anihyou.core.model.HomeTab
@@ -66,7 +65,7 @@ import com.axiel7.anihyou.ui.screens.main.composables.MainNavigationRail
 import com.axiel7.anihyou.widget.AiringWidgetReceiver
 import com.materialkolor.PaletteStyle
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -80,92 +79,94 @@ class MainActivity : AppCompatActivity() {
 
         val deepLink = findDeepLink()
 
-        //get necessary preferences while on splashscreen
-        viewModel.setToken(viewModel.accessToken.firstBlocking())
-        val initialIsLoggedIn = viewModel.isLoggedIn.firstBlocking()
-        val initialTheme = viewModel.theme.firstBlocking()
-        val initialUseBlackColors = viewModel.useBlackColors.firstBlocking()
-        val initialAppColor = viewModel.appColor.firstBlocking()
-        val initialAppColorMode = viewModel.appColorMode.firstBlocking()
-        val initialPaletteStyle = viewModel.paletteStyle.firstBlocking()
-        val initialBlurAdult = viewModel.blurAdultContent.firstBlocking()
-        val initialScoreFormat = viewModel.scoreFormat.firstBlocking()
-        val initialHideScores = viewModel.hideScores.firstBlocking()
-        val startTab = runBlocking { viewModel.getStartTab() }
-        val homeTab = viewModel.homeTab.firstBlocking() ?: HomeTab.CURRENT
-        val novelTab = viewModel.novelTab.firstBlocking() ?: NovelTab.MANGA
-        val exploreTab = viewModel.exploreTab.firstBlocking() ?: ExploreTab.ANIME
+        lifecycleScope.launch {
+            // Keep the main thread responsive while startup preferences initialize.
+            viewModel.setToken(viewModel.accessToken.first())
+            val initialIsLoggedIn = viewModel.isLoggedIn.first()
+            val initialTheme = viewModel.theme.first()
+            val initialUseBlackColors = viewModel.useBlackColors.first()
+            val initialAppColor = viewModel.appColor.first()
+            val initialAppColorMode = viewModel.appColorMode.first()
+            val initialPaletteStyle = viewModel.paletteStyle.first()
+            val initialBlurAdult = viewModel.blurAdultContent.first()
+            val initialScoreFormat = viewModel.scoreFormat.first()
+            val initialHideScores = viewModel.hideScores.first()
+            val startTab = viewModel.getStartTab()
+            val homeTab = viewModel.homeTab.first() ?: HomeTab.CURRENT
+            val novelTab = viewModel.novelTab.first() ?: NovelTab.MANGA
+            val exploreTab = viewModel.exploreTab.first() ?: ExploreTab.ANIME
 
-        if (initialIsLoggedIn) {
-            lifecycleScope.launch { setWidgetPreviews() }
-        }
-
-        setContent {
-            val windowSizeClass = calculateWindowSizeClass(this)
-            val theme by viewModel.theme.collectAsStateWithLifecycle(initialTheme)
-            val isDark = if (theme == Theme.FOLLOW_SYSTEM) isSystemInDarkTheme()
-            else theme == Theme.DARK
-            val useBlackColors by viewModel.useBlackColors.collectAsStateWithLifecycle(
-                initialValue = initialUseBlackColors
-            )
-            val appColor by viewModel.appColor.collectAsStateWithLifecycle(initialAppColor)
-            val appColorMode by viewModel.appColorMode.collectAsStateWithLifecycle(
-                initialValue = initialAppColorMode
-            )
-            val paletteStyle by viewModel.paletteStyle.collectAsStateWithLifecycle(initialPaletteStyle)
-            val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(initialIsLoggedIn)
-            val blurAdultContent by viewModel.blurAdultContent.collectAsStateWithLifecycle(initialBlurAdult)
-            val scoreFormat by viewModel.scoreFormat.collectAsStateWithLifecycle(initialScoreFormat)
-            val hideScores by viewModel.hideScores.collectAsStateWithLifecycle(initialHideScores)
-
-            DisposableEffect(isDark) {
-                enableEdgeToEdge(
-                    statusBarStyle = SystemBarStyle.auto(
-                        android.graphics.Color.TRANSPARENT,
-                        android.graphics.Color.TRANSPARENT,
-                    ) { isDark },
-                    navigationBarStyle = SystemBarStyle.auto(
-                        light_scrim.toArgb(),
-                        dark_scrim.toArgb(),
-                    ) { isDark },
-                )
-                onDispose {}
+            if (initialIsLoggedIn) {
+                lifecycleScope.launch { setWidgetPreviews() }
             }
 
-            AniHyouTheme(
-                darkTheme = isDark,
-                blackColors = useBlackColors,
-                appColor = appColor,
-                appColorMode = appColorMode,
-                paletteStyle = paletteStyle,
-            ) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+            setContent {
+                val windowSizeClass = calculateWindowSizeClass(this@MainActivity)
+                val theme by viewModel.theme.collectAsStateWithLifecycle(initialTheme)
+                val isDark = if (theme == Theme.FOLLOW_SYSTEM) isSystemInDarkTheme()
+                else theme == Theme.DARK
+                val useBlackColors by viewModel.useBlackColors.collectAsStateWithLifecycle(
+                    initialValue = initialUseBlackColors
+                )
+                val appColor by viewModel.appColor.collectAsStateWithLifecycle(initialAppColor)
+                val appColorMode by viewModel.appColorMode.collectAsStateWithLifecycle(
+                    initialValue = initialAppColorMode
+                )
+                val paletteStyle by viewModel.paletteStyle.collectAsStateWithLifecycle(initialPaletteStyle)
+                val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(initialIsLoggedIn)
+                val blurAdultContent by viewModel.blurAdultContent.collectAsStateWithLifecycle(initialBlurAdult)
+                val scoreFormat by viewModel.scoreFormat.collectAsStateWithLifecycle(initialScoreFormat)
+                val hideScores by viewModel.hideScores.collectAsStateWithLifecycle(initialHideScores)
+
+                DisposableEffect(isDark) {
+                    enableEdgeToEdge(
+                        statusBarStyle = SystemBarStyle.auto(
+                            android.graphics.Color.TRANSPARENT,
+                            android.graphics.Color.TRANSPARENT,
+                        ) { isDark },
+                        navigationBarStyle = SystemBarStyle.auto(
+                            light_scrim.toArgb(),
+                            dark_scrim.toArgb(),
+                        ) { isDark },
+                    )
+                    onDispose {}
+                }
+
+                AniHyouTheme(
+                    darkTheme = isDark,
+                    blackColors = useBlackColors,
+                    appColor = appColor,
+                    appColorMode = appColorMode,
+                    paletteStyle = paletteStyle,
                 ) {
-                    CompositionLocalProvider(
-                        LocalBlurAdult provides blurAdultContent,
-                        LocalScoreFormat provides scoreFormat,
-                        LocalHideScores provides hideScores,
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
                     ) {
-                        MainView(
-                            windowSizeClass = windowSizeClass,
-                            isLoggedIn = isLoggedIn,
-                            tabToOpen = startTab,
-                            event = viewModel,
-                            homeTab = homeTab,
-                            novelTab = novelTab,
-                            exploreTab = exploreTab,
-                            deepLink = deepLink,
-                            theme = theme,
-                            blackColors = useBlackColors,
-                            paletteStyle = paletteStyle,
-                            setNavigationBarContrastEnforced = {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    window.isNavigationBarContrastEnforced = it
+                        CompositionLocalProvider(
+                            LocalBlurAdult provides blurAdultContent,
+                            LocalScoreFormat provides scoreFormat,
+                            LocalHideScores provides hideScores,
+                        ) {
+                            MainView(
+                                windowSizeClass = windowSizeClass,
+                                isLoggedIn = isLoggedIn,
+                                tabToOpen = startTab,
+                                event = viewModel,
+                                homeTab = homeTab,
+                                novelTab = novelTab,
+                                exploreTab = exploreTab,
+                                deepLink = deepLink,
+                                theme = theme,
+                                blackColors = useBlackColors,
+                                paletteStyle = paletteStyle,
+                                setNavigationBarContrastEnforced = {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                        window.isNavigationBarContrastEnforced = it
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
