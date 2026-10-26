@@ -1,6 +1,8 @@
 name: Release Localization Bundle
 
 on:
+  schedule:
+    - cron: '17 4 * * 1'
   workflow_dispatch:
     inputs:
       release_tag:
@@ -48,7 +50,9 @@ jobs:
       - name: Determine and Validate Release Tag
         id: determine_tag
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            TAG="v$(date -u +%Y.%m.%d)"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             TAG="${{ github.event.inputs.release_tag }}"
           else
             TAG="${GITHUB_REF#refs/tags/}"
@@ -62,15 +66,50 @@ jobs:
 
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
-      - name: Run Localization Unit Tests
+      - name: Sync scheduled localization resources
+        if: github.event_name == 'schedule'
+        id: sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.determine_tag.outputs.tag }}
         run: |
-          ./gradlew :core:network:test --tests '*Localization*' --tests '*Bangumi*'
+          set -euo pipefail
+          # Fail on API errors; only an absent release permits publication.
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" > "$RUNNER_TEMP/releases.json"
+          if jq -e --arg tag "$TAG" '.[] | select(.tag_name == $tag and .draft == false)' "$RUNNER_TEMP/releases.json" >/dev/null; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          bash scripts/sync-titles.sh
+          for name in tags_zh_cn.json staff_characters_zh_cn.json t2s_char_map.json; do
+            curl --fail --silent --show-error --location --retry 3 \
+              "https://raw.githubusercontent.com/TouhouGO/anilist-zh-cn-userscript/main/data/$name" \
+              -o "$RUNNER_TEMP/$name"
+            jq -e 'type == "object" and length > 0' "$RUNNER_TEMP/$name" >/dev/null
+            if [ "$name" = "t2s_char_map.json" ]; then
+              # Retain established Japanese kanji mappings absent from OpenCC exports.
+              jq -s '.[0] * .[1]' "core/network/src/main/resources/$name" "$RUNNER_TEMP/$name" \
+                > "$RUNNER_TEMP/merged-t2s.json"
+              cp "$RUNNER_TEMP/merged-t2s.json" "core/network/src/main/resources/$name"
+            else
+              cp "$RUNNER_TEMP/$name" "core/network/src/main/resources/$name"
+            fi
+          done
+          if git diff --quiet -- core/network/src/main/resources/; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Localization Unit Tests
+        if: steps.sync.outputs.skip != 'true'
+        run: ./gradlew :core:network:test
 
       - name: Calibrate Titles with Latest Bangumi Archive
+        if: steps.sync.outputs.skip != 'true'
         run: |
           ./scripts/enrich_bundle_from_bangumi_archive.sh
 
       - name: Package Localization Bundle & Generate Remote Manifest
+        if: steps.sync.outputs.skip != 'true'
         env:
           TAG: ${{ steps.determine_tag.outputs.tag }}
         run: |
@@ -83,16 +122,18 @@ jobs:
             -PbundleBuildTimestamp="$BUILD_TIMESTAMP"
 
       - name: Verify Generated Release Artifacts
+        if: steps.sync.outputs.skip != 'true'
         run: |
           ./scripts/verify_localization_release.sh \
             core/network/build/outputs/localization/localization_bundle.zip \
             core/network/build/outputs/localization/remote_bundle_manifest.json
 
       - name: Draft-First Ordered Release Publication
+        if: steps.sync.outputs.skip != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.determine_tag.outputs.tag }}
-          PUBLISH: ${{ github.event_name == 'push' || github.event.inputs.publish_release == 'true' }}
+          PUBLISH: ${{ github.event_name != 'workflow_dispatch' || inputs.publish_release }}
         run: |
           ZIP_FILE="core/network/build/outputs/localization/localization_bundle.zip"
           MANIFEST_FILE="core/network/build/outputs/localization/remote_bundle_manifest.json"
@@ -109,6 +150,7 @@ jobs:
           else
             echo "Creating initial draft release for $TAG..."
             gh release create "$TAG" \
+              --target "$GITHUB_SHA" \
               --title "Localization Bundle $TAG" \
               --notes "Automated OTA localization bundle release with SHA-256 and remote bundle manifest." \
               --draft
@@ -156,7 +198,7 @@ jobs:
           fi
 
       - name: Backfill Built-in Baseline from Published Bundle
-        if: ${{ github.event_name == 'push' || inputs.publish_release == 'true' }}
+        if: ${{ steps.sync.outputs.skip != 'true' && (github.event_name != 'workflow_dispatch' || inputs.publish_release) }}
         env:
           TAG: ${{ steps.determine_tag.outputs.tag }}
         run: |
