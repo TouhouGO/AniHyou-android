@@ -1,24 +1,24 @@
 {
     "formatVersion": 1,
-    "version": "2026.09.28",
-    "buildTimestamp": 1790501781000,
+    "version": "2026.10.26",
+    "buildTimestamp": 1792976714000,
     "description": "AniHyou \u5185\u7f6e\u6c49\u5316\u57fa\u7ebf\u8d44\u6e90\u5305",
     "files": {
         "titles_zh_cn.json": {
-            "size": 1258436,
-            "sha256": "5834247dc450504353d91c8b2b589a0d4d3f68eea5482a3dffe539f6bcd978a6"
+            "size": 1279500,
+            "sha256": "1323d77302edc177d34c78b5d5a6dc0218d457897b7b07620b8185b9067e762c"
         },
         "tags_zh_cn.json": {
             "size": 12134,
             "sha256": "57aac2f934eefa05d71cee5b6bca4d573a34ed7a5a7d45e82ca523c2e59994c7"
         },
         "staff_characters_zh_cn.json": {
-            "size": 1744993,
-            "sha256": "e75a4a9a52a848243a46d6c74683d412f31dc2df090450ab8594da57a6f0fd2f"
+            "size": 1743410,
+            "sha256": "420c3f9c6d431e82214548a232a97b4b5870516afae1aca25524c3edda0618bc"
         },
         "t2s_char_map.json": {
-            "size": 35377,
-            "sha256": "b333ce6e5674c0d96e5bc62677a1cabfc48b07ff3ae7d455484715e367a6d053"
+            "size": 35161,
+            "sha256": "96c998db7a54c51e1e5770ff54fafd16fb9f5d5229432f59cf42b62fcbe86824"
         }
     }
 }
