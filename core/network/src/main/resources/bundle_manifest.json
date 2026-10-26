@@ -1,7 +1,7 @@
 {
     "formatVersion": 1,
-    "version": "2026.10.26",
-    "buildTimestamp": 1792976714000,
+    "version": "2026.10.27",
+    "buildTimestamp": 1793059200000,
     "description": "AniHyou \u5185\u7f6e\u6c49\u5316\u57fa\u7ebf\u8d44\u6e90\u5305",
     "files": {
         "titles_zh_cn.json": {
@@ -17,8 +17,8 @@
             "sha256": "420c3f9c6d431e82214548a232a97b4b5870516afae1aca25524c3edda0618bc"
         },
         "t2s_char_map.json": {
-            "size": 35161,
-            "sha256": "96c998db7a54c51e1e5770ff54fafd16fb9f5d5229432f59cf42b62fcbe86824"
+            "size": 35377,
+            "sha256": "b333ce6e5674c0d96e5bc62677a1cabfc48b07ff3ae7d455484715e367a6d053"
         }
     }
 }

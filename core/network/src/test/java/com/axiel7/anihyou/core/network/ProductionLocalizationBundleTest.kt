@@ -146,8 +146,13 @@ class ProductionLocalizationBundleTest {
 
             zipFile.inputStream().use { fis ->
                 val result = bundleManager.installBundleFromZip(fis, expectedVersion = expectedVer)
-                assertTrue("Generated production bundle must install cleanly: ${result.message}", result.isSuccess)
-                assertEquals(expectedVer, result.installedVersion)
+                if (expectedVer == bundleManager.getCurrentVersion()) {
+                    assertTrue("Installing the built-in version must be rejected", !result.isSuccess)
+                    assertTrue(result.message.contains("not newer"))
+                } else {
+                    assertTrue("Generated production bundle must install cleanly: ${result.message}", result.isSuccess)
+                    assertEquals(expectedVer, result.installedVersion)
+                }
             }
         } finally {
             tempDir.deleteRecursively()

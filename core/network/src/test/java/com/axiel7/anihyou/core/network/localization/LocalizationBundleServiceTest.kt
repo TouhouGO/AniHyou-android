@@ -54,7 +54,7 @@ class LocalizationBundleServiceTest {
         return baos.toByteArray()
     }
 
-    private fun createValidBundleZip(version: String = "2026.09.99"): ByteArray {
+    private fun createValidBundleZip(version: String = "2099.01.01"): ByteArray {
         val customTitles = """{"999999": "测试动态标题"}""".toByteArray(Charsets.UTF_8)
         val customTags = """{"TestTag": "测试标签"}""".toByteArray(Charsets.UTF_8)
         val customChars = """{"char_88888": "测试角色"}""".toByteArray(Charsets.UTF_8)
@@ -125,7 +125,7 @@ class LocalizationBundleServiceTest {
 
     @Test
     fun testInstallBundleFromZipSuccessUpdatesBundleStatusAndClearsCache() = runBlocking {
-        val targetVersion = "2026.09.99"
+        val targetVersion = "2099.01.01"
         val zipBytes = createValidBundleZip(targetVersion)
 
         val result = service.installBundleFromZip(ByteArrayInputStream(zipBytes), targetVersion)
@@ -153,7 +153,7 @@ class LocalizationBundleServiceTest {
 
     @Test
     fun testResetToBuiltInTurnsOverlayOffAndClearsCache() = runBlocking {
-        val targetVersion = "2026.09.99"
+        val targetVersion = "2099.01.01"
         val zipBytes = createValidBundleZip(targetVersion)
         val installResult = service.installBundleFromZip(ByteArrayInputStream(zipBytes), targetVersion)
         assertTrue(installResult.isSuccess)
@@ -172,7 +172,7 @@ class LocalizationBundleServiceTest {
     fun testBundleStatusStateFlowAutoUpdatesOnNotifyReload() {
         assertFalse(service.bundleStatus.value.isOverlayActive)
 
-        val targetVersion = "2026.09.99"
+        val targetVersion = "2099.01.01"
         val zipBytes = createValidBundleZip(targetVersion)
         val installResult = bundleManager.installBundleFromZip(ByteArrayInputStream(zipBytes), targetVersion)
         assertTrue(installResult.isSuccess)
@@ -190,7 +190,7 @@ class LocalizationBundleServiceTest {
         assertEquals(bundleManager.getCurrentVersion(), service.getCurrentVersion())
         assertEquals(bundleManager.isOverlayActive(), service.isOverlayActive())
 
-        val targetVersion = "2026.09.99"
+        val targetVersion = "2099.01.01"
         val zipBytes = createValidBundleZip(targetVersion)
         service.installBundleFromZip(ByteArrayInputStream(zipBytes), targetVersion)
 

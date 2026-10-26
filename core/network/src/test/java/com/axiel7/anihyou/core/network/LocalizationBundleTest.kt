@@ -89,7 +89,7 @@ class LocalizationBundleTest {
 
             val manifest = BundleManifest(
                 formatVersion = 1,
-                version = "2026.09.99",
+                version = "2099.01.01",
                 files = mapOf(
                     "titles_zh_cn.json" to BundleFileEntry(size = customTitles.size.toLong(), sha256 = sha256Hex(customTitles)),
                     "tags_zh_cn.json" to BundleFileEntry(size = customTags.size.toLong(), sha256 = sha256Hex(customTags)),
@@ -110,10 +110,10 @@ class LocalizationBundleTest {
                 )
             )
 
-            val result = bundleManager.installBundleFromZip(ByteArrayInputStream(zipBytes), expectedVersion = "2026.09.99")
+            val result = bundleManager.installBundleFromZip(ByteArrayInputStream(zipBytes), expectedVersion = "2099.01.01")
             assertTrue("Bundle install should succeed: ${result.message}", result.isSuccess)
             assertTrue("Reload listener should have been invoked", reloaded)
-            assertEquals("2026.09.99", bundleManager.getCurrentVersion())
+            assertEquals("2099.01.01", bundleManager.getCurrentVersion())
             assertTrue("Overlay should be active", bundleManager.isOverlayActive())
 
             // Hot reloaded data should immediately reflect
@@ -177,7 +177,7 @@ class LocalizationBundleTest {
 
             val manifest = BundleManifest(
                 formatVersion = 1,
-                version = "2026.09.99",
+                version = "2099.01.01",
                 files = mapOf(
                     "titles_zh_cn.json" to BundleFileEntry(size = customTitles.size.toLong(), sha256 = "0000000000000000000000000000000000000000000000000000000000000000"),
                     "tags_zh_cn.json" to BundleFileEntry(size = customTags.size.toLong(), sha256 = sha256Hex(customTags)),
@@ -263,7 +263,7 @@ class LocalizationBundleTest {
 
             val manifest = BundleManifest(
                 formatVersion = 1,
-                version = "2026.09.99",
+                version = "2099.01.01",
                 files = mapOf(
                     "titles_zh_cn.json" to BundleFileEntry(size = invalidTitles.size.toLong(), sha256 = sha256Hex(invalidTitles)),
                     "tags_zh_cn.json" to BundleFileEntry(size = customTags.size.toLong(), sha256 = sha256Hex(customTags)),
@@ -305,7 +305,7 @@ class LocalizationBundleTest {
 
             val manifest = BundleManifest(
                 formatVersion = 1,
-                version = "2026.09.99",
+                version = "2099.01.01",
                 files = mapOf(
                     "titles_zh_cn.json" to BundleFileEntry(size = customTitles.size.toLong(), sha256 = sha256Hex(customTitles)),
                     "tags_zh_cn.json" to BundleFileEntry(size = customTags.size.toLong(), sha256 = sha256Hex(customTags)),
@@ -619,7 +619,7 @@ class LocalizationBundleTest {
 
             val manifest = BundleManifest(
                 formatVersion = 1,
-                version = "2026.09.99",
+                version = "2099.01.01",
                 files = mapOf(
                     "titles_zh_cn.json" to BundleFileEntry(size = customTitles.size.toLong(), sha256 = sha256Hex(customTitles)),
                     "tags_zh_cn.json" to BundleFileEntry(size = customTags.size.toLong(), sha256 = sha256Hex(customTags)),
@@ -635,7 +635,7 @@ class LocalizationBundleTest {
                 "staff_characters_zh_cn.json" to customChars,
                 "t2s_char_map.json" to customT2s
             ))
-            val installResult = bundleManager.installBundleFromZip(ByteArrayInputStream(zipBytes), expectedVersion = "2026.09.99")
+            val installResult = bundleManager.installBundleFromZip(ByteArrayInputStream(zipBytes), expectedVersion = "2099.01.01")
             assertTrue("Install must succeed: ${installResult.message}", installResult.isSuccess)
 
             // Cache in localization-state must remain intact
@@ -671,7 +671,7 @@ class LocalizationBundleTest {
             val customChars = """{"char_1": "角色"}""".toByteArray(Charsets.UTF_8)
             val customT2s = """{"幹": "干"}""".toByteArray(Charsets.UTF_8)
 
-            val testVersion = "2026.09.99"
+            val testVersion = "2099.01.01"
             val manifest = BundleManifest(
                 formatVersion = 1,
                 version = testVersion,
