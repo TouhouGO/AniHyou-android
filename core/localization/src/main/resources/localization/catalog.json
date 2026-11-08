@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "2026.11.07",
+  "version": "2026.11.08",
   "sources": [
     {
       "id": "anihyou-tag-labels",
@@ -11,38 +11,38 @@
     },
     {
       "id": "bangumi-data",
-      "revision": "94ea82be75d9e617c7970bb0fd0670ae5c60e53d",
-      "url": "https://github.com/bangumi-data/bangumi-data/tree/94ea82be75d9e617c7970bb0fd0670ae5c60e53d",
+      "revision": "d5f56180c0c71fbeb24bd1914eb04c75f2f358fa",
+      "url": "https://github.com/bangumi-data/bangumi-data/tree/d5f56180c0c71fbeb24bd1914eb04c75f2f358fa",
       "license": "CC-BY-4.0",
-      "sha256": "c21466156d528eea24f2b32c7b36c9ec11273801037efdc698eccf3a475a893f"
+      "sha256": "f8f02b81690d7545e4ef9a7f9ace7eb05407c8bbc0a4f32e2aa63d10217feb85"
     },
     {
       "id": "soruly-anilist-chinese",
-      "revision": "913bb1dcd8f65aac18199d8ee6819f703596658a",
-      "url": "https://github.com/soruly/anilist-chinese/tree/913bb1dcd8f65aac18199d8ee6819f703596658a",
+      "revision": "146e48ee813a470eabbf7710ff228bbf24769d49",
+      "url": "https://github.com/soruly/anilist-chinese/tree/146e48ee813a470eabbf7710ff228bbf24769d49",
       "license": "MIT",
       "sha256": "95860c98e796f5ae3a9e224224e80858c1caa1ceb549a5a715072be6cc23f3cc"
     },
     {
       "id": "wikidata-p11227",
-      "revision": "2026-11-05T01:58:00.471973+00:00:ec7de43b3e22773fad90b6653edda1624962ca6bc89a17ca960401ba48627d61",
+      "revision": "2026-11-08T08:47:26.354929+00:00:3c0b62fd42277b34671b77267de40f944346b2d0420dc236fca9c12e02b9fa6c",
       "url": "https://www.wikidata.org/wiki/Property:P11227",
       "license": "CC0-1.0",
-      "sha256": "ec7de43b3e22773fad90b6653edda1624962ca6bc89a17ca960401ba48627d61"
+      "sha256": "3c0b62fd42277b34671b77267de40f944346b2d0420dc236fca9c12e02b9fa6c"
     },
     {
       "id": "wikidata-p11736",
-      "revision": "2026-11-05T01:59:31.780107+00:00:7a79c3e35ede479b780c235a4e8f6f6a7f5d6a3ea991225e04d175ee52e63e73",
+      "revision": "2026-11-08T08:47:26.354929+00:00:83766bf2d07c1005797aabcdd097d8e85368ec8b630d85d728dc66c49545cfb2",
       "url": "https://www.wikidata.org/wiki/Property:P11736",
       "license": "CC0-1.0",
-      "sha256": "7a79c3e35ede479b780c235a4e8f6f6a7f5d6a3ea991225e04d175ee52e63e73"
+      "sha256": "83766bf2d07c1005797aabcdd097d8e85368ec8b630d85d728dc66c49545cfb2"
     },
     {
       "id": "wikidata-p8731",
-      "revision": "2026-11-05T02:01:03.367135+00:00:a255f54cd7973a4cc4a35a8dc892ae09b03ac841505bec7bb96a0117c9239ce0",
+      "revision": "2026-11-08T08:47:26.354929+00:00:caaa59980e52f91caf049881a7beabcd05aa14b1777b4b477942bd5cfd2ce5c9",
       "url": "https://www.wikidata.org/wiki/Property:P8731",
       "license": "CC0-1.0",
-      "sha256": "a255f54cd7973a4cc4a35a8dc892ae09b03ac841505bec7bb96a0117c9239ce0"
+      "sha256": "caaa59980e52f91caf049881a7beabcd05aa14b1777b4b477942bd5cfd2ce5c9"
     }
   ],
   "records": [
@@ -2428,7 +2428,7 @@
         "kind": "CHARACTER",
         "id": 3585
       },
-      "displayName": "\u68a6\u539f\u5e0c",
+      "displayName": "\u68a6\u539f\u671b",
       "aliases": [],
       "sourceId": "wikidata-p11736"
     },
@@ -2693,6 +2693,16 @@
         "id": 4775
       },
       "displayName": "\u733f\u98de\u963f\u65af\u739b",
+      "aliases": [],
+      "sourceId": "wikidata-p11736"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "CHARACTER",
+        "id": 4830
+      },
+      "displayName": "\u6625\u65e5\u91ce\u4e3d",
       "aliases": [],
       "sourceId": "wikidata-p11736"
     },
@@ -6679,6 +6689,16 @@
         "id": 273552
       },
       "displayName": "\u6a31\u82b1\u6842\u51a0",
+      "aliases": [],
+      "sourceId": "wikidata-p11736"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "CHARACTER",
+        "id": 276358
+      },
+      "displayName": "\u534e\u6cd5\u7433",
       "aliases": [],
       "sourceId": "wikidata-p11736"
     },
@@ -67136,7 +67156,8 @@
       "aliases": [
         "\u5c11\u5e74\u602a\u533b\u9ed1\u6770\u514b",
         "\u30e4\u30f3\u30b0 \u30d6\u30e9\u30c3\u30af\u30fb\u30b8\u30e3\u30c3\u30af",
-        "Young Black Jack"
+        "Young Black Jack",
+        "\u9752\u5e74\u9ed1\u5091\u514b"
       ],
       "sourceId": "bangumi-data",
       "mediaKind": "ANIME"
@@ -80032,6 +80053,17 @@
       "key": {
         "platform": "ANILIST",
         "kind": "MEDIA",
+        "id": 52290
+      },
+      "displayName": "\u841d\u8389\u59ca\u59b9\u82b1",
+      "aliases": [],
+      "sourceId": "wikidata-p8731",
+      "mediaKind": "MANGA"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "MEDIA",
         "id": 52504
       },
       "displayName": "\u72ac\u795e\uff01",
@@ -83211,6 +83243,17 @@
         "id": 89675
       },
       "displayName": "\u9634\u5b88\u5fcd\u8005",
+      "aliases": [],
+      "sourceId": "wikidata-p8731",
+      "mediaKind": "MANGA"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "MEDIA",
+        "id": 89773
+      },
+      "displayName": "\u5c4c\u7d72\u9a91\u58eb",
       "aliases": [],
       "sourceId": "wikidata-p8731",
       "mediaKind": "MANGA"
@@ -91550,6 +91593,17 @@
       "key": {
         "platform": "ANILIST",
         "kind": "MEDIA",
+        "id": 101255
+      },
+      "displayName": "\u70e6\u607c\u7740\u604b\u7231\u7684\u60e0\u8389",
+      "aliases": [],
+      "sourceId": "wikidata-p8731",
+      "mediaKind": "MANGA"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "MEDIA",
         "id": 101261
       },
       "displayName": "\u76bf\u4e09\u6627",
@@ -94677,6 +94731,17 @@
       "key": {
         "platform": "ANILIST",
         "kind": "MEDIA",
+        "id": 103995
+      },
+      "displayName": "\u5973\u795e\u964d\u4e34",
+      "aliases": [],
+      "sourceId": "wikidata-p8731",
+      "mediaKind": "MANGA"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "MEDIA",
         "id": 104004
       },
       "displayName": "\u661f\u4e4b\u5c9b\u55b5\u55b5",
@@ -97672,7 +97737,8 @@
         "\u5c0f\u6797\u5bb6\u7684\u5973\u4ec6\u9f99S",
         "\u5c0f\u6797\u5bb6\u7684\u9f99\u5973\u4ec6 \u7b2c\u4e8c\u5b63",
         "\u5c0f\u6797\u3055\u3093\u3061\u306e\u30e1\u30a4\u30c9\u30e9\u30b4\u30f3S",
-        "Miss Kobayashi's Dragon Maid S"
+        "Miss Kobayashi's Dragon Maid S",
+        "\u5c0f\u6797\u5bb6\u7684\u9f8d\u5973\u50d5 S"
       ],
       "sourceId": "bangumi-data",
       "mediaKind": "ANIME"
@@ -101863,7 +101929,8 @@
       },
       "displayName": "\u5929\u5b98\u8d50\u798f",
       "aliases": [
-        "\u5929\u5b98\u8cdc\u798f"
+        "\u5929\u5b98\u8cdc\u798f",
+        "Heaven Official's Blessing"
       ],
       "sourceId": "bangumi-data",
       "mediaKind": "ANIME"
@@ -101966,6 +102033,17 @@
       ],
       "sourceId": "bangumi-data",
       "mediaKind": "ANIME"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "MEDIA",
+        "id": 113399
+      },
+      "displayName": "\u5824\u4e9a\u7a46\u5e1d\u56fd\u7269\u8bed\uff5e\u4ece\u65ad\u5934\u53f0\u5f00\u59cb\uff0c\u516c\u4e3b\u91cd\u751f\u540e\u7684\u9006\u8f6c\u4eba\u751f\uff5e",
+      "aliases": [],
+      "sourceId": "wikidata-p8731",
+      "mediaKind": "MANGA"
     },
     {
       "key": {
@@ -106010,6 +106088,17 @@
       "key": {
         "platform": "ANILIST",
         "kind": "MEDIA",
+        "id": 120980
+      },
+      "displayName": "\u67d0\u5929\u6210\u4e3a\u9b54\u795e",
+      "aliases": [],
+      "sourceId": "wikidata-p8731",
+      "mediaKind": "MANGA"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "MEDIA",
         "id": 121026
       },
       "displayName": "\u7535\u5f71 Healin' Good \u2665 \u5149\u4e4b\u7f8e\u5c11\u5973 \u68a6\u60f3\u7684\u5c0f\u9547\u5fc3\u52a8\u4e0d\u5df2\uff01GoGo\uff01\u5927\u53d8\u8eab\uff01\uff01",
@@ -106429,17 +106518,6 @@
       ],
       "sourceId": "bangumi-data",
       "mediaKind": "ANIME"
-    },
-    {
-      "key": {
-        "platform": "ANILIST",
-        "kind": "MEDIA",
-        "id": 122192
-      },
-      "displayName": "\u516c\u53f8\u7684\u5c0f\u5c0f\u524d\u8f88",
-      "aliases": [],
-      "sourceId": "wikidata-p8731",
-      "mediaKind": "MANGA"
     },
     {
       "key": {
@@ -114359,6 +114437,17 @@
       "key": {
         "platform": "ANILIST",
         "kind": "MEDIA",
+        "id": 140006
+      },
+      "displayName": "\u54c8\u91cc\u65af\u7684\u65cb\u98ce",
+      "aliases": [],
+      "sourceId": "wikidata-p8731",
+      "mediaKind": "MANGA"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "MEDIA",
         "id": 140036
       },
       "displayName": "\u806a\u660e\u7684\u4e00\u4f11 \u9732\u59ec\uff0c\u6625\u5929\u5230\u4e86\uff01",
@@ -115182,7 +115271,8 @@
       },
       "displayName": "\u98df\u8349\u8001\u9f99\u88ab\u51a0\u4ee5\u6076\u9f99\u4e4b\u540d",
       "aliases": [
-        "\u9f625000\u5e74\u306e\u8349\u98df\u30c9\u30e9\u30b4\u30f3\u3001\u3044\u308f\u308c\u306a\u304d\u90aa\u7adc\u8a8d\u5b9a"
+        "\u9f625000\u5e74\u306e\u8349\u98df\u30c9\u30e9\u30b4\u30f3\u3001\u3044\u308f\u308c\u306a\u304d\u90aa\u7adc\u8a8d\u5b9a",
+        "A Herbivorous Dragon of 5,000 Years Gets Unfairly Villainized"
       ],
       "sourceId": "bangumi-data",
       "mediaKind": "ANIME"
@@ -125319,6 +125409,17 @@
       "key": {
         "platform": "ANILIST",
         "kind": "MEDIA",
+        "id": 169148
+      },
+      "displayName": "\u7687\u5e1d\u4e4b\u5251",
+      "aliases": [],
+      "sourceId": "wikidata-p8731",
+      "mediaKind": "MANGA"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "MEDIA",
         "id": 169227
       },
       "displayName": "\u677e\u72ac",
@@ -127299,7 +127400,8 @@
       },
       "displayName": "\u6211\u4eec\u8fd9\u4e00\u5bb6NEXT",
       "aliases": [
-        "\u3042\u305f\u3057\u30f3\u3061NEXT"
+        "\u3042\u305f\u3057\u30f3\u3061NEXT",
+        "\u6211\u5011\u9019\u4e00\u5bb6NEXT"
       ],
       "sourceId": "bangumi-data",
       "mediaKind": "ANIME"
@@ -132715,7 +132817,8 @@
       },
       "displayName": "\u545c\u8393\u732b\u732b",
       "aliases": [
-        "\u30f3\u3081\u306d\u3053"
+        "\u30f3\u3081\u306d\u3053",
+        "\u55da\u8393\u8c93\u8c93"
       ],
       "sourceId": "bangumi-data",
       "mediaKind": "ANIME"
@@ -133542,6 +133645,17 @@
       "key": {
         "platform": "ANILIST",
         "kind": "MEDIA",
+        "id": 188155
+      },
+      "displayName": "\u72ec\u5251\u590d\u6b8b\u95e8",
+      "aliases": [],
+      "sourceId": "wikidata-p8731",
+      "mediaKind": "MANGA"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "MEDIA",
         "id": 188216
       },
       "displayName": "\u5929\u4e2d\u9f99\u95e8",
@@ -133841,6 +133955,19 @@
         "\u30dd\u30f3\u30b3\u30c4\u98a8\u7d00\u59d4\u54e1\u3068\u30b9\u30ab\u30fc\u30c8\u4e08\u304c\u4e0d\u9069\u5207\u306aJK\u306e\u8a71",
         "The Klutzy Class Monitor and the Girl with the Short Skirt",
         "\u6728\u982d\u98a8\u7d00\u59d4\u54e1\u548c\u8ff7\u4f60\u88d9 JK \u7684\u6545\u4e8b"
+      ],
+      "sourceId": "bangumi-data",
+      "mediaKind": "ANIME"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "MEDIA",
+        "id": 190054
+      },
+      "displayName": "\u6211\u7684\u5e78\u798f\u5a5a\u59fb \u7279\u522b\u7bc7",
+      "aliases": [
+        "\u308f\u305f\u3057\u306e\u5e78\u305b\u306a\u7d50\u5a5a \u7279\u5225\u7bc7"
       ],
       "sourceId": "bangumi-data",
       "mediaKind": "ANIME"
@@ -134705,6 +134832,7 @@
       "displayName": "\u6469\u7eea",
       "aliases": [
         "MAO",
+        "Mao",
         "MAO \u6469\u7dd2",
         "MAO\u6469\u7dd2"
       ],
@@ -135163,6 +135291,17 @@
       ],
       "sourceId": "bangumi-data",
       "mediaKind": "ANIME"
+    },
+    {
+      "key": {
+        "platform": "ANILIST",
+        "kind": "MEDIA",
+        "id": 198459
+      },
+      "displayName": "\u98de\u9f99\u5341\u4e09\u961f",
+      "aliases": [],
+      "sourceId": "wikidata-p8731",
+      "mediaKind": "MANGA"
     },
     {
       "key": {
@@ -217849,6 +217988,12 @@
     },
     {
       "mediaKind": "ANIME",
+      "aniListId": 190054,
+      "bangumiSubjectId": 551304,
+      "sourceId": "bangumi-data"
+    },
+    {
+      "mediaKind": "ANIME",
       "aniListId": 190143,
       "bangumiSubjectId": 551455,
       "sourceId": "bangumi-data"
@@ -219123,6 +219268,12 @@
       "mediaKind": "ANIME",
       "aniListId": 216557,
       "bangumiSubjectId": 617273,
+      "sourceId": "bangumi-data"
+    },
+    {
+      "mediaKind": "ANIME",
+      "aniListId": 216895,
+      "bangumiSubjectId": 701782,
       "sourceId": "bangumi-data"
     }
   ],
@@ -285206,7 +285357,8 @@
       "names": [
         "\u6211\u7684\u5e78\u798f\u5a5a\u7d04 \u7279\u5225\u7bc7"
       ],
-      "sourceId": "soruly-anilist-chinese"
+      "sourceId": "soruly-anilist-chinese",
+      "mediaKind": "ANIME"
     },
     {
       "aniListId": 190143,
@@ -288562,7 +288714,8 @@
       "names": [
         "\u85cd\u8272\u50b3\u627f Welsh & Shedar"
       ],
-      "sourceId": "soruly-anilist-chinese"
+      "sourceId": "soruly-anilist-chinese",
+      "mediaKind": "ANIME"
     },
     {
       "aniListId": 216939,
