@@ -23,6 +23,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
       - name: Refresh and verify
         run: |
           python3 scripts/localization/refresh_sources.py
@@ -31,7 +32,7 @@ jobs:
           python3 scripts/localization/rebuild_catalog.py --output /tmp/catalog-check/catalog.json --report /tmp/catalog-check/report.json
           cmp /tmp/catalog-check/catalog.json core/localization/src/main/resources/localization/catalog.json
           cmp /tmp/catalog-check/report.json docs/localization/catalog-report.json
-          ./gradlew :core:localization:test
+          scripts/ci/gradle-with-network-retry.sh :core:localization:test
       - name: Prepare review branch
         id: branch
         env:

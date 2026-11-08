@@ -29,23 +29,24 @@ jobs:
           python3 -m unittest discover -s scripts/localization -p 'test_*.py'
           python3 -m unittest discover -s scripts/localization/opencc -p 'test_*.py'
           python3 -m unittest discover -s scripts/maintenance -p 'test_*.py'
+          python3 -m unittest discover -s scripts/ci -p 'test_*.py'
           mkdir -p /tmp/catalog-check
           python3 scripts/localization/rebuild_catalog.py --output /tmp/catalog-check/catalog.json --report /tmp/catalog-check/report.json
           cmp /tmp/catalog-check/catalog.json core/localization/src/main/resources/localization/catalog.json
           cmp /tmp/catalog-check/report.json docs/localization/catalog-report.json
       - name: Run localization host tests and compile phone and Wear
         run: |
-          ./gradlew :core:localization:test :core:network:test :core:domain:testDebugUnitTest :core:model:testDebugUnitTest :feature:explore:testDebugUnitTest :feature:settings:testDebugUnitTest :feature:usermedialist:testDebugUnitTest :feature:mediadetails:testDebugUnitTest :feature:genrestags:testDebugUnitTest :app:compileFossDebugKotlin :wearos:compileDebugKotlin --no-daemon --console=plain --max-workers=2
-          ./gradlew :core:ui:testDebugUnitTest --tests '*TitleDisplayTest' --no-daemon --console=plain --max-workers=2
+          scripts/ci/gradle-with-network-retry.sh :core:localization:test :core:network:test :core:domain:testDebugUnitTest :core:model:testDebugUnitTest :feature:explore:testDebugUnitTest :feature:settings:testDebugUnitTest :feature:usermedialist:testDebugUnitTest :feature:mediadetails:testDebugUnitTest :feature:genrestags:testDebugUnitTest :app:compileFossDebugKotlin :wearos:compileDebugKotlin --no-daemon --console=plain --max-workers=2
+          scripts/ci/gradle-with-network-retry.sh :core:ui:testDebugUnitTest --tests '*TitleDisplayTest' --no-daemon --console=plain --max-workers=2
       - name: Inspect assembly graph and build debug APKs
         run: |
-          ./gradlew :app:assembleFossDebug :wearos:assembleDebug --dry-run --no-daemon --console=plain > /tmp/assembly-graph.txt
+          scripts/ci/gradle-with-network-retry.sh :app:assembleFossDebug :wearos:assembleDebug --dry-run --no-daemon --console=plain > /tmp/assembly-graph.txt
           cat /tmp/assembly-graph.txt
           if grep -Ei '^:.*(connected|manageddevice|devicecheck|androidtest|install|uninstall|generate.*baselineprofile)' /tmp/assembly-graph.txt; then
             echo '::error::Unexpected device task in host assembly graph'
             exit 1
           fi
-          ./gradlew :app:assembleFossDebug :wearos:assembleDebug --no-daemon --console=plain --max-workers=2
+          scripts/ci/gradle-with-network-retry.sh :app:assembleFossDebug :wearos:assembleDebug --no-daemon --console=plain --max-workers=2
       - name: Preserve host test results
         if: always()
         uses: actions/upload-artifact@v4

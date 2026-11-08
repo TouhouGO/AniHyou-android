@@ -41,6 +41,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.integration.outputs.changed == 'true'
 
       - name: Verify Python sources and offline catalog reproducibility
         if: steps.integration.outputs.changed == 'true'
@@ -61,8 +63,8 @@ jobs:
         if: steps.integration.outputs.changed == 'true'
         run: |
           set -euo pipefail
-          ./gradlew :core:localization:test :core:network:test :core:domain:testDebugUnitTest :core:model:testDebugUnitTest :feature:explore:testDebugUnitTest :feature:settings:testDebugUnitTest :feature:usermedialist:testDebugUnitTest :feature:mediadetails:testDebugUnitTest :feature:genrestags:testDebugUnitTest :app:compileFossDebugKotlin :wearos:compileDebugKotlin --no-daemon --console=plain --max-workers=2
-          ./gradlew :core:ui:testDebugUnitTest --tests '*TitleDisplayTest' --no-daemon --console=plain --max-workers=2
+          scripts/ci/gradle-with-network-retry.sh :core:localization:test :core:network:test :core:domain:testDebugUnitTest :core:model:testDebugUnitTest :feature:explore:testDebugUnitTest :feature:settings:testDebugUnitTest :feature:usermedialist:testDebugUnitTest :feature:mediadetails:testDebugUnitTest :feature:genrestags:testDebugUnitTest :app:compileFossDebugKotlin :wearos:compileDebugKotlin --no-daemon --console=plain --max-workers=2
+          scripts/ci/gradle-with-network-retry.sh :core:ui:testDebugUnitTest --tests '*TitleDisplayTest' --no-daemon --console=plain --max-workers=2
           printf '\nJDK 21 host validation passed: localization, network, domain, model, search, settings, lists, details, tag and title-display tests; phone and Wear compilation (max-workers=2). No device tests or release build ran.\n' >> "$RUNNER_TEMP/upstream-sync/report.md"
 
       - name: Push the validated review branch
