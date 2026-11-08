@@ -43,6 +43,9 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
         if: steps.integration.outputs.changed == 'true'
+      - name: Prepare verified Gradle distribution
+        if: steps.integration.outputs.changed == 'true'
+        run: python3 scripts/ci/prepare_gradle.py
 
       - name: Verify Python sources and offline catalog reproducibility
         if: steps.integration.outputs.changed == 'true'
