@@ -63,7 +63,9 @@ class ArtifactTests(unittest.TestCase):
         alternate = f'Number of signers: 1\nSigner #1 certificate SHA-256 digest: {a.CERT_SHA}\n'
         with mock.patch.object(a, '_tool', side_effect=lambda x: Path(x)), mock.patch.object(a, '_run', side_effect=['', alternate, "package: name='com.axiel7.anihyou' versionCode='140' versionName='1.8.0'\n"]):
             a._inspect(apk, self.root)
-        badge = "package: name='com.axiel7.anihyou' versionCode='140' versionName='1.8.0'\n"
+        badge = ("package: name='com.axiel7.anihyou' versionCode='140' versionName='1.8.0' "
+                 "platformBuildVersionName='17' platformBuildVersionCode='37' "
+                 "compileSdkVersion='37' compileSdkVersionCodename='17'\n")
         with mock.patch.object(a, '_tool', side_effect=lambda x: Path(x)), mock.patch.object(a, '_run', side_effect=['', cert, badge]):
             a._inspect(apk, self.root)
         for bad_cert, bad_badge in [(cert.replace(a.CERT_SHA, 'a'*64), badge), (cert.replace('signers: 1', 'signers: 2'), badge), (cert.replace('Number of signers: 1\n', ''), badge), (cert, badge.replace('140', '141')), (cert, badge.replace(a.PACKAGE, 'wrong')), (cert, badge + 'application-debuggable\n')]:
@@ -130,6 +132,7 @@ class ArtifactTests(unittest.TestCase):
         for args in calls:
             self.assertIn('env:KEYSTORE_PASSWORD', args)
             self.assertIn('env:KEY_PASSWORD', args)
+            self.assertEqual(args[args.index('--v4-signing-enabled') + 1], 'false')
             self.assertNotIn('secret1', args)
             self.assertNotIn('secret2', args)
         with mock.patch.dict(os.environ, env), mock.patch.object(a, '_read_build', return_value={'fixture': True}), self.assertRaises(ValueError):

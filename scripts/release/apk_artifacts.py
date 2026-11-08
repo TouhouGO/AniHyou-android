@@ -126,7 +126,7 @@ def _inspect(path: Path, root: Path) -> None:
         raise ValueError(f"APK signing certificate mismatch: {path.name}")
     badging = _run([str(_tool("aapt2")), "dump", "badging", str(path)])
     package_line = next((line for line in badging.splitlines() if line.startswith("package: ")), "")
-    fields = dict(re.findall(r"(name|versionCode|versionName)='([^']*)'", package_line))
+    fields = dict(re.findall(r"(?:^|\s)(name|versionCode|versionName)='([^']*)'", package_line))
     if fields != {"name": PACKAGE, "versionCode": str(code), "versionName": version} or re.search(r"(?m)^application-debuggable(?:\s|$)", badging):
         raise ValueError(f"APK identity, version, or debuggable mismatch: {path.name}")
 
@@ -223,7 +223,7 @@ def sign_and_verify(input_dir: Path, output_dir: Path, keystore: Path, root: Pat
     signed = []
     for path in paths:
         target = output_dir / path.name.replace("-unsigned.apk", ".apk")
-        _run([str(_tool("apksigner")), "sign", "--ks", str(keystore), "--ks-key-alias", os.environ["KEY_ALIAS"], "--ks-pass", "env:KEYSTORE_PASSWORD", "--key-pass", "env:KEY_PASSWORD", "--out", str(target), str(path)])
+        _run([str(_tool("apksigner")), "sign", "--ks", str(keystore), "--ks-key-alias", os.environ["KEY_ALIAS"], "--ks-pass", "env:KEYSTORE_PASSWORD", "--key-pass", "env:KEY_PASSWORD", "--v4-signing-enabled", "false", "--out", str(target), str(path)])
         _inspect(target, root)
         signed.append(target)
     if _read_build(input_dir, root) != build:
