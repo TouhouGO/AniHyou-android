@@ -5,14 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.base.extensions.firstBlocking
-import com.axiel7.anihyou.core.base.extensions.indexOfFirstOrNull
 import com.axiel7.anihyou.core.common.utils.NumberUtils.isNullOrZero
 import com.axiel7.anihyou.core.common.utils.SearchUtils.fuzzyScore
 import com.axiel7.anihyou.core.common.utils.SearchUtils.whiteSpaceRegex
 import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.ListPreferencesRepository
+import com.axiel7.anihyou.core.domain.repository.LocalizationCatalogRepository
 import com.axiel7.anihyou.core.domain.repository.MediaListRepository
+import com.axiel7.anihyou.core.localization.LocalizationSnapshot
+import com.axiel7.anihyou.core.localization.MediaKind
 import com.axiel7.anihyou.core.model.genre.GenresAndTagsForSearch
 import com.axiel7.anihyou.core.model.media.CountryOfOrigin
 import com.axiel7.anihyou.core.model.media.ListType
@@ -20,6 +22,7 @@ import com.axiel7.anihyou.core.model.media.MediaFormatLocalizable
 import com.axiel7.anihyou.core.model.media.asMediaListStatus
 import com.axiel7.anihyou.core.model.media.comparator
 import com.axiel7.anihyou.core.model.media.duration
+import com.axiel7.anihyou.core.model.media.isDescending
 import com.axiel7.anihyou.core.model.media.isTitle
 import com.axiel7.anihyou.core.model.media.plainName
 import com.axiel7.anihyou.core.network.fragment.BasicMediaListEntry
@@ -35,10 +38,11 @@ import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.Route
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.emptyFlow
@@ -47,9 +51,9 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.InjectedParam
@@ -60,6 +64,7 @@ class UserMediaListViewModel(
     private val mediaListRepository: MediaListRepository,
     private val defaultPreferencesRepository: DefaultPreferencesRepository,
     private val listPreferencesRepository: ListPreferencesRepository,
+    private val catalogRepository: LocalizationCatalogRepository,
 ) : UiStateViewModel<UserMediaListUiState>(), UserMediaListEvent {
 
     private val scoreFormat = arguments.scoreFormat?.let { ScoreFormat.safeValueOf(it) }
@@ -95,7 +100,6 @@ class UserMediaListViewModel(
                     status = listName?.asMediaListStatus()
                 )
             }
-            updateSearchAndFilters(uiState.value)
 
             if (mediaType == MediaType.ANIME) {
                 listPreferencesRepository.setAnimeListSelected(listName)
@@ -134,7 +138,6 @@ class UserMediaListViewModel(
                     isSearchSortModified = true
                 )
             }
-            applySorting(uiState.value)
 
             if (mediaType == MediaType.ANIME) {
                 listPreferencesRepository.setAnimeListSort(sort)
@@ -188,68 +191,46 @@ class UserMediaListViewModel(
     }
 
     override fun onUpdateListEntry(newListEntry: BasicMediaListEntry?) {
-        mutableUiState.value.run {
-            selectedItem?.let { selectedItem ->
-                if (selectedItem.basicMediaListEntry != newListEntry) {
-                    val list = if (selectedListName != null) {
-                        lists[selectedListName]?.toMutableList() ?: return
-                    } else entries
-                    if (newListEntry != null) {
-                        list.indexOfFirstOrNull { it.mediaId == selectedItem.mediaId }
-                            ?.let { index ->
-                                val oldValue = list[index]
-                                val newEntry = oldValue.copy(basicMediaListEntry = newListEntry)
-                                if (newListEntry.status != oldValue.basicMediaListEntry.status) {
-                                    list.removeAt(index)
-                                    newListEntry.status?.let { status ->
-                                        oldValue.media?.format?.let { mediaFormat ->
-                                            oldValue.media?.basicMediaDetails?.type?.let { mediaType ->
-                                                findListForEntry(status, mediaType, mediaFormat)
-                                                    ?.let { newList ->
-                                                        lists[newList] =
-                                                            lists[newList].orEmpty()
-                                                                .plus(newEntry)
-                                                    }
-                                            }
-                                        }
-                                    }
-
-                                    val openSetScoreDialog =
-                                        newListEntry.status == MediaListStatus.COMPLETED
-                                                && newListEntry.score.isNullOrZero()
-                                    mutableUiState.update {
-                                        it.copy(
-                                            openSetScoreDialog = openSetScoreDialog,
-                                            selectedItem = newEntry
-                                        )
-                                    }
-                                } else {
-                                    list[index] = newEntry
-                                }
-                            }
-                        lists.forEach { (listName, entries) ->
-                            entries.indexOfFirstOrNull { it.mediaId == selectedItem.mediaId }
-                                ?.let { index ->
-                                    val newList = entries.toMutableList()
-                                    newList[index] = entries[index].copy(basicMediaListEntry = newListEntry)
-                                    lists[listName] = newList
-                                }
-                        }
-                    } else {
-                        list.remove(selectedItem)
-                        lists.forEach { (listName, entries) ->
-                            val newList = entries.toMutableList()
-                            if (newList.remove(selectedItem)) {
-                                lists[listName] = newList
-                            }
-                        }
-                    }
-                    if (selectedListName != null) {
-                        lists[selectedListName] = list
-                    }
-                    onChangeList(selectedListName)
+        val state = mutableUiState.value
+        val selected = state.selectedItem ?: return
+        if (selected.basicMediaListEntry == newListEntry) return
+        val lists = state.lists.toMutableMap()
+        val replacement = newListEntry?.let { selected.copy(basicMediaListEntry = it) }
+        val changedStatus = newListEntry != null && newListEntry.status != selected.basicMediaListEntry.status
+        val mediaFormat = selected.media?.format
+        val selectedMediaType = selected.media?.basicMediaDetails?.type ?: state.mediaType
+        val regularListNames = state.standardListNames.takeIf { it.isNotEmpty() }
+            ?.map { it.uppercase() }
+            ?.toSet()
+            ?: mediaFormat?.let { standardListNames(selectedMediaType, it) }.orEmpty()
+        val targetList = if (changedStatus) {
+            newListEntry.status?.let { status ->
+                mediaFormat?.let { findListForEntry(status, selectedMediaType, it) }
+            }
+        } else null
+        val shouldOpenScoreDialog = changedStatus && newListEntry.status == MediaListStatus.COMPLETED &&
+            newListEntry.score.isNullOrZero()
+        lists.keys.toList().forEach { name ->
+            lists[name] = lists[name].orEmpty().mapNotNull { old ->
+                when {
+                    old.mediaId != selected.mediaId -> old
+                    replacement == null -> null
+                    changedStatus && name.uppercase() in regularListNames -> null
+                    else -> old.copy(basicMediaListEntry = newListEntry)
                 }
             }
+        }
+        if (changedStatus && replacement != null && targetList != null) {
+            if (lists[targetList].orEmpty().none { it.mediaId == selected.mediaId }) {
+                lists[targetList] = lists[targetList].orEmpty() + replacement
+            }
+        }
+        mutableUiState.update {
+            it.copy(
+                lists = lists,
+                selectedItem = if (changedStatus) replacement else it.selectedItem,
+                openSetScoreDialog = if (changedStatus) shouldOpenScoreDialog else it.openSetScoreDialog,
+            )
         }
     }
 
@@ -450,28 +431,38 @@ class UserMediaListViewModel(
             mutableUiState.update {
                 it.copy(isSearchSortModified = false)
             }
-            applySorting(uiState.value)
         }
     }
 
-    private suspend fun updateSearchAndFilters(uiState: UserMediaListUiState) {
-        val newCache = withContext(Dispatchers.Default) {
+    private suspend fun calculate(
+        uiState: UserMediaListUiState,
+        snapshot: LocalizationSnapshot,
+        enabled: Boolean,
+    ): List<CommonMediaListEntry> {
+        return withContext(Dispatchers.Default) {
+            val context = currentCoroutineContext()
             val queryText = uiState.query.trim().lowercase()
             val isQueryNotBlank = queryText.isNotBlank()
 
+            val localizedIds = if (isQueryNotBlank) {
+                context.ensureActive()
+                val kind = if (mediaType == MediaType.ANIME) MediaKind.ANIME else MediaKind.MANGA
+                localizedListCandidates(snapshot, queryText, kind).also { context.ensureActive() }
+            } else emptySet()
             val baseEntries = if (uiState.selectedListName != null) {
                 uiState.lists[uiState.selectedListName].orEmpty()
             } else {
                 uiState.lists.values.flatten().distinctBy { it.mediaId }
             }
 
-            if (uiState.filterCount > 0 || isQueryNotBlank) {
+            val newCache = if (uiState.filterCount > 0 || isQueryNotBlank) {
                 if (uiState.isFuzzySearchEnabled) {
                     val queryTokens = if (isQueryNotBlank) {
                         queryText.split(whiteSpaceRegex).filter { it.isNotEmpty() }
                     } else emptyList()
 
                     val scoredEntries = baseEntries.mapNotNull { entry ->
+                        context.ensureActive()
                         val matchesFilters = uiState.formatMatch(entry)
                                 && uiState.statusMatch(entry)
                                 && uiState.countryMatch(entry)
@@ -493,7 +484,7 @@ class UserMediaListViewModel(
                                 syn.fuzzyScore(queryText, queryTokens)
                             } ?: 0
 
-                            val maxScore = maxOf(romajiScore, englishScore, nativeScore, synonymScore)
+                            val maxScore = maxOf(romajiScore, englishScore, nativeScore, synonymScore, if (entry.mediaId in localizedIds) 1 else 0)
 
                             (entry to maxScore).takeIf { maxScore > 0 }
                         } else {
@@ -508,6 +499,7 @@ class UserMediaListViewModel(
                     }
                 } else {
                     baseEntries.filter { entry ->
+                        context.ensureActive()
                         val matchesFilters = uiState.formatMatch(entry)
                                 && uiState.statusMatch(entry)
                                 && uiState.countryMatch(entry)
@@ -528,7 +520,7 @@ class UserMediaListViewModel(
                                 syn?.contains(queryText, ignoreCase = true) == true
                             } == true
 
-                            romajiMatch || englishMatch || nativeMatch || synonymMatch
+                            romajiMatch || englishMatch || nativeMatch || synonymMatch || entry.mediaId in localizedIds
                         } else {
                             true
                         }
@@ -537,74 +529,66 @@ class UserMediaListViewModel(
             } else {
                 baseEntries.map { it to 0 }
             }
-        }
-
-        mutableUiState.updateAndGet {
-            it.copy(filteredEntriesCache = newCache)
-        }.also {
-            applySorting(it)
+            context.ensureActive()
+            val sortComparator: Comparator<CommonMediaListEntry> = if (uiState.sort.isTitle()) {
+                val title: (CommonMediaListEntry) -> String? = { entry ->
+                    val raw = entry.media?.basicMediaDetails?.title?.userPreferred
+                    localizedListTitle(snapshot, entry.mediaId, raw, enabled)
+                }
+                listTitleComparator(uiState.sort.isDescending(), title) { it.mediaId }
+            } else uiState.sort.comparator()
+            if (isQueryNotBlank && uiState.isFuzzySearchEnabled && !uiState.isSearchSortModified) {
+                newCache.sortedWith(compareByDescending<Pair<CommonMediaListEntry, Int>> { it.second }
+                    .then(Comparator { a, b -> sortComparator.compare(a.first, b.first) })).map { it.first }
+            } else newCache.map { it.first }.sortedWith(sortComparator)
         }
     }
 
-    private suspend fun applySorting(uiState: UserMediaListUiState) {
-        val finalSortedList = withContext(Dispatchers.Default) {
-            val matchedEntries = uiState.filteredEntriesCache
-            val isQueryNotBlank = uiState.query.trim().isNotBlank()
-            val sortComparator = uiState.sort.comparator()
+    private var cachedListSource: MutableMap<String, List<CommonMediaListEntry>>? = null
+    private var cachedListInputs: MutableMap<String, List<CommonMediaListEntry>>? = null
 
-            if (isQueryNotBlank && uiState.isFuzzySearchEnabled && !uiState.isSearchSortModified) {
-                matchedEntries.sortedWith(
-                    compareByDescending<Pair<CommonMediaListEntry, Int>> { it.second }
-                        .then(Comparator { p1, p2 -> sortComparator.compare(p1.first, p2.first) })
-                ).map { it.first }
-            } else {
-                matchedEntries.map { it.first }.sortedWith(sortComparator)
-            }
+    private fun stateForSearch(state: UserMediaListUiState): UserMediaListUiState {
+        if (state.lists !== cachedListSource) {
+            cachedListSource = state.lists
+            cachedListInputs = immutableListInputs(state.lists).toMutableMap()
         }
+        return state.copy(lists = cachedListInputs ?: mutableMapOf())
+    }
 
-        with(uiState) {
-            entries.clear()
-            entries.addAll(finalSortedList)
+    private fun launchSearchPipeline() = viewModelScope.launch {
+        combine(
+            mutableUiState.map(::stateForSearch)
+                .distinctUntilChanged { a, b ->
+                    a.lists == b.lists && a.selectedListName == b.selectedListName &&
+                        a.query == b.query && a.mediaFormat == b.mediaFormat && a.mediaStatus == b.mediaStatus &&
+                        a.country == b.country && a.year == b.year && a.genresAndTagsForSearch == b.genresAndTagsForSearch &&
+                        a.episodesChaptersRange == b.episodesChaptersRange && a.durationVolumesRange == b.durationVolumesRange &&
+                        a.isFuzzySearchEnabled == b.isFuzzySearchEnabled && a.sort == b.sort &&
+                        a.isSearchSortModified == b.isSearchSortModified && a.separateNovelsAndManga == b.separateNovelsAndManga
+                },
+            catalogRepository.snapshot,
+            defaultPreferencesRepository.chineseTitles,
+        ) { state, snapshot, enabled -> Triple(state, snapshot, enabled) }
+            .publishLatest(
+                compute = { (state, snapshot, enabled) -> calculate(state, snapshot, enabled) },
+                publish = ::publishSearchResult,
+            )
+    }
 
-            mangaEntries.clear()
-            novelEntries.clear()
-            applyPartition()
-        }
+    private fun publishSearchResult(result: List<CommonMediaListEntry>) = mutableUiState.update { state ->
+        state.entries.clear()
+        state.entries.addAll(result)
+        state.mangaEntries.clear()
+        state.novelEntries.clear()
+        state.applyPartition()
+        state
     }
 
     init {
-
-        //search
-        mutableUiState
-            .filter {
-                it.query.isNotEmpty()
-                        || it.filterCount > 0
-                        || it.clearedFilters
-            }
-            .distinctUntilChanged { old, new ->
-                old.query == new.query
-                        && old.mediaFormat == new.mediaFormat
-                        && old.mediaStatus == new.mediaStatus
-                        && old.country == new.country
-                        && old.year == new.year
-                        && old.genresAndTagsForSearch == new.genresAndTagsForSearch
-                        && old.episodesChaptersRange == new.episodesChaptersRange
-                        && old.durationVolumesRange == new.durationVolumesRange
-                        && old.clearedFilters == new.clearedFilters
-            }
-            .debounce { uiState ->
-                val totalItems = uiState.entries.size
-
-                when {
-                    totalItems <= 20 -> 0L
-                    totalItems >= 1000 -> 300L
-                    else -> (totalItems * 0.3).toLong()
-                }
-            }
-            .onEach { uiState ->
-                updateSearchAndFilters(uiState)
-            }
-            .launchIn(viewModelScope)
+        launchSearchPipeline()
+        viewModelScope.launch {
+            catalogRepository.load()
+        }
 
         // score format
         mutableUiState
@@ -672,11 +656,7 @@ class UserMediaListViewModel(
             defaultPreferencesRepository.separateNovelsAndManga
                 .onEach { isEnabled ->
                     mutableUiState.update { uiState ->
-                        uiState.copy(separateNovelsAndManga = isEnabled).also {
-                            it.mangaEntries.clear()
-                            it.novelEntries.clear()
-                            it.applyPartition()
-                        }
+                        uiState.copy(separateNovelsAndManga = isEnabled)
                     }
                 }
                 .launchIn(viewModelScope)
@@ -722,7 +702,6 @@ class UserMediaListViewModel(
             .onEach { sort ->
                 if (uiState.value.sort != sort) {
                     mutableUiState.update { it.copy(sort = sort) }
-                    applySorting(uiState.value)
                 }
             }
             .launchIn(viewModelScope)
@@ -772,22 +751,25 @@ class UserMediaListViewModel(
                     }
 
                     mutableUiState.update { uiState ->
-                        if (result.currentPage == 1 || result.currentPage == null) {
-                            uiState.lists.clear()
+                        val lists = if (result.currentPage == 1 || result.currentPage == null) mutableMapOf() else uiState.lists.toMutableMap()
+                        val standardListNames = if (result.currentPage == 1 || result.currentPage == null) {
+                            mutableSetOf<String>()
+                        } else {
+                            uiState.standardListNames.toMutableSet()
                         }
-
                         var hasNewEntries = false
                         processedLists.forEach { (name, entries, isStandardList) ->
-                            uiState.lists[name] = uiState.lists[name].orEmpty() + entries
+                            lists[name] = lists[name].orEmpty() + entries
+                            if (isStandardList) standardListNames.add(name)
                             if ((uiState.selectedListName == null && isStandardList) || name == uiState.selectedListName) {
                                 if (entries.isNotEmpty()) hasNewEntries = true
                             }
                         }
 
-                        updateSearchAndFilters(uiState)
-
                         val loadMore = !hasNewEntries && result.hasNextPage
                         uiState.copy(
+                            lists = lists,
+                            standardListNames = standardListNames,
                             fetchFromNetwork = false,
                             isLoading = loadMore,
                         )

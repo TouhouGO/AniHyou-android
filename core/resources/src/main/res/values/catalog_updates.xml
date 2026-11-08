@@ -1,0 +1,26 @@
+<resources>
+    <string name="catalog_version">Localization resources</string>
+    <string name="catalog_builtin">%1$s · Built-in · %2$d records</string>
+    <string name="catalog_installed">%1$s · Installed · %2$d records</string>
+    <string name="catalog_check">Check for resource updates</string>
+    <string name="catalog_download">Download version %1$s</string>
+    <string name="catalog_import">Import catalog file</string>
+    <string name="catalog_reset">Restore built-in resources</string>
+    <string name="catalog_unavailable">Update channel unavailable</string>
+    <string name="catalog_up_to_date">Resources are up to date</string>
+    <string name="catalog_complete">Resource operation completed</string>
+    <string name="catalog_too_large">The catalog is too large and was not installed.</string>
+    <string name="catalog_invalid_utf8">The catalog is not valid UTF-8 text. Choose a complete catalog.json file.</string>
+    <string name="catalog_invalid_format">The catalog format, schema, or source references do not match the required catalog format. Choose a complete catalog.json file.</string>
+    <string name="catalog_empty">The catalog has no records and was not installed.</string>
+    <string name="catalog_invalid_version">The catalog version is invalid. Use a release catalog with a valid date version.</string>
+    <string name="catalog_downgrade">This catalog is older than the current resources.</string>
+    <string name="catalog_collision">This version already exists with different contents. Use a catalog with a newer version.</string>
+    <string name="catalog_metadata_mismatch">The downloaded file does not match the update information. Check for the update again.</string>
+    <string name="catalog_stale">Resources changed during this operation. Check again before continuing.</string>
+    <string name="catalog_storage_error">The catalog could not be saved. Current resources were kept.</string>
+    <string name="catalog_import_error">The selected file could not be opened or read.</string>
+    <string name="catalog_network_error">The update channel could not be reached. Check your connection and try again.</string>
+    <string name="catalog_invalid_manifest">The update channel returned invalid information. Try again later.</string>
+    <string name="catalog_unknown_error">The operation could not be completed. Current resources were kept.</string>
+</resources>

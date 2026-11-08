@@ -49,6 +49,7 @@ import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemHorizontal
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemHorizontalPlaceholder
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import com.axiel7.anihyou.feature.addrecommendation.search.SimpleMediaSearchSheetView
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
@@ -146,7 +147,7 @@ private fun AddRecommendationContent(
             // main media
             if (media != null) {
                 MediaItemHorizontal(
-                    title = media.basicMediaDetails.title?.userPreferred.orEmpty(),
+                    title = displayMediaTitle(media.basicMediaDetails.id, media.basicMediaDetails.title?.userPreferred.orEmpty()),
                     imageUrl = media.coverImage?.large,
                     blurImage = blurAdult && media.basicMediaDetails.isAdult == true,
                     score = media.weightedScore ?: 0,
@@ -213,7 +214,7 @@ private fun AddRecommendationContent(
                 }
             } else {
                 MediaItemHorizontal(
-                    title = rec.basicMediaDetails.title?.userPreferred.orEmpty(),
+                    title = displayMediaTitle(rec.basicMediaDetails.id, rec.basicMediaDetails.title?.userPreferred.orEmpty()),
                     imageUrl = rec.coverImage?.large,
                     blurImage = blurAdult && rec.basicMediaDetails.isAdult == true,
                     score = rec.weightedScore ?: 0,

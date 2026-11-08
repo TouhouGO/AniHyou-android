@@ -1,0 +1,117 @@
+name: Review official upstream updates
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '43 4 * * 1'
+
+permissions: {}
+
+# One integration at a time, including manual runs. Never cancel a published review.
+concurrency:
+  group: upstream-sync-master
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    if: github.repository == 'TouhouGO/AniHyou-android' && github.event.repository.default_branch == 'master' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+      pull-requests: write
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Merge official master into an isolated review branch
+        id: integration
+        env:
+          UPSTREAM_REPORT_DIR: ${{ runner.temp }}/upstream-sync
+        run: scripts/maintenance/merge-upstream.sh
+
+      - uses: actions/setup-java@v4
+        if: steps.integration.outputs.changed == 'true'
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Verify Python sources and offline catalog reproducibility
+        if: steps.integration.outputs.changed == 'true'
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s scripts/localization -p 'test_*.py'
+          python3 -m unittest discover -s scripts/localization/opencc -p 'test_*.py'
+          python3 -m unittest discover -s scripts/maintenance -p 'test_*.py'
+          check_dir=$(mktemp -d "$RUNNER_TEMP/upstream-catalog.XXXXXX")
+          python3 scripts/localization/rebuild_catalog.py --output "$check_dir/catalog.json" --report "$check_dir/report.json"
+          cmp "$check_dir/catalog.json" core/localization/src/main/resources/localization/catalog.json
+          cmp "$check_dir/report.json" docs/localization/catalog-report.json
+          printf '\nPython source tests and offline catalog reproduction passed.\n' >> "$RUNNER_TEMP/upstream-sync/report.md"
+
+      - name: Run localization host tests and compile phone and Wear
+        if: steps.integration.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          ./gradlew :core:localization:test :core:network:test :core:domain:testDebugUnitTest :core:model:testDebugUnitTest :feature:explore:testDebugUnitTest :feature:settings:testDebugUnitTest :feature:usermedialist:testDebugUnitTest :feature:mediadetails:testDebugUnitTest :feature:genrestags:testDebugUnitTest :app:compileFossDebugKotlin :wearos:compileDebugKotlin --no-daemon --console=plain --max-workers=2
+          ./gradlew :core:ui:testDebugUnitTest --tests '*TitleDisplayTest' --no-daemon --console=plain --max-workers=2
+          printf '\nJDK 21 host validation passed: localization, network, domain, model, search, settings, lists, details, tag and title-display tests; phone and Wear compilation (max-workers=2). No device tests or release build ran.\n' >> "$RUNNER_TEMP/upstream-sync/report.md"
+
+      - name: Push the validated review branch
+        if: steps.integration.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.integration.outputs.branch }}
+          BASE_SHA: ${{ steps.integration.outputs.base_sha }}
+        run: |
+          set -euo pipefail
+          current_base=$(git ls-remote origin refs/heads/master | cut -f1)
+          if [ "$current_base" != "$BASE_SHA" ]; then
+            echo '::error::Fork master changed during validation. Rerun this workflow to validate against the new base; nothing was pushed.'
+            exit 1
+          fi
+          gh auth setup-git
+          git -c core.hooksPath=/dev/null push origin "HEAD:refs/heads/$BRANCH"
+          compare_url="https://github.com/${GITHUB_REPOSITORY}/compare/master...${BRANCH}?expand=1"
+          printf '\nValidated review branch preserved: %s\n' "$compare_url" | tee -a "$RUNNER_TEMP/upstream-sync/report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open a pull request for human review
+        if: steps.integration.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.integration.outputs.branch }}
+          BASE_SHA: ${{ steps.integration.outputs.base_sha }}
+          UPSTREAM_SHA: ${{ steps.integration.outputs.upstream_sha }}
+        run: |
+          set -euo pipefail
+          body_file="$RUNNER_TEMP/upstream-sync/pr-body.md"
+          {
+            printf '将官方 axiel7/AniHyou-android/master 的 `%s` 正常 merge 到 fork master `%s`，保留 fork 的中文本地化提交。\n\n' "$UPSTREAM_SHA" "$BASE_SHA"
+            printf '本分支已通过 Python 来源与 OpenCC 测试、离线目录可复现重建、本地化相关 Kotlin/Android 主机测试以及手机和 Wear 编译（JDK 21、`--max-workers=2`）。未运行设备测试或签名发布。已知上游三个 Markdown 测试不在本批次内，详见 IMPLEMENTATION_STATUS。\n\n'
+            printf '请人工审阅上游变更和本地化兼容性。工作流不会自动合并。GITHUB_TOKEN 创建的 PR 可能不触发其他 CI，因此已在创建前执行以上主机检查；合并前仍需遵守仓库审核要求。\n'
+          } > "$body_file"
+          if ! gh pr create --repo "$GITHUB_REPOSITORY" --base master --head "$BRANCH" --title '同步官方上游 master（保留中文本地化）' --body-file "$body_file" > "$RUNNER_TEMP/upstream-sync/pr-result.txt" 2>&1; then
+            compare_url="https://github.com/${GITHUB_REPOSITORY}/compare/master...${BRANCH}?expand=1"
+            printf '\nPR creation failed. The validated branch is preserved. Open a PR manually: %s\n' "$compare_url" | tee -a "$RUNNER_TEMP/upstream-sync/report.md" >> "$GITHUB_STEP_SUMMARY"
+            echo '::error::Cannot create review PR. Actions may be forbidden to create PRs by repository settings. See the compare link and pr-result.txt artifact; no automatic merge or master rewrite was attempted.'
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/upstream-sync/pr-result.txt" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve integration report and host test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upstream-sync-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/upstream-sync/
+            **/build/test-results/**/*.xml
+          if-no-files-found: warn

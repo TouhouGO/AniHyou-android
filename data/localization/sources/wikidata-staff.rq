@@ -1,0 +1,7 @@
+SELECT ?item ?id ?label WHERE {
+  hint:Query hint:optimizer "None" .
+  ?item wdt:P11227 ?id .
+  ?item rdfs:label ?label .
+  FILTER(LANG(?label) IN ("zh-hans", "zh-cn"))
+}
+LIMIT 50000

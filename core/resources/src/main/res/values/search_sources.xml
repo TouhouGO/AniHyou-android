@@ -1,0 +1,16 @@
+<resources>
+    <string name="local_title_search_partitioned">More than 5,000 candidates. Continue scrolling to search every group; your selected order applies within each group.</string>
+    <string name="search_retry_page">Retry this page</string>
+    <string name="search_primary_more">Load more main results</string>
+    <string name="search_supplement_title">Additional results</string>
+    <string name="search_supplement_notice">AniList text search and Bangumi original-name suggestions. Results are appended as found; order applies within each source. Coverage may be incomplete.</string>
+    <string name="search_supplement_popularity_fallback">Mapped Bangumi IDs are ordered by AniList popularity because relevance ranking is unavailable for ID-only requests.</string>
+    <string name="search_supplement_loading">Looking for more matches...</string>
+    <string name="search_supplement_failed">Some sources could not finish. Existing results are retained.</string>
+    <string name="search_supplement_finished">Available sources have been checked.</string>
+    <string name="search_supplement_more">Find more matches</string>
+    <string name="search_supplement_retry">Retry remaining sources</string>
+    <string name="search_supplement_retry_delay">The source requested a %1$d-second pause. Retry after waiting.</string>
+    <string name="search_supplement_depth_limit">A text search reached the service paging limit. Use a more specific query for additional matches.</string>
+    <string name="search_supplement_unresolved">%1$d suggestions have no mapped ID or original title.</string>
+</resources>

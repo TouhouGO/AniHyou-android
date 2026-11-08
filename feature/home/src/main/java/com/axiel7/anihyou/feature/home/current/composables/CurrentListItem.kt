@@ -42,6 +42,7 @@ import com.axiel7.anihyou.core.ui.composables.media.MediaProgressIndicator
 import com.axiel7.anihyou.core.ui.composables.media.PriorityIndicator
 import com.axiel7.anihyou.core.ui.composables.scores.BadgeScoreIndicator
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 
 @Composable
 fun CurrentListItem(
@@ -113,7 +114,7 @@ fun CurrentListItem(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                    text = displayMediaTitle(item.media?.basicMediaDetails?.id, item.media?.basicMediaDetails?.title?.userPreferred.orEmpty()),
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.bodyLarge,
                     overflow = TextOverflow.Ellipsis,

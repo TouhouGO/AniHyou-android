@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.home.activity
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -134,7 +135,7 @@ private fun ActivityFeedContent(
                         username = it.user?.activityUser?.name,
                         avatarUrl = it.user?.activityUser?.avatar?.medium,
                         createdAt = it.createdAt,
-                        text = it.text(),
+                        text = it.text(displayMediaTitle(it.media?.id, it.media?.title?.userPreferred.orEmpty())),
                         replyCount = it.replyCount,
                         likeCount = it.likeCount,
                         isLiked = it.isLiked,

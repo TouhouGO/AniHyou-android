@@ -32,6 +32,7 @@ kotlin {
 }
 
 dependencies {
+    api(project(":core:localization"))
     api(project(":core:base"))
     api(project(":core:common"))
     api(project(":core:resources"))

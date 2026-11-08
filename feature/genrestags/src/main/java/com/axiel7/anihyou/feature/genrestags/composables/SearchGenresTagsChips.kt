@@ -27,6 +27,7 @@ import com.axiel7.anihyou.core.model.genre.GenresAndTagsForSearch
 import com.axiel7.anihyou.core.model.genre.SelectableGenre.Companion.genreTagLocalized
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.composables.common.InputChipError
+import com.axiel7.anihyou.core.ui.localization.displayTagName
 import com.axiel7.anihyou.feature.genrestags.GenresTagsSheet
 import com.axiel7.anihyou.feature.genrestags.GenresTagsViewModel
 import kotlinx.coroutines.launch
@@ -127,7 +128,7 @@ fun SearchGenresTagsChips(
                         )
                     }
                 },
-                label = { Text(text = tag) },
+                label = { Text(text = displayTagName(tag)) },
                 trailingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.close_20),
@@ -146,7 +147,7 @@ fun SearchGenresTagsChips(
                         )
                     }
                 },
-                text = tag,
+                text = displayTagName(tag),
                 icon = R.drawable.close_20,
                 iconDescription = stringResource(R.string.delete)
             )

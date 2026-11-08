@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.mediadetails.activity
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -115,7 +116,7 @@ private fun MediaActivityContent(
                     username = item.user?.activityUser?.name,
                     avatarUrl = item.user?.activityUser?.avatar?.medium,
                     createdAt = item.createdAt,
-                    text = item.text(),
+                    text = item.text(displayMediaTitle(item.media?.id, item.media?.title?.userPreferred.orEmpty())),
                     replyCount = item.replyCount,
                     likeCount = item.likeCount,
                     isLiked = item.isLiked,

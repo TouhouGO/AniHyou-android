@@ -1,0 +1,7 @@
+<resources>
+    <string name="catalog_auto_check">自动检查资源更新</string>
+    <string name="catalog_auto_check_description">打开应用时检查，下载需要手动操作。</string>
+    <string name="catalog_last_check">上次资源检查</string>
+    <string name="catalog_never_checked">尚未检查</string>
+    <string name="catalog_update_notice">资源 %1$s 可更新 · 打开设置</string>
+</resources>

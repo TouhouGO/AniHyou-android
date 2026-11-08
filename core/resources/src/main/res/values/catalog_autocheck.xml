@@ -1,0 +1,7 @@
+<resources>
+    <string name="catalog_auto_check">Automatically check resources</string>
+    <string name="catalog_auto_check_description">Check when the app opens; downloads remain manual.</string>
+    <string name="catalog_last_check">Last resource check</string>
+    <string name="catalog_never_checked">Never</string>
+    <string name="catalog_update_notice">Resource update %1$s available · Open settings</string>
+</resources>

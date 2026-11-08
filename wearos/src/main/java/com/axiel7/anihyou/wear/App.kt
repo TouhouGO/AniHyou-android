@@ -9,6 +9,8 @@ import com.axiel7.anihyou.core.network.networkModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 
 class App : Application() {
 
@@ -20,7 +22,9 @@ class App : Application() {
                 androidLogger()
             }
             androidContext(this@App)
+            val coreModule = module { single(named("appVersion")) { BuildConfig.VERSION_NAME } }
             modules(
+                coreModule,
                 dataStoreModule,
                 databaseModule,
                 networkModule,

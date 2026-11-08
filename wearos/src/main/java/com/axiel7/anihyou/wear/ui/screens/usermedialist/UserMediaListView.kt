@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.wear.ui.screens.usermedialist
 
+import com.axiel7.anihyou.wear.ui.screens.main.wearMediaTitle
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -198,7 +199,7 @@ private fun ItemView(
                     .padding(CardDefaults.ContentPadding)
             ) {
                 Text(
-                    text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                    text = wearMediaTitle(item.mediaId, item.media?.basicMediaDetails?.title?.userPreferred.orEmpty()),
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 3,
                 )

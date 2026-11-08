@@ -9,12 +9,22 @@ import com.axiel7.anihyou.core.base.ANILIST_URL
 import com.axiel7.anihyou.core.base.MAL_CLIENT_ID
 import com.axiel7.anihyou.core.base.X_MAL_CLIENT_ID
 import com.axiel7.anihyou.core.network.cache.Cache.cache
+import com.axiel7.anihyou.core.network.localization.BangumiDescriptionApi
+import com.axiel7.anihyou.core.network.localization.BangumiSubjectSearchApi
+import com.axiel7.anihyou.core.network.localization.SubjectSearchTransport
+import com.axiel7.anihyou.core.network.localization.DescriptionTransport
+import com.axiel7.anihyou.core.network.localization.CatalogUpdateClient
+import com.axiel7.anihyou.core.network.localization.CatalogTransport
+import org.koin.core.qualifier.named
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import org.koin.dsl.module
 
 val networkModule = module {
+    single<CatalogTransport> { CatalogUpdateClient() }
+    single<DescriptionTransport> { BangumiDescriptionApi(get(named("appVersion"))) }
+    single<SubjectSearchTransport> { BangumiSubjectSearchApi(get(named("appVersion"))) }
     single { NetworkVariables() }
     single { provideAuthorizationInterceptor(get()) }
     single { provideApolloClient(get()) }

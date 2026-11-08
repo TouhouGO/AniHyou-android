@@ -24,6 +24,7 @@ import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import org.koin.core.qualifier.named
 
 class App : Application(), SingletonImageLoader.Factory {
 
@@ -38,6 +39,7 @@ class App : Application(), SingletonImageLoader.Factory {
             workManagerFactory()
 
             val coreModule = module {
+                single(named("appVersion")) { BuildConfig.VERSION_NAME }
                 single<DevicePerformance> { DefaultDevicePerformance() }
             }
 

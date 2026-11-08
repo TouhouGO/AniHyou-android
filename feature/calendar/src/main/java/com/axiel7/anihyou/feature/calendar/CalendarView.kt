@@ -58,6 +58,7 @@ import com.axiel7.anihyou.core.ui.composables.common.ErrorDialogHandler
 import com.axiel7.anihyou.core.ui.composables.common.IconButtonWithMenu
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
 import com.axiel7.anihyou.core.ui.composables.list.rememberIsScrollingUp
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import com.axiel7.anihyou.feature.calendar.composables.CalendarAiringHorizontalItem
 import com.axiel7.anihyou.feature.calendar.composables.CalendarAiringHorizontalItemPlaceholder
 import com.axiel7.anihyou.feature.calendar.composables.CalendarBanner
@@ -353,7 +354,7 @@ private fun ListView(
                 val isFirst = mediaList.firstOrNull() == item
 
                 CalendarAiringHorizontalItem(
-                    title = item.basicMediaDetails.title?.userPreferred.orEmpty(),
+                    title = displayMediaTitle(item.basicMediaDetails.id, item.basicMediaDetails.title?.userPreferred.orEmpty()),
                     subtitle = item.nextAiringEpisode?.let { nextAiringEpisode ->
                         stringResource(
                             R.string.episode_airing_at,

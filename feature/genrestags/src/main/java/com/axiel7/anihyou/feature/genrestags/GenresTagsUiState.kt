@@ -14,7 +14,6 @@ data class GenresTagsUiState(
     val genres: SnapshotStateList<SelectableGenre> = mutableStateListOf(),
     val tags: SnapshotStateList<SelectableGenre> = mutableStateListOf(),
     val displayGenres: SnapshotStateList<SelectableGenre> = mutableStateListOf(),
-    val displayTags: SnapshotStateList<SelectableGenre> = mutableStateListOf(),
     val minimumTagPercentage: Int = 18,
     val genresAndTagsForSearch: GenresAndTagsForSearch = GenresAndTagsForSearch(),
     override val error: String? = null,
@@ -56,8 +55,8 @@ data class GenresTagsUiState(
         tags.indexOfFirstOrNull { it.name == value.name }?.let { index ->
             tags[index] = value
         }
-        displayTags.indexOfFirstOrNull { it.name == value.name }?.let { index ->
-            displayTags[index] = value
-        }
     }
+
+    fun filteredTags(matches: (rawName: String, query: String) -> Boolean): List<SelectableGenre> =
+        if (filter.isBlank()) tags else tags.filter { matches(it.name, filter) }
 }

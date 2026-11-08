@@ -1,0 +1,813 @@
+{
+  "schemaVersion": 1,
+  "measurement": "host JVM; no network; decoded catalog and indexes reused; not Android device latency",
+  "catalogVersion": "2026.11.07",
+  "catalogBytes": 7471994,
+  "catalogSha256": "be12dfeaad442016528d5a83ed648266c04c7cccbcb763dc260070a85e398a9a",
+  "directCoreResultDigest": "929f80124d6b0ce215089d41092bcf58502bdf3f4b7ede6bd6d592575f9c22d8",
+  "referenceCoreResultDigest": "929f80124d6b0ce215089d41092bcf58502bdf3f4b7ede6bd6d592575f9c22d8",
+  "directCoreDigestMatchesReference": true,
+  "nativeQueriesBypassLocalSelection": true,
+  "javaVersion": "21.0.10",
+  "javaVm": "OpenJDK 64-Bit Server VM",
+  "os": "Mac OS X",
+  "architecture": "aarch64",
+  "maxHeapBytes": 536870912,
+  "samplesPerQuery": 150,
+  "warmupIterations": 30,
+  "candidateMode": "complete local candidates; no result cap or narrowing",
+  "changedFixture": "sort-only TITLE_ROMAJI; filtered SEARCH_MATCH becomes POPULARITY_DESC with all session fields populated",
+  "freshScope": "fresh session and selection over the already-decoded immutable catalog; decode/index are excluded",
+  "consumed": 4752639926312736364,
+  "phaseSummary": {
+    "warmCachedPagePlan": {
+      "samples": 2550,
+      "p50Millis": 7.08E-4,
+      "p95Millis": 0.005417
+    },
+    "changedFilterSortPlan": {
+      "samples": 2550,
+      "p50Millis": 8.33E-4,
+      "p95Millis": 0.003041
+    },
+    "freshSelection": {
+      "samples": 2550,
+      "p50Millis": 0.0085,
+      "p95Millis": 0.146041
+    },
+    "freshSelectionAndPlan": {
+      "samples": 2550,
+      "p50Millis": 0.008958,
+      "p95Millis": 0.109291
+    }
+  },
+  "corpus": [
+    {
+      "kind": "ANIME",
+      "query": "星"
+    },
+    {
+      "kind": "ANIME",
+      "query": "之"
+    },
+    {
+      "kind": "ANIME",
+      "query": "火影"
+    },
+    {
+      "kind": "ANIME",
+      "query": "物语"
+    },
+    {
+      "kind": "ANIME",
+      "query": "火影忍者"
+    },
+    {
+      "kind": "ANIME",
+      "query": "名侦探柯南"
+    },
+    {
+      "kind": "ANIME",
+      "query": "進擊的巨人"
+    },
+    {
+      "kind": "ANIME",
+      "query": "【我推的孩子】"
+    },
+    {
+      "kind": "ANIME",
+      "query": "孤独摇滚"
+    },
+    {
+      "kind": "ANIME",
+      "query": "链锯人"
+    },
+    {
+      "kind": "ANIME",
+      "query": "重启"
+    },
+    {
+      "kind": "ANIME",
+      "query": "咲良"
+    },
+    {
+      "kind": "ANIME",
+      "query": "Re:Zero"
+    },
+    {
+      "kind": "ANIME",
+      "query": "葬送的芙莉莲"
+    },
+    {
+      "kind": "MANGA",
+      "query": "葬送的芙莉莲"
+    },
+    {
+      "kind": "MANGA",
+      "query": "火影"
+    },
+    {
+      "kind": "ANIME",
+      "query": "not-a-catalog-title-8247301"
+    }
+  ],
+  "queries": [
+    {
+      "kind": "ANIME",
+      "query": "星",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 369,
+      "coreDirectReturnedIds": 369,
+      "countComparison": "match",
+      "totalCandidates": 369,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 0.006166,
+        "p95Millis": 0.014708
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 0.004625,
+        "p95Millis": 0.006958
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.069209,
+        "p95Millis": 0.32025
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.061917,
+        "p95Millis": 0.068875
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "0ab5a39b37c6bd6945a852ac7b41c261662640b9c9e6a16a6834bcf86848092f",
+        "changedFilterSortPlan": "a0bf89e8624859f17f010182f84fe4da158a07a30bc854d815ebb157f60a5729",
+        "freshSelection": "620abf2baaddfd2f3e5dc463ee612717957f8dfa949ee86e5e6c6f8bc0c52c6c",
+        "freshSelectionAndPlan": "0ab5a39b37c6bd6945a852ac7b41c261662640b9c9e6a16a6834bcf86848092f"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "之",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 1212,
+      "coreDirectReturnedIds": 1212,
+      "countComparison": "match",
+      "totalCandidates": 1212,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 6.66E-4,
+        "p95Millis": 0.00275
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 0.001875,
+        "p95Millis": 0.003
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.252542,
+        "p95Millis": 0.331417
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.115959,
+        "p95Millis": 0.125416
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "9046a5762b91599994eebb962b4a0322d811d34894a31d5b9edb2b6cb897a178",
+        "changedFilterSortPlan": "23092a6ce74742b503d41f843865978df4998b7bcfa3aba68c16d2c2958419e7",
+        "freshSelection": "fd1678439078751fe978c20fbee6a7d061e08ef9468e81f5173196fbeb514e4c",
+        "freshSelectionAndPlan": "9046a5762b91599994eebb962b4a0322d811d34894a31d5b9edb2b6cb897a178"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "火影",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 17,
+      "coreDirectReturnedIds": 17,
+      "countComparison": "match",
+      "totalCandidates": 17,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 5.0E-4,
+        "p95Millis": 6.25E-4
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 7.91E-4,
+        "p95Millis": 8.75E-4
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.01175,
+        "p95Millis": 0.0155
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.012,
+        "p95Millis": 0.012791
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "489db72fd34c83852a24798b833070ac96caa817ae643b82dfcc05d766cbdf68",
+        "changedFilterSortPlan": "969c934eab013d91a44376853bb1454ab474186106bf5cede0c44a5e74927f3c",
+        "freshSelection": "fdd7016a53c8f519f5965e29625efe42ad5e2ad959ffcd3883486c25b7f30043",
+        "freshSelectionAndPlan": "489db72fd34c83852a24798b833070ac96caa817ae643b82dfcc05d766cbdf68"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "物语",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 158,
+      "coreDirectReturnedIds": 158,
+      "countComparison": "match",
+      "totalCandidates": 158,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 5.84E-4,
+        "p95Millis": 8.75E-4
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 7.91E-4,
+        "p95Millis": 9.17E-4
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.025708,
+        "p95Millis": 0.031458
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.02575,
+        "p95Millis": 0.027667
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "1e52f10528723ed53515532d5913b23af0987541606b7fc192484f844ba52424",
+        "changedFilterSortPlan": "153079aa2108dab8ea906c8042504a738a67a955983749a9b1b5b309d54c4c6e",
+        "freshSelection": "ad3696e90c60aecce0e6673c07c35a560f7a2e3edbb3580ef86169a326bfa4a8",
+        "freshSelectionAndPlan": "1e52f10528723ed53515532d5913b23af0987541606b7fc192484f844ba52424"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "火影忍者",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 17,
+      "coreDirectReturnedIds": 17,
+      "countComparison": "match",
+      "totalCandidates": 17,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 6.67E-4,
+        "p95Millis": 7.09E-4
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 8.75E-4,
+        "p95Millis": 9.17E-4
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.022833,
+        "p95Millis": 0.02475
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.023459,
+        "p95Millis": 0.02525
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "489db72fd34c83852a24798b833070ac96caa817ae643b82dfcc05d766cbdf68",
+        "changedFilterSortPlan": "969c934eab013d91a44376853bb1454ab474186106bf5cede0c44a5e74927f3c",
+        "freshSelection": "ee35eb7e4a4871017816236b1039f1f7eb475eac47564255c8bff014eb3d443a",
+        "freshSelectionAndPlan": "489db72fd34c83852a24798b833070ac96caa817ae643b82dfcc05d766cbdf68"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "名侦探柯南",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 42,
+      "coreDirectReturnedIds": 42,
+      "countComparison": "match",
+      "totalCandidates": 42,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 6.67E-4,
+        "p95Millis": 8.75E-4
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 7.92E-4,
+        "p95Millis": 0.001
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.015458,
+        "p95Millis": 0.018958
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.016,
+        "p95Millis": 0.018042
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "c6f66f5bf5fb57d2c88db0d53de727eb86d577fda5431bc52c1470c45c000e6b",
+        "changedFilterSortPlan": "113f58d19614bef17ce243754a1f38d1866f1b3efe449a27f4e69c4502349516",
+        "freshSelection": "e1307713ecc945c758238cfd22a64ae9e1c079eb620335219bcf2dccb5886983",
+        "freshSelectionAndPlan": "c6f66f5bf5fb57d2c88db0d53de727eb86d577fda5431bc52c1470c45c000e6b"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "進擊的巨人",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 18,
+      "coreDirectReturnedIds": 18,
+      "countComparison": "match",
+      "totalCandidates": 18,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 6.67E-4,
+        "p95Millis": 7.5E-4
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 7.92E-4,
+        "p95Millis": 9.58E-4
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.029292,
+        "p95Millis": 0.030667
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.02775,
+        "p95Millis": 0.031666
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "5d837ae1f21b17d9f46c8636104010c02984f50a12dfc49ab8254bab6a1b2cbe",
+        "changedFilterSortPlan": "f22fdc73dea9478c376f03873b47452e54320cf95973f48795eca25acdda7725",
+        "freshSelection": "32dccf7333cb8b4b34474df4560caa331badb390cbc5bb43a01cec7702a85cf4",
+        "freshSelectionAndPlan": "5d837ae1f21b17d9f46c8636104010c02984f50a12dfc49ab8254bab6a1b2cbe"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "【我推的孩子】",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 4,
+      "coreDirectReturnedIds": 4,
+      "countComparison": "match",
+      "totalCandidates": 4,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 0.001167,
+        "p95Millis": 0.001667
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 7.92E-4,
+        "p95Millis": 0.001417
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.006834,
+        "p95Millis": 0.0105
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.007083,
+        "p95Millis": 0.007541
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "7b90849354b736ec32e7b6e299d57f8bd296f0b021271c7a3cda59842ebc423f",
+        "changedFilterSortPlan": "2298fd186c4b7092fb5a9709de4a6bb6dd9363589504627ded0fe865f8dd535f",
+        "freshSelection": "13edf616b60d601b93ccfeac0454393399fcc527ee4bdb4a4cd5b1b4c06f5924",
+        "freshSelectionAndPlan": "7b90849354b736ec32e7b6e299d57f8bd296f0b021271c7a3cda59842ebc423f"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "孤独摇滚",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 3,
+      "coreDirectReturnedIds": 3,
+      "countComparison": "match",
+      "totalCandidates": 3,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 7.08E-4,
+        "p95Millis": 0.001
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 8.33E-4,
+        "p95Millis": 9.58E-4
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.005792,
+        "p95Millis": 0.00625
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.006208,
+        "p95Millis": 0.006667
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "af4a4a08caf209805ffc98246c4a9c30a1b489dff4145f46ee4ac11e73012634",
+        "changedFilterSortPlan": "e6df6fb679d67c9855db571069a3081c392294002b4326646cbe2cce919c6fce",
+        "freshSelection": "d319a11c4f1a51d3074a2d3bb68448d42ce72fc269e51f34a1d3b3db31bc30b7",
+        "freshSelectionAndPlan": "af4a4a08caf209805ffc98246c4a9c30a1b489dff4145f46ee4ac11e73012634"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "链锯人",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 2,
+      "coreDirectReturnedIds": 2,
+      "countComparison": "match",
+      "totalCandidates": 2,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 7.08E-4,
+        "p95Millis": 9.17E-4
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 8.33E-4,
+        "p95Millis": 9.17E-4
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.001916,
+        "p95Millis": 0.002209
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.002292,
+        "p95Millis": 0.002625
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "d478be4b8aedad3bf6b49624f8854b68bbb8df53807964d700fbac6ffb9f6c3b",
+        "changedFilterSortPlan": "348bd25b026056411b7251ba9578081f22efdc8abd3183ea50b3769fea668e2a",
+        "freshSelection": "57b3792f42c6a7b73318626191a7926aa5009c1efd71afc5dba8c2a1fc08ef47",
+        "freshSelectionAndPlan": "d478be4b8aedad3bf6b49624f8854b68bbb8df53807964d700fbac6ffb9f6c3b"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "重启",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 7,
+      "coreDirectReturnedIds": 7,
+      "countComparison": "match",
+      "totalCandidates": 7,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 6.67E-4,
+        "p95Millis": 7.5E-4
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 8.33E-4,
+        "p95Millis": 0.001042
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.009958,
+        "p95Millis": 0.010458
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.010333,
+        "p95Millis": 0.010833
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "82bf2d10d1267b7874f9530007d825f4d4fa994a2e1fd5a2d2aa22a21c00f409",
+        "changedFilterSortPlan": "36841d4f903f1ed86180062adafbc37a97e7ad288c124a65741091320633b266",
+        "freshSelection": "d312d40e551f5926f263acc668121180094551cb71f7e9ede563b5f57314bb67",
+        "freshSelectionAndPlan": "82bf2d10d1267b7874f9530007d825f4d4fa994a2e1fd5a2d2aa22a21c00f409"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "咲良",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 1,
+      "coreDirectReturnedIds": 1,
+      "countComparison": "match",
+      "totalCandidates": 1,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 6.67E-4,
+        "p95Millis": 7.92E-4
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 8.33E-4,
+        "p95Millis": 9.17E-4
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.008458,
+        "p95Millis": 0.008875
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.008917,
+        "p95Millis": 0.009333
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "ecf15846daaf4c5561ea67473df02854936655330de9b3b46c83213ca94f3ddd",
+        "changedFilterSortPlan": "909b59b4edb3e61ebc164bf9ae32e17fe0184ca6deb1f0746b245c7ac7d43adc",
+        "freshSelection": "84d634a7033f7e00f9210bd370b8c0d33e3b99bf5e2a7da8fc43e5febe6afd50",
+        "freshSelectionAndPlan": "ecf15846daaf4c5561ea67473df02854936655330de9b3b46c83213ca94f3ddd"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "Re:Zero",
+      "sessionUsesCatalog": false,
+      "sessionSelectedIds": 0,
+      "coreDirectReturnedIds": 2,
+      "countComparison": "not-applicable-native-bypass",
+      "totalCandidates": 0,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 0.001417,
+        "p95Millis": 0.001834
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 8.75E-4,
+        "p95Millis": 0.001917
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.001083,
+        "p95Millis": 0.001375
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.001583,
+        "p95Millis": 0.0025
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "43dc8e49536e3dd770e8cef69504066053ced23bb942d463141fbec680df7e5a",
+        "changedFilterSortPlan": "09c261d90835ddffcbac767c75c796553aa81857b590cabb2f9e055cc049a563",
+        "freshSelection": "82dc78e7a7fab1a5171db88e07fa51e998b49c8cdf567b73bfa4cacf3ff9f32e",
+        "freshSelectionAndPlan": "bcf64b3b2f377a47b2b5f7f3636aec915e717e42b9fb9f656e90f3f08f72c8ce"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "葬送的芙莉莲",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 6,
+      "coreDirectReturnedIds": 6,
+      "countComparison": "match",
+      "totalCandidates": 6,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 7.08E-4,
+        "p95Millis": 9.59E-4
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 9.16E-4,
+        "p95Millis": 0.001666
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.002459,
+        "p95Millis": 0.003875
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.003,
+        "p95Millis": 0.004333
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "ca2f14befd33561a34c808f4ee3f796c364a14d761a239925feec244ef769c8a",
+        "changedFilterSortPlan": "c0a534911f56993614328d1c5335507b03d9c379b8553a52d0fb7a7501e60136",
+        "freshSelection": "f80952c583a3b61533e12610c19e6c2c5bfda8bb6e6c670956674803a81b3cb4",
+        "freshSelectionAndPlan": "ca2f14befd33561a34c808f4ee3f796c364a14d761a239925feec244ef769c8a"
+      }
+    },
+    {
+      "kind": "MANGA",
+      "query": "葬送的芙莉莲",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 5,
+      "coreDirectReturnedIds": 5,
+      "countComparison": "match",
+      "totalCandidates": 5,
+      "truncated": false,
+      "requestDigest": "67c950ff813b8eeced3ae7118dc87ab35065aa244287ca92e4ce53c3ac2099ff",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 7.09E-4,
+        "p95Millis": 9.58E-4
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 9.16E-4,
+        "p95Millis": 0.001
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.001709,
+        "p95Millis": 0.002583
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.002209,
+        "p95Millis": 0.0035
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "a85191bbdcd64a1b7b88f8a248e9096fba9b724260c9056b2c2316957c4cf044",
+        "changedFilterSortPlan": "07bd59198c18bc871515f7cfe49f552dcb36b7e7ba2723804a80177277bb6e42",
+        "freshSelection": "573cfeaea48f91329e8cf435234f46fa4007a8e1b333cdc66ca239f5d099ffc1",
+        "freshSelectionAndPlan": "a85191bbdcd64a1b7b88f8a248e9096fba9b724260c9056b2c2316957c4cf044"
+      }
+    },
+    {
+      "kind": "MANGA",
+      "query": "火影",
+      "sessionUsesCatalog": true,
+      "sessionSelectedIds": 2,
+      "coreDirectReturnedIds": 2,
+      "countComparison": "match",
+      "totalCandidates": 2,
+      "truncated": false,
+      "requestDigest": "67c950ff813b8eeced3ae7118dc87ab35065aa244287ca92e4ce53c3ac2099ff",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 7.09E-4,
+        "p95Millis": 0.001167
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 8.75E-4,
+        "p95Millis": 0.001458
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.003583,
+        "p95Millis": 0.004959
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.004125,
+        "p95Millis": 0.0055
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "b04db5063a5e1a7b0241dd75289c17c3ddd6f84d8dd0b93adf29de8ee0007605",
+        "changedFilterSortPlan": "8509711731cf87a7dc33201771bf7682c9da0e5bfbf39d5d04a4ac8efde62b24",
+        "freshSelection": "471edf2b754e32fb7fc5b3c04b77084cd47106da15f16f40858920f4ca475ef3",
+        "freshSelectionAndPlan": "b04db5063a5e1a7b0241dd75289c17c3ddd6f84d8dd0b93adf29de8ee0007605"
+      }
+    },
+    {
+      "kind": "ANIME",
+      "query": "not-a-catalog-title-8247301",
+      "sessionUsesCatalog": false,
+      "sessionSelectedIds": 0,
+      "coreDirectReturnedIds": 0,
+      "countComparison": "not-applicable-native-bypass",
+      "totalCandidates": 0,
+      "truncated": false,
+      "requestDigest": "b7b4976cae2ddb457ed8a350407ba7a6e6ecd1dc8ba383e531026c8c1a263893",
+      "changedFilterSortSorts": {
+        "sortOnly": "TITLE_ROMAJI",
+        "filtered": "POPULARITY_DESC"
+      },
+      "warmCachedPagePlan": {
+        "samples": 150,
+        "p50Millis": 0.002083,
+        "p95Millis": 0.0025
+      },
+      "changedFilterSortPlan": {
+        "samples": 150,
+        "p50Millis": 8.75E-4,
+        "p95Millis": 0.00125
+      },
+      "freshSelection": {
+        "samples": 150,
+        "p50Millis": 0.00325,
+        "p95Millis": 0.0035
+      },
+      "freshSelectionAndPlan": {
+        "samples": 150,
+        "p50Millis": 0.003667,
+        "p95Millis": 0.003958
+      },
+      "phaseDigests": {
+        "warmCachedPagePlan": "092750f1ff3d2a5bc0000b54d76f331c0dafa1e4522090bab8d49cfa51191a13",
+        "changedFilterSortPlan": "8847c22b6fd91587258b4c8c48a73a8e45056fea562ab025b5352eaabd9b4ce4",
+        "freshSelection": "8837eae8008ae2cecbf770b309b2937303553a3a07246e305fe828c42dbbc91a",
+        "freshSelectionAndPlan": "5e92f4bc358bf139248874996a7dfd84ab7f0386d995073af54085216d89c1dc"
+      }
+    }
+  ]
+}

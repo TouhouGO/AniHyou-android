@@ -1,4 +1,4 @@
-query SearchMedia($page: Int, $perPage: Int, $search: String, $type: MediaType, $sort: [MediaSort],
+query SearchMedia($page: Int, $perPage: Int, $search: String, $type: MediaType, $sort: [MediaSort], $id_in: [Int],
     $genre_in: [String], $genre_not_in: [String], $tag_in: [String], $tag_not_in: [String],
     $minimumTagRank: Int, $format_in: [MediaFormat], $status_in: [MediaStatus],
     $episodes_lesser: Int, $episodes_greater: Int, $duration_lesser: Int, $duration_greater: Int,
@@ -8,7 +8,7 @@ query SearchMedia($page: Int, $perPage: Int, $search: String, $type: MediaType, 
     $onList: Boolean, $isLicensed: Boolean, $isAdult: Boolean, $country: CountryCode, $source_in: [MediaSource]
 ) {
     Page(page: $page, perPage: $perPage) {
-        media(search: $search, type: $type, sort: $sort,
+        media(search: $search, type: $type, sort: $sort, id_in: $id_in,
             genre_in: $genre_in, genre_not_in: $genre_not_in, tag_in: $tag_in, tag_not_in: $tag_not_in,
             minimumTagRank: $minimumTagRank, format_in: $format_in, status_in: $status_in, season: $season,
             episodes_lesser: $episodes_lesser, episodes_greater: $episodes_greater,

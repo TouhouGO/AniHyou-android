@@ -1,0 +1,78 @@
+name: Refresh catalog sources
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+permissions: {}
+concurrency:
+  group: catalog-source-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    if: github.repository == 'TouhouGO/AniHyou-android' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          persist-credentials: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Refresh and verify
+        run: |
+          python3 scripts/localization/refresh_sources.py
+          python3 -m unittest discover -s scripts/localization -p 'test_*.py'
+          mkdir -p /tmp/catalog-check
+          python3 scripts/localization/rebuild_catalog.py --output /tmp/catalog-check/catalog.json --report /tmp/catalog-check/report.json
+          cmp /tmp/catalog-check/catalog.json core/localization/src/main/resources/localization/catalog.json
+          cmp /tmp/catalog-check/report.json docs/localization/catalog-report.json
+          ./gradlew :core:localization:test
+      - name: Prepare review branch
+        id: branch
+        env:
+          GIT_AUTHOR_NAME: TouhouGO
+          GIT_AUTHOR_EMAIL: 93237754+TouhouGO@users.noreply.github.com
+          GIT_COMMITTER_NAME: TouhouGO
+          GIT_COMMITTER_EMAIL: 93237754+TouhouGO@users.noreply.github.com
+        run: |
+          if [ -z "$(git status --porcelain -- data/localization/sources core/localization/src/main/resources/localization/catalog.json docs/localization/catalog-report.json)" ]; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          branch="catalog-refresh/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$branch"
+          git config user.name 'TouhouGO'
+          git config user.email '93237754+TouhouGO@users.noreply.github.com'
+          git add data/localization/sources core/localization/src/main/resources/localization/catalog.json docs/localization/catalog-report.json
+          git commit -m '刷新中文目录数据来源'
+          git push origin "$branch"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+      - name: Preserve review artifacts
+        if: steps.branch.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalog-refresh-review
+          path: |
+            data/localization/sources/catalog-sources.json
+            docs/localization/catalog-report.json
+      - name: Open review pull request
+        if: steps.branch.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.branch.outputs.branch }}
+        run: |
+          cat > /tmp/catalog-pr-body.txt <<'EOF'
+          本次刷新更新公开来源、固定版本、查询结果及可复现目录。请审阅来源变化、数量报告和许可证；合并后才会发布目录。
+
+          工作流已运行离线重建、脚本测试与 core:localization 主机测试。常规 PR 审核和仓库策略仍然适用；GITHUB_TOKEN 创建的 PR 不一定触发其他 CI。
+          EOF
+          if ! gh pr create --base master --head "$BRANCH" --title '刷新中文目录数据来源' --body-file /tmp/catalog-pr-body.txt; then
+            echo "::error::无法创建 PR。仓库可能未允许 Actions 创建 PR；请检查设置，或从 https://github.com/${GITHUB_REPOSITORY}/compare/master...${BRANCH}?expand=1 手动创建。分支与审阅产物已保留。"
+            exit 1
+          fi

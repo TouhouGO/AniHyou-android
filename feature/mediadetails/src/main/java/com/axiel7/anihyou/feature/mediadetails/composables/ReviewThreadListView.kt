@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import com.axiel7.anihyou.core.common.utils.NumberUtils.format
 import com.axiel7.anihyou.core.model.activity.text
 import com.axiel7.anihyou.core.resources.R
@@ -171,7 +172,7 @@ fun ReviewThreadListView(
                     contentType = { it }
                 ) { item ->
                     PostItem(
-                        title = item.text(),
+                        title = item.text(displayMediaTitle(item.media?.id, item.media?.title?.userPreferred.orEmpty())),
                         author = item.user?.activityUser?.name.orEmpty(),
                         avatarUrl = item.user?.activityUser?.avatar?.medium.orEmpty(),
                         subtitle = {

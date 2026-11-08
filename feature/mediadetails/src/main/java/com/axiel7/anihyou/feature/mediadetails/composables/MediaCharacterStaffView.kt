@@ -35,6 +35,8 @@ import com.axiel7.anihyou.core.ui.composables.person.PERSON_IMAGE_SIZE_SMALL
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemHorizontal
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemHorizontalPlaceholder
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.localization.displayCharacterName
+import com.axiel7.anihyou.core.ui.localization.displayStaffName
 import com.axiel7.anihyou.feature.mediadetails.MediaDetailsUiState
 
 private const val GRID_HEIGHT = (PERSON_IMAGE_SIZE_SMALL + 16) * 2
@@ -83,7 +85,7 @@ fun MediaCharacterStaffView(
                         contentType = { it }
                     ) { item ->
                         PersonItemHorizontal(
-                            title = item.node?.name?.userPreferred.orEmpty(),
+                            title = displayStaffName(item.node?.id, item.node?.name?.userPreferred.orEmpty()),
                             modifier = Modifier.padding(horizontal = 16.dp),
                             imageUrl = item.node?.image?.medium,
                             subtitle = item.roleLocalized(),
@@ -129,7 +131,7 @@ fun MediaCharacterStaffView(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             PersonItemHorizontal(
-                                title = item.node?.name?.userPreferred.orEmpty(),
+                                title = displayCharacterName(item.node?.id, item.node?.name?.userPreferred.orEmpty()),
                                 modifier = Modifier
                                     .width(300.dp)
                                     .padding(horizontal = 16.dp),

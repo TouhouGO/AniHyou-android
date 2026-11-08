@@ -41,6 +41,7 @@ import com.axiel7.anihyou.core.ui.composables.media.MediaProgressIndicator
 import com.axiel7.anihyou.core.ui.composables.media.priorityIcon
 import com.axiel7.anihyou.core.ui.composables.scores.MinimalScoreIndicator
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 
 @Composable
 fun MinimalUserMediaListItem(
@@ -82,7 +83,7 @@ fun MinimalUserMediaListItem(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                    text = displayMediaTitle(item.media?.basicMediaDetails?.id, item.media?.basicMediaDetails?.title?.userPreferred.orEmpty()),
                     modifier = Modifier.padding(end = 4.dp, bottom = 4.dp),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 15.sp,

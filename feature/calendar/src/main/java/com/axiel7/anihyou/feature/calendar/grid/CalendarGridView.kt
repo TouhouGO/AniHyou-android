@@ -51,6 +51,7 @@ import com.axiel7.anihyou.core.ui.composables.media.MediaItemVertical
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemVerticalPlaceholder
 import com.axiel7.anihyou.core.ui.composables.rememberTopBarContainerColor
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import com.axiel7.anihyou.feature.calendar.AppBarActions
 import com.axiel7.anihyou.feature.calendar.CalendarHostViewModel
 import com.axiel7.anihyou.feature.editmedia.EditMediaSheet
@@ -193,7 +194,7 @@ private fun CalendarDayView(
             contentType = { it }
         ) { item ->
             MediaItemVertical(
-                title = item.basicMediaDetails.title?.userPreferred.orEmpty(),
+                title = displayMediaTitle(item.basicMediaDetails.id, item.basicMediaDetails.title?.userPreferred.orEmpty()),
                 imageUrl = item.coverImage?.large,
                 blurImage = blurAdult && item.basicMediaDetails.isAdult == true,
                 modifier = Modifier.wrapContentWidth(),

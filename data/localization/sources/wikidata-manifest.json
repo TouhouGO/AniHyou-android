@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "property": "P11227",
+      "sourceFile": "wikidata-staff-2026-11-05.json.gz",
+      "queryFile": "wikidata-staff.rq",
+      "fetchedAt": "2026-11-05T01:58:00.471973+00:00",
+      "endpoint": "https://query.wikidata.org/sparql",
+      "httpStatus": 200,
+      "sha256": "ec7de43b3e22773fad90b6653edda1624962ca6bc89a17ca960401ba48627d61",
+      "queryLimit": 50000,
+      "rowCount": 4227,
+      "license": "CC0-1.0",
+      "licenseUrl": "https://www.wikidata.org/wiki/Wikidata:Licensing"
+    },
+    {
+      "property": "P11736",
+      "sourceFile": "wikidata-character-2026-11-05.json.gz",
+      "queryFile": "wikidata-character.rq",
+      "fetchedAt": "2026-11-05T01:59:31.780107+00:00",
+      "endpoint": "https://query.wikidata.org/sparql",
+      "httpStatus": 200,
+      "sha256": "7a79c3e35ede479b780c235a4e8f6f6a7f5d6a3ea991225e04d175ee52e63e73",
+      "queryLimit": 50000,
+      "rowCount": 931,
+      "license": "CC0-1.0",
+      "licenseUrl": "https://www.wikidata.org/wiki/Wikidata:Licensing"
+    },
+    {
+      "property": "P8731",
+      "sourceFile": "wikidata-manga-2026-11-05.json.gz",
+      "queryFile": "wikidata-manga.rq",
+      "fetchedAt": "2026-11-05T02:01:03.367135+00:00",
+      "endpoint": "https://query.wikidata.org/sparql",
+      "httpStatus": 200,
+      "sha256": "a255f54cd7973a4cc4a35a8dc892ae09b03ac841505bec7bb96a0117c9239ce0",
+      "queryLimit": 50000,
+      "rowCount": 1963,
+      "license": "CC0-1.0",
+      "licenseUrl": "https://www.wikidata.org/wiki/Wikidata:Licensing"
+    }
+  ]
+}

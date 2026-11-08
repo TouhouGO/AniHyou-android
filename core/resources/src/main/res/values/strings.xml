@@ -711,4 +711,24 @@
     <string name="variables">Variables</string>
     <string name="image_downloading">Downloading image…</string>
     <string name="image_download_title">Image</string>
+    <string name="chinese_titles">Chinese titles</string>
+    <string name="chinese_titles_description">Show available Chinese titles for anime and manga. Coverage is partial.</string>
+    <string name="local_title_search_notice">Searching %1$d local title candidates. Catalog coverage is partial; AniList filters still apply.</string>
+    <string name="local_title_search_truncated">Only the first 500 candidates are included. Use a more specific title to see other matches.</string>
+    <string name="local_title_search_sort_notice">Local title matches use popularity order when relevance is selected.</string>
+    <string name="localization_preferences">Chinese localization</string>
+    <string name="chinese_people">Chinese people names</string>
+    <string name="chinese_people_description">Show available Chinese names for characters and staff. Coverage is partial.</string>
+    <string name="chinese_tags">Chinese tags</string>
+    <string name="chinese_tags_description">Show available Chinese labels for AniList tags. Filters continue to use their original tag names.</string>
+    <string name="localization_data_sources">Localization data sources</string>
+    <string name="localization_data_sources_description">Catalog data is attributed to Wikidata, bangumi-data, and the sources recorded in the bundled catalog.</string>
+    <string name="chinese_descriptions">Chinese descriptions</string>
+    <string name="chinese_descriptions_description">Fetch available descriptions online from Bangumi; otherwise show AniList. Available without signing in.</string>
+    <string name="description_source">Description from Bangumi</string>
+    <string name="description_loading">Loading Bangumi description…</string>
+    <string name="description_unavailable">No Bangumi description available</string>
+    <string name="description_failed">Bangumi description unavailable</string>
+    <string name="description_retry">Retry</string>
+    <string name="description_retry_after">Retry available in %1$d seconds</string>
 </resources>

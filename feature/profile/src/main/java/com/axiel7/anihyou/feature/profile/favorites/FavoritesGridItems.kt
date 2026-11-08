@@ -22,6 +22,9 @@ import com.axiel7.anihyou.core.ui.composables.media.MediaItemVertical
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemVerticalPlaceholder
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemVertical
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemVerticalPlaceholder
+import com.axiel7.anihyou.core.ui.localization.displayCharacterName
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
+import com.axiel7.anihyou.core.ui.localization.displayStaffName
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.ReorderableLazyGridState
 
@@ -50,7 +53,7 @@ internal fun LazyGridScope.favoritesItems(
                 if (reorderableState != null) {
                     ReorderableItem(reorderableState, key = "${item.id}${item.node?.id}") {
                         MediaItemVertical(
-                            title = item.node?.title?.userPreferred.orEmpty(),
+                            title = displayMediaTitle(item.node?.id, item.node?.title?.userPreferred.orEmpty()),
                             imageUrl = item.node?.coverImage?.large,
                             blurImage = blurAdult && item.node?.isAdult == true,
                             modifier = Modifier
@@ -61,7 +64,7 @@ internal fun LazyGridScope.favoritesItems(
                     }
                 } else {
                     MediaItemVertical(
-                        title = item.node?.title?.userPreferred.orEmpty(),
+                        title = displayMediaTitle(item.node?.id, item.node?.title?.userPreferred.orEmpty()),
                         imageUrl = item.node?.coverImage?.large,
                         blurImage = blurAdult && item.node?.isAdult == true,
                         modifier = Modifier.wrapContentWidth(),
@@ -85,7 +88,7 @@ internal fun LazyGridScope.favoritesItems(
                 if (reorderableState != null) {
                     ReorderableItem(reorderableState, key = "${item.id}${item.node?.id}") {
                         MediaItemVertical(
-                            title = item.node?.title?.userPreferred.orEmpty(),
+                            title = displayMediaTitle(item.node?.id, item.node?.title?.userPreferred.orEmpty()),
                             imageUrl = item.node?.coverImage?.large,
                             blurImage = blurAdult && item.node?.isAdult == true,
                             modifier = Modifier
@@ -96,7 +99,7 @@ internal fun LazyGridScope.favoritesItems(
                     }
                 } else {
                     MediaItemVertical(
-                        title = item.node?.title?.userPreferred.orEmpty(),
+                        title = displayMediaTitle(item.node?.id, item.node?.title?.userPreferred.orEmpty()),
                         imageUrl = item.node?.coverImage?.large,
                         blurImage = blurAdult && item.node?.isAdult == true,
                         modifier = Modifier.wrapContentWidth(),
@@ -120,7 +123,7 @@ internal fun LazyGridScope.favoritesItems(
                 if (reorderableState != null) {
                     ReorderableItem(reorderableState, key = "${item.id}${item.node?.id}") {
                         PersonItemVertical(
-                            title = item.node?.name?.userPreferred.orEmpty(),
+                            title = displayCharacterName(item.node?.id, item.node?.name?.userPreferred.orEmpty()),
                             imageUrl = item.node?.image?.large,
                             modifier = Modifier.longPressDraggableHandle(),
                             onClick = { onCharacterClick(item.node?.id ?: 0) }
@@ -128,7 +131,7 @@ internal fun LazyGridScope.favoritesItems(
                     }
                 } else {
                     PersonItemVertical(
-                        title = item.node?.name?.userPreferred.orEmpty(),
+                        title = displayCharacterName(item.node?.id, item.node?.name?.userPreferred.orEmpty()),
                         imageUrl = item.node?.image?.large,
                         onClick = { onCharacterClick(item.node?.id ?: 0) }
                     )
@@ -150,7 +153,7 @@ internal fun LazyGridScope.favoritesItems(
                 if (reorderableState != null) {
                     ReorderableItem(reorderableState, key = "${item.id}${item.node?.id}") {
                         PersonItemVertical(
-                            title = item.node?.name?.userPreferred.orEmpty(),
+                            title = displayStaffName(item.node?.id, item.node?.name?.userPreferred.orEmpty()),
                             imageUrl = item.node?.image?.large,
                             modifier = Modifier.longPressDraggableHandle(),
                             onClick = { onStaffClick(item.node?.id ?: 0) }
@@ -158,7 +161,7 @@ internal fun LazyGridScope.favoritesItems(
                     }
                 } else {
                     PersonItemVertical(
-                        title = item.node?.name?.userPreferred.orEmpty(),
+                        title = displayStaffName(item.node?.id, item.node?.name?.userPreferred.orEmpty()),
                         imageUrl = item.node?.image?.large,
                         onClick = { onStaffClick(item.node?.id ?: 0) }
                     )

@@ -1,5 +1,8 @@
 package com.axiel7.anihyou.feature.explore.search
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
+import com.axiel7.anihyou.core.ui.localization.displayCharacterName
+import com.axiel7.anihyou.core.ui.localization.displayStaffName
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -62,6 +65,7 @@ import com.axiel7.anihyou.core.model.media.MediaSortSearch
 import com.axiel7.anihyou.core.network.type.MediaFormat
 import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaType
+import com.axiel7.anihyou.core.network.SearchMediaQuery
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.LocalBlurAdult
 import com.axiel7.anihyou.core.ui.common.LocalNavActionManager
@@ -199,7 +203,7 @@ fun SearchContentView(
     val scope = rememberCoroutineScope()
     val snackbarManager = rememberSnackbarManager()
     val listState = rememberLazyListState()
-    if (!uiState.isLoading) {
+    if (!uiState.isLoading && !uiState.localPageFailed) {
         listState.OnBottomReached(buffer = 3, onLoadMore = { event?.onLoadMore() })
     }
     val isAtTop by remember {
@@ -213,6 +217,30 @@ fun SearchContentView(
     var showEditSheet by rememberSaveable { mutableStateOf(false) }
 
     ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() })
+
+    val mediaRow: @Composable (SearchMediaQuery.Medium) -> Unit = { item ->
+        MediaItemHorizontal(
+            title = displayMediaTitle(item.basicMediaDetails.id, item.basicMediaDetails.title?.userPreferred.orEmpty()),
+            imageUrl = item.coverImage?.large,
+            blurImage = blurAdult && item.basicMediaDetails.isAdult == true,
+            score = item.weightedScore ?: 0,
+            format = item.format ?: MediaFormat.UNKNOWN__,
+            year = item.startDate?.year,
+            mediaStatus = item.status,
+            episodes = item.episodes,
+            chapters = item.chapters,
+            duration = item.duration,
+            genres = item.genres?.fastFilterNotNull()?.toImmutableList(),
+            onClick = { navActionManager.toMediaDetails(item.id) },
+            onLongClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                event?.selectMediaItem(item)
+                if (uiState.isLoggedIn) showEditSheet = true
+                else snackbarManager.showNotLoggedInSnackbar()
+            },
+            status = item.mediaListEntry?.basicMediaListEntry?.status,
+        )
+    }
 
     LaunchedEffect(performSearch.value) {
         if (performSearch.value) {
@@ -287,6 +315,27 @@ fun SearchContentView(
                         }
                     }
                     if (uiState.searchType.isSearchMedia) {
+                        if (uiState.isLocalTitleSearch) {
+                            Text(
+                                text = stringResource(R.string.local_title_search_notice, uiState.localCandidateCount),
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            )
+                            if (uiState.localCandidatesPartitioned) {
+                                Text(
+                                    text = stringResource(R.string.local_title_search_partitioned),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                )
+                            }
+                            if (uiState.usesLocalPopularitySort) {
+                                Text(
+                                    text = stringResource(R.string.local_title_search_sort_notice),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                )
+                            }
+                        }
                         MediaSearchSortChip(
                             mediaSortSearch = MediaSortSearch.valueOf(uiState.mediaSort)
                                 ?: MediaSortSearch.SEARCH_MATCH,
@@ -327,34 +376,60 @@ fun SearchContentView(
                     }
                     items(
                         items = uiState.media,
+                        key = { it.id },
                         contentType = { "media" }
                     ) { item ->
-                        MediaItemHorizontal(
-                            title = item.basicMediaDetails.title?.userPreferred.orEmpty(),
-                            imageUrl = item.coverImage?.large,
-                            blurImage = blurAdult && item.basicMediaDetails.isAdult == true,
-                            score = item.weightedScore ?: 0,
-                            format = item.format ?: MediaFormat.UNKNOWN__,
-                            year = item.startDate?.year,
-                            mediaStatus = item.status,
-                            episodes = item.episodes,
-                            chapters = item.chapters,
-                            duration = item.duration,
-                            genres = item.genres?.fastFilterNotNull()?.toImmutableList(),
-                            onClick = {
-                                navActionManager.toMediaDetails(item.id)
-                            },
-                            onLongClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                event?.selectMediaItem(item)
-                                if (uiState.isLoggedIn) {
-                                    showEditSheet = true
-                                } else {
-                                    snackbarManager.showNotLoggedInSnackbar()
+                        mediaRow(item)
+                    }
+                    if (uiState.localPageFailed) {
+                        item(key = "retry_media_page") {
+                            TextButton(onClick = { event?.retryMediaPage() }) {
+                                Text(stringResource(R.string.search_retry_page))
+                            }
+                        }
+                    }
+                    if (uiState.hasNextPage && !uiState.localPageFailed && uiState.supplementStarted) {
+                        item(key = "primary_more") {
+                            TextButton(onClick = { event?.onLoadMore() }, enabled = !uiState.isLoading) {
+                                Text(stringResource(R.string.search_primary_more))
+                            }
+                        }
+                    }
+                    if (uiState.supplementStarted) {
+                        item(key = "supplement_header") {
+                            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                                Text(stringResource(R.string.search_supplement_title), style = MaterialTheme.typography.titleSmall)
+                                Text(stringResource(R.string.search_supplement_notice), style = MaterialTheme.typography.bodySmall)
+                                if (uiState.supplementUsesPopularityFallback) {
+                                    Text(
+                                        stringResource(R.string.search_supplement_popularity_fallback),
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
                                 }
-                            },
-                            status = item.mediaListEntry?.basicMediaListEntry?.status,
-                        )
+                                if (uiState.supplementLoading) Text(stringResource(R.string.search_supplement_loading))
+                                if (uiState.supplementFailed) Text(stringResource(R.string.search_supplement_failed))
+                                if (!uiState.supplementLoading && !uiState.supplementHasMore && !uiState.supplementFailed) {
+                                    Text(stringResource(R.string.search_supplement_finished))
+                                }
+                                uiState.supplementRetryAfterMillis?.let {
+                                    Text(stringResource(R.string.search_supplement_retry_delay, (it + 999) / 1000))
+                                }
+                                if (uiState.supplementDepthLimited) Text(stringResource(R.string.search_supplement_depth_limit))
+                                if (uiState.supplementNamelessCount > 0) {
+                                    Text(stringResource(R.string.search_supplement_unresolved, uiState.supplementNamelessCount))
+                                }
+                            }
+                        }
+                        items(uiState.supplementalMedia, key = { "supplement_${it.id}" }, contentType = { "media" }) {
+                            mediaRow(it)
+                        }
+                        if (uiState.supplementHasMore) {
+                            item(key = "supplement_more") {
+                                TextButton(onClick = { event?.loadMoreSupplemental() }, enabled = !uiState.supplementLoading) {
+                                    Text(stringResource(if (uiState.supplementFailed) R.string.search_supplement_retry else R.string.search_supplement_more))
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -369,7 +444,7 @@ fun SearchContentView(
                         contentType = { "character" }
                     ) { item ->
                         PersonItemHorizontal(
-                            title = item.name?.userPreferred.orEmpty(),
+                            title = displayCharacterName(item.id, item.name?.userPreferred.orEmpty()),
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .fillMaxWidth(),
@@ -392,7 +467,7 @@ fun SearchContentView(
                         contentType = { "staff" }
                     ) { item ->
                         PersonItemHorizontal(
-                            title = item.name?.userPreferred.orEmpty(),
+                            title = displayStaffName(item.id, item.name?.userPreferred.orEmpty()),
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .fillMaxWidth(),

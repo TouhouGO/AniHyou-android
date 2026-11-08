@@ -42,6 +42,8 @@ import com.axiel7.anihyou.core.ui.composables.person.PersonItemHorizontal
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemHorizontalMirrored
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemHorizontalPlaceholder
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.localization.displayCharacterName
+import com.axiel7.anihyou.core.ui.localization.displayStaffName
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -102,7 +104,7 @@ fun MediaCharactersViewContent(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     PersonItemHorizontal(
-                        title = item.node?.name?.userPreferred.orEmpty(),
+                        title = displayCharacterName(item.node?.id, item.node?.name?.userPreferred.orEmpty()),
                         modifier = Modifier
                             .padding(start = 8.dp)
                             .weight(1f),
@@ -118,7 +120,7 @@ fun MediaCharactersViewContent(
                         ?.find { it?.commonVoiceActor?.languageV2 == uiState.selectedLanguage }
                         ?.let { voiceActor ->
                             PersonItemHorizontalMirrored(
-                                title = voiceActor.commonVoiceActor.name?.userPreferred.orEmpty(),
+                                title = displayStaffName(voiceActor.id, voiceActor.commonVoiceActor.name?.userPreferred.orEmpty()),
                                 modifier = Modifier
                                     .padding(end = 8.dp)
                                     .weight(1f),

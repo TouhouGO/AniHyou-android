@@ -20,6 +20,12 @@ import com.materialkolor.PaletteStyle
 @Immutable
 interface SettingsEvent : UiEvent {
 
+    fun setCatalogAutoCheck(enabled: Boolean)
+    fun checkCatalog()
+    fun downloadCatalog()
+    fun importCatalog(uri: android.net.Uri)
+    fun resetCatalog()
+
     fun setTheme(value: Theme)
 
     fun setUseBlackColors(value: Boolean)
@@ -40,6 +46,10 @@ interface SettingsEvent : UiEvent {
 
     fun setAiringOnMyList(value: Boolean)
 
+    fun setChineseDescriptions(value: Boolean)
+    fun setChineseTitles(value: Boolean)
+    fun setChinesePeople(value: Boolean)
+    fun setChineseTags(value: Boolean)
     fun setUseFuzzySearch(value: Boolean)
 
     fun setSeparateNovelsAndManga(value: Boolean)

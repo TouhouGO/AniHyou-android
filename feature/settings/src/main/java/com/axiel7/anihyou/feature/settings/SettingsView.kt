@@ -2,6 +2,8 @@ package com.axiel7.anihyou.feature.settings
 
 import android.Manifest
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -398,6 +400,8 @@ private fun SettingsContent(
                 )
             }
 
+            LocalizationPreferences(uiState = uiState, event = event)
+
             if (uiState.isLoggedIn) {
                 PreferencesTitle(text = stringResource(R.string.notifications))
 
@@ -538,6 +542,92 @@ private fun SettingsContent(
             }
         )
     }
+}
+
+@Composable
+private fun LocalizationPreferences(
+    uiState: SettingsUiState,
+    event: SettingsEvent?,
+) {
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) event?.importCatalog(uri)
+    }
+    PreferencesTitle(text = stringResource(R.string.localization_preferences))
+
+    SwitchPreference(
+        title = stringResource(R.string.chinese_titles),
+        subtitle = stringResource(R.string.chinese_titles_description),
+        preferenceValue = uiState.chineseTitles,
+        icon = R.drawable.language_24,
+        onValueChange = { event?.setChineseTitles(it) },
+        shape = topShape,
+    )
+
+    SwitchPreference(
+        title = stringResource(R.string.chinese_people),
+        subtitle = stringResource(R.string.chinese_people_description),
+        preferenceValue = uiState.chinesePeople,
+        icon = R.drawable.language_24,
+        onValueChange = { event?.setChinesePeople(it) },
+        shape = middleShape,
+    )
+
+    SwitchPreference(
+        title = stringResource(R.string.chinese_tags),
+        subtitle = stringResource(R.string.chinese_tags_description),
+        preferenceValue = uiState.chineseTags,
+        icon = R.drawable.language_24,
+        onValueChange = { event?.setChineseTags(it) },
+        shape = middleShape,
+    )
+
+    SwitchPreference(
+        title = stringResource(R.string.chinese_descriptions),
+        subtitle = stringResource(R.string.chinese_descriptions_description),
+        preferenceValue = uiState.chineseDescriptions,
+        icon = R.drawable.language_24,
+        onValueChange = { event?.setChineseDescriptions(it) },
+        shape = middleShape,
+    )
+
+    PlainPreference(
+        title = stringResource(R.string.localization_data_sources),
+        subtitle = stringResource(R.string.localization_data_sources_description),
+        icon = R.drawable.code_24,
+        enabled = false,
+        onClick = {},
+        shape = middleShape,
+    )
+    PlainPreference(
+        title = stringResource(R.string.catalog_version),
+        subtitle = stringResource(
+            if (uiState.catalogInstalled) R.string.catalog_installed else R.string.catalog_builtin,
+            uiState.catalogVersion,
+            uiState.catalogRecordCount,
+        ),
+        icon = R.drawable.language_24, enabled = false, onClick = {}, shape = middleShape,
+    )
+    SwitchPreference(
+        title = stringResource(R.string.catalog_auto_check),
+        subtitle = stringResource(R.string.catalog_auto_check_description),
+        preferenceValue = uiState.catalogAutoEnabled,
+        enabled = uiState.catalogAutoLoaded,
+        icon = R.drawable.update_24,
+        onValueChange = { event?.setCatalogAutoCheck(it) }, shape = middleShape,
+    )
+    PlainPreference(title = stringResource(R.string.catalog_last_check),
+        subtitle = uiState.catalogLastAttempt?.let { java.text.DateFormat.getDateTimeInstance().format(java.util.Date(it)) } ?: stringResource(R.string.catalog_never_checked),
+        icon = R.drawable.update_24, enabled = false, onClick = {}, shape = middleShape)
+    PlainPreference(title = stringResource(R.string.catalog_check), subtitle = uiState.catalogMessage,
+        icon = R.drawable.update_24, enabled = !uiState.catalogBusy, onClick = { event?.checkCatalog() }, shape = middleShape)
+    if (uiState.catalogOfferVersion != null) {
+        PlainPreference(title = stringResource(R.string.catalog_download, uiState.catalogOfferVersion),
+            icon = R.drawable.update_24, enabled = !uiState.catalogBusy, onClick = { event?.downloadCatalog() }, shape = middleShape)
+    }
+    PlainPreference(title = stringResource(R.string.catalog_import), icon = R.drawable.language_24,
+        enabled = !uiState.catalogBusy, onClick = { picker.launch(arrayOf("application/json", "text/plain")) }, shape = middleShape)
+    PlainPreference(title = stringResource(R.string.catalog_reset), icon = R.drawable.language_24,
+        enabled = !uiState.catalogBusy, onClick = { event?.resetCatalog() }, shape = bottomShape)
 }
 
 @OptIn(ExperimentalPermissionsApi::class)

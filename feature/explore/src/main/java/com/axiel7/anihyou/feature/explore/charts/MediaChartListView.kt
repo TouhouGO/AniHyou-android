@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.explore.charts
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -117,7 +118,7 @@ private fun MediaChartListContent(
                 contentType = { _, item -> item }
             ) { index, item ->
                 MediaItemHorizontal(
-                    title = item.basicMediaDetails.title?.userPreferred.orEmpty(),
+                    title = displayMediaTitle(item.basicMediaDetails.id, item.basicMediaDetails.title?.userPreferred.orEmpty()),
                     imageUrl = item.coverImage?.large,
                     blurImage = blurAdult && item.basicMediaDetails.isAdult == true,
                     score = item.weightedScore ?: 0,

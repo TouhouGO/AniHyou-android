@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.explore.season
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -236,7 +237,7 @@ private fun SeasonalGrid(
             contentType = { it }
         ) { item ->
             MediaItemVertical(
-                title = item.basicMediaDetails.title?.userPreferred.orEmpty(),
+                title = displayMediaTitle(item.basicMediaDetails.id, item.basicMediaDetails.title?.userPreferred.orEmpty()),
                 imageUrl = item.coverImage?.large,
                 blurImage = blurAdult && item.basicMediaDetails.isAdult == true,
                 modifier = Modifier.wrapContentWidth(),
@@ -279,7 +280,7 @@ private fun SeasonalList(
             contentType = { it }
         ) { item ->
             MediaItemHorizontal(
-                title = item.basicMediaDetails.title?.userPreferred.orEmpty(),
+                title = displayMediaTitle(item.basicMediaDetails.id, item.basicMediaDetails.title?.userPreferred.orEmpty()),
                 imageUrl = item.coverImage?.large,
                 blurImage = blurAdult && item.basicMediaDetails.isAdult == true,
                 status = item.mediaListEntry?.basicMediaListEntry?.status,

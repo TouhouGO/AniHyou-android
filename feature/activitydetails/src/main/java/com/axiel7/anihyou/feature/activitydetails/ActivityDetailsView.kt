@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.activitydetails
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -150,7 +151,9 @@ private fun ActivityDetailsContent(
                         ActivityTextView(
                             modifier = Modifier.padding(16.dp),
                             text = uiState.details.text
-                                ?: uiState.details.listActivityFragment?.text().orEmpty(),
+                                ?: uiState.details.listActivityFragment?.let { activity ->
+                                    activity.text(displayMediaTitle(activity.media?.id, activity.media?.title?.userPreferred.orEmpty()))
+                                }.orEmpty(),
                             userId = uiState.details.userId ?: 0,
                             username = uiState.details.username,
                             avatarUrl = uiState.details.avatarUrl,

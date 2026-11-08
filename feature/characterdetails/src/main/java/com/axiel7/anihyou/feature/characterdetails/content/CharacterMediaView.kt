@@ -24,6 +24,7 @@ import com.axiel7.anihyou.core.ui.common.LocalBlurAdult
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemHorizontal
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemHorizontalPlaceholder
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
@@ -54,7 +55,7 @@ fun CharacterMediaView(
             contentType = { it }
         ) { item ->
             MediaItemHorizontal(
-                title = item.node?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                title = displayMediaTitle(item.node?.basicMediaDetails?.id, item.node?.basicMediaDetails?.title?.userPreferred.orEmpty()),
                 imageUrl = item.node?.coverImage?.large,
                 blurImage = blurAdult && item.node?.basicMediaDetails?.isAdult == true,
                 subtitle1 = {

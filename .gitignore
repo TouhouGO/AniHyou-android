@@ -12,3 +12,5 @@
 local.properties
 /fastlane/report.xml
 .kotlin
+.superpowers/
+**/__pycache__/

@@ -43,6 +43,7 @@ import com.axiel7.anihyou.feature.thread.publish.PublishCommentViewModel
 import com.axiel7.anihyou.feature.usermedialist.MangaListTabbedViewModel
 import com.axiel7.anihyou.feature.usermedialist.UserMediaListViewModel
 import com.axiel7.anihyou.ui.screens.main.MainViewModel
+import org.koin.core.module.dsl.viewModel as explicitViewModel
 import org.koin.dsl.module
 import org.koin.plugin.module.dsl.viewModel
 
@@ -55,7 +56,9 @@ val viewModelModule = module {
     viewModel<CalendarGridViewModel>()
     viewModel<CharacterDetailsViewModel>()
     viewModel<EditMediaViewModel>()
-    viewModel<SearchViewModel>()
+    explicitViewModel { (arguments: com.axiel7.anihyou.core.ui.common.navigation.Route.Search, isLoggedIn: Boolean) ->
+        SearchViewModel(arguments, isLoggedIn, get(), get(), get(), get(), chineseSearchRepository = get())
+    }
     viewModel<GenresTagsViewModel>()
     viewModel<MediaChartViewModel>()
     viewModel<SeasonAnimeViewModel>()

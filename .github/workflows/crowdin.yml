@@ -8,6 +8,7 @@ on:
 
 jobs:
   synchronize-with-crowdin:
+    if: github.repository == 'axiel7/AniHyou-android'
     runs-on: ubuntu-latest
     permissions:
       contents: write

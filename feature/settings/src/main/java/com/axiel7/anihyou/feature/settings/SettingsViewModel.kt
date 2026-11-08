@@ -1,5 +1,17 @@
 package com.axiel7.anihyou.feature.settings
 
+import android.content.Context
+import android.net.Uri
+import com.axiel7.anihyou.core.domain.repository.LocalizationCatalogRepository
+import com.axiel7.anihyou.core.domain.repository.CatalogUpdateMonitor
+import com.axiel7.anihyou.core.domain.repository.CatalogUpdater
+import com.axiel7.anihyou.core.domain.repository.CatalogCheck
+import com.axiel7.anihyou.core.domain.repository.readBounded
+import com.axiel7.anihyou.core.localization.CatalogFailureCode
+import com.axiel7.anihyou.core.localization.CatalogFailureException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CancellationException
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
@@ -43,9 +55,75 @@ class SettingsViewModel(
     private val userRepository: UserRepository,
     private val loginRepository: LoginRepository,
     private val workManager: WorkManager,
+    private val catalog: LocalizationCatalogRepository,
+    private val catalogMonitor: CatalogUpdateMonitor,
+    private val context: Context,
 ) : UiStateViewModel<SettingsUiState>(), SettingsEvent {
 
     override val initialState = SettingsUiState()
+
+
+    private fun catalogErrorMessage(error: Throwable): String = context.getString(
+        when ((error as? CatalogFailureException)?.code) {
+            CatalogFailureCode.FILE_TOO_LARGE -> com.axiel7.anihyou.core.resources.R.string.catalog_too_large
+            CatalogFailureCode.INVALID_UTF8 -> com.axiel7.anihyou.core.resources.R.string.catalog_invalid_utf8
+            CatalogFailureCode.INVALID_FORMAT -> com.axiel7.anihyou.core.resources.R.string.catalog_invalid_format
+            CatalogFailureCode.EMPTY_CATALOG -> com.axiel7.anihyou.core.resources.R.string.catalog_empty
+            CatalogFailureCode.INVALID_VERSION -> com.axiel7.anihyou.core.resources.R.string.catalog_invalid_version
+            CatalogFailureCode.DOWNGRADE -> com.axiel7.anihyou.core.resources.R.string.catalog_downgrade
+            CatalogFailureCode.VERSION_COLLISION -> com.axiel7.anihyou.core.resources.R.string.catalog_collision
+            CatalogFailureCode.METADATA_MISMATCH -> com.axiel7.anihyou.core.resources.R.string.catalog_metadata_mismatch
+            CatalogFailureCode.STALE_OPERATION -> com.axiel7.anihyou.core.resources.R.string.catalog_stale
+            CatalogFailureCode.STORAGE_FAILURE -> com.axiel7.anihyou.core.resources.R.string.catalog_storage_error
+            CatalogFailureCode.IMPORT_FAILURE -> com.axiel7.anihyou.core.resources.R.string.catalog_import_error
+            CatalogFailureCode.NETWORK_FAILURE -> com.axiel7.anihyou.core.resources.R.string.catalog_network_error
+            CatalogFailureCode.INVALID_MANIFEST -> com.axiel7.anihyou.core.resources.R.string.catalog_invalid_manifest
+            CatalogFailureCode.INTERNAL_ERROR, null -> com.axiel7.anihyou.core.resources.R.string.catalog_unknown_error
+        }
+    )
+
+    private fun catalogAction(action: suspend () -> Unit) {
+        if (mutableUiState.value.catalogBusy) return
+        mutableUiState.update { it.copy(catalogBusy = true, catalogMessage = null) }
+        viewModelScope.launch {
+            try { action() }
+            catch (e: CancellationException) { throw e }
+            catch (e: Exception) { mutableUiState.update { it.copy(catalogMessage = catalogErrorMessage(e)) } }
+            finally { mutableUiState.update { it.copy(catalogBusy = false) } }
+        }
+    }
+    override fun checkCatalog() = catalogAction {
+        when (catalogMonitor.check(manual = true)) {
+            CatalogCheck.Unavailable -> mutableUiState.update { it.copy(catalogMessage = context.getString(com.axiel7.anihyou.core.resources.R.string.catalog_unavailable)) }
+            CatalogCheck.UpToDate -> mutableUiState.update { it.copy(catalogMessage = context.getString(com.axiel7.anihyou.core.resources.R.string.catalog_up_to_date)) }
+            else -> Unit
+        }
+    }
+    override fun downloadCatalog() = catalogAction {
+        catalogMonitor.download()
+        mutableUiState.update { it.copy(catalogMessage = context.getString(com.axiel7.anihyou.core.resources.R.string.catalog_complete)) }
+    }
+    override fun setCatalogAutoCheck(enabled: Boolean) { viewModelScope.launch { catalogMonitor.setEnabled(enabled) } }
+    override fun importCatalog(uri: Uri) = catalogAction {
+        catalog.load()
+        val token = catalog.captureGeneration()
+        val bytes = withContext(Dispatchers.IO) {
+            try { requireNotNull(context.contentResolver.openInputStream(uri)).use { it.readBounded() } }
+            catch (e: CatalogFailureException) { throw e }
+            catch (e: Exception) { throw CatalogFailureException(CatalogFailureCode.IMPORT_FAILURE, e) }
+        }
+        catalogMonitor.invalidate()
+        catalog.install(bytes, token = token)
+        catalogMonitor.invalidate()
+        mutableUiState.update { it.copy(catalogOfferVersion = null, catalogMessage = context.getString(com.axiel7.anihyou.core.resources.R.string.catalog_complete)) }
+    }
+    override fun resetCatalog() = catalogAction {
+        catalogMonitor.invalidate()
+        catalog.reset()
+        catalogMonitor.invalidate()
+        mutableUiState.update { it.copy(catalogOfferVersion = null, catalogMessage = context.getString(com.axiel7.anihyou.core.resources.R.string.catalog_complete)) }
+    }
+
 
     private val profileColor = defaultPreferencesRepository.profileColor
 
@@ -121,6 +199,22 @@ class SettingsViewModel(
         viewModelScope.launch {
             defaultPreferencesRepository.setAiringOnMyList(value)
         }
+    }
+
+    override fun setChineseDescriptions(value: Boolean) {
+        viewModelScope.launch { defaultPreferencesRepository.setChineseDescriptions(value) }
+    }
+
+    override fun setChineseTitles(value: Boolean) {
+        viewModelScope.launch { defaultPreferencesRepository.setChineseTitles(value) }
+    }
+
+    override fun setChinesePeople(value: Boolean) {
+        viewModelScope.launch { defaultPreferencesRepository.setChinesePeople(value) }
+    }
+
+    override fun setChineseTags(value: Boolean) {
+        viewModelScope.launch { defaultPreferencesRepository.setChineseTags(value) }
     }
 
     override fun setUseFuzzySearch(value: Boolean) {
@@ -274,6 +368,14 @@ class SettingsViewModel(
         }
 
     init {
+        catalogMonitor.state.onEach { state ->
+            mutableUiState.update { it.copy(catalogAutoEnabled = state.enabled, catalogAutoLoaded = state.loaded, catalogLastAttempt = state.lastAttempt, catalogOfferVersion = state.offerVersion, catalogMessage = state.error?.let { code -> catalogErrorMessage(CatalogFailureException(code)) } ?: it.catalogMessage) }
+        }.launchIn(viewModelScope)
+        viewModelScope.launch { catalogMonitor.initializeForUi() }
+        catalog.state.onEach { state ->
+            mutableUiState.update { it.copy(catalogVersion = state.status.version, catalogRecordCount = state.status.recordCount, catalogInstalled = state.status.installed, catalogMessage = state.status.error?.let(::catalogErrorMessage) ?: it.catalogMessage) }
+        }.launchIn(viewModelScope)
+        viewModelScope.launch { catalog.load() }
         isLoggedIn
             .onEach { value ->
                 mutableUiState.update { it.copy(isLoggedIn = value) }
@@ -410,6 +512,22 @@ class SettingsViewModel(
             .onEach { value ->
                 mutableUiState.update { it.copy(hideScores = value) }
             }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.chineseDescriptions
+            .onEach { value -> mutableUiState.update { it.copy(chineseDescriptions = value) } }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.chineseTitles
+            .onEach { value -> mutableUiState.update { it.copy(chineseTitles = value) } }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.chinesePeople
+            .onEach { value -> mutableUiState.update { it.copy(chinesePeople = value) } }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.chineseTags
+            .onEach { value -> mutableUiState.update { it.copy(chineseTags = value) } }
             .launchIn(viewModelScope)
 
         defaultPreferencesRepository.useFuzzySearch

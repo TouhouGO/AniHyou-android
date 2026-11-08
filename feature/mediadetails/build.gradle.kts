@@ -9,6 +9,9 @@ android {
 }
 
 dependencies {
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
     implementation(project(":feature:editmedia"))
     implementation(project(":feature:addrecommendation"))
 }

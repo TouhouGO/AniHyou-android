@@ -7,3 +7,7 @@ val appPackageName = rootProject.extra["appPackageName"] as String
 android {
     namespace = "$appPackageName.feature.genrestags"
 }
+
+dependencies {
+    testImplementation(libs.junit)
+}

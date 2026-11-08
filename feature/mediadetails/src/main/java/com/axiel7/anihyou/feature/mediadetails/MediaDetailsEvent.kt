@@ -10,6 +10,7 @@ import com.axiel7.anihyou.core.network.type.RecommendationRating
 @Immutable
 interface MediaDetailsEvent : UiEvent {
     fun onUpdateListEntry(newListEntry: BasicMediaListEntry?)
+    fun retryChineseDescription()
     fun toggleFavorite()
     fun fetchCharactersAndStaff()
     fun fetchRelationsAndRecommendations()

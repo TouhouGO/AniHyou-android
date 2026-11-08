@@ -18,6 +18,7 @@ import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.LocalNavActionManager
 import com.axiel7.anihyou.core.ui.composables.InfoTitle
+import com.axiel7.anihyou.core.ui.localization.displayTagName
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.feature.profile.stats.UserStatsEvent
 import com.axiel7.anihyou.feature.profile.stats.UserStatsUiState
@@ -72,7 +73,9 @@ fun TagsStatsView(
             contentType = { _, stat -> stat }
         ) { index, stat ->
             PositionalStatItemView(
-                name = stat.tag?.name ?: stringResource(R.string.unknown),
+                name = stat.tag?.name
+                    ?.let { displayTagName(it) }
+                    ?: stringResource(R.string.unknown),
                 position = index + 1,
                 count = stat.count,
                 meanScore = stat.meanScore,

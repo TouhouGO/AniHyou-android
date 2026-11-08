@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,10 +45,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-            WearApp(
-                uiState = uiState,
-                event = viewModel,
-            )
+            val snapshot by viewModel.titleCatalog.collectAsStateWithLifecycle()
+            val enabled by viewModel.chineseTitles.collectAsStateWithLifecycle(false)
+            CompositionLocalProvider(LocalWearTitleDisplay provides WearTitleDisplay(snapshot, enabled)) {
+                WearApp(uiState = uiState, event = viewModel)
+            }
         }
     }
 

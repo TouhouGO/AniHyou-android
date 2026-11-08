@@ -1,0 +1,215 @@
+{
+    "measurement": "host JVM; no network; no result cache; not Android device latency",
+    "candidateMode": "complete local candidates; no 500-result prefix",
+    "javaVersion": "21.0.10",
+    "os": "Mac OS X",
+    "architecture": "aarch64",
+    "catalogVersion": "2026.11.07",
+    "catalogBytes": 7471994,
+    "catalogSha256": "be12dfeaad442016528d5a83ed648266c04c7cccbcb763dc260070a85e398a9a",
+    "firstDecodeAndIndexMillis": 657.137583,
+    "decodeIndexMeasurement": "one initial observation; 3 discarded in-process warmups; 30 measured warm samples; not a cold-start P95",
+    "warmedDecodeAndIndexWarmupIterations": 3,
+    "warmedDecodeAndIndexSamples": 30,
+    "warmedDecodeAndIndexP50Millis": 180.014625,
+    "warmedDecodeAndIndexP95Millis": 203.502333,
+    "warmedDecodeAndIndexMillis": [
+        203.502333,
+        203.961042,
+        201.7435,
+        229.459291,
+        202.2245,
+        194.580375,
+        189.130917,
+        189.712209,
+        176.802875,
+        194.940958,
+        183.502792,
+        175.042167,
+        177.818292,
+        171.066667,
+        169.127375,
+        164.853833,
+        172.426875,
+        185.677917,
+        173.253417,
+        178.266834,
+        178.316917,
+        186.846,
+        178.415792,
+        178.383167,
+        186.413916,
+        181.671416,
+        179.602125,
+        180.014625,
+        187.520041,
+        178.998541
+    ],
+    "consumedLoadMetadata": {
+        "checksum": 8465054243557549056,
+        "metadataFields": "version; recordCount; sourceCount; representativeTitle",
+        "version": "2026.11.07",
+        "recordCount": 13277,
+        "sourceCount": 6,
+        "representativeMediaId": 1735,
+        "representativeTitleHash": 895359186
+    },
+    "samplesPerQuery": 150,
+    "resultDigest": "929f80124d6b0ce215089d41092bcf58502bdf3f4b7ede6bd6d592575f9c22d8",
+    "consumed": 19909613370,
+    "queries": [
+        {
+            "kind": "ANIME",
+            "query": "星",
+            "returnedIds": 369,
+            "totalMatches": 369,
+            "truncated": false,
+            "p50Millis": 0.078541,
+            "p95Millis": 0.127917
+        },
+        {
+            "kind": "ANIME",
+            "query": "之",
+            "returnedIds": 1212,
+            "totalMatches": 1212,
+            "truncated": false,
+            "p50Millis": 0.282875,
+            "p95Millis": 0.382875
+        },
+        {
+            "kind": "ANIME",
+            "query": "火影",
+            "returnedIds": 17,
+            "totalMatches": 17,
+            "truncated": false,
+            "p50Millis": 0.01125,
+            "p95Millis": 0.025042
+        },
+        {
+            "kind": "ANIME",
+            "query": "物语",
+            "returnedIds": 158,
+            "totalMatches": 158,
+            "truncated": false,
+            "p50Millis": 0.027084,
+            "p95Millis": 0.0735
+        },
+        {
+            "kind": "ANIME",
+            "query": "火影忍者",
+            "returnedIds": 17,
+            "totalMatches": 17,
+            "truncated": false,
+            "p50Millis": 0.004417,
+            "p95Millis": 0.005709
+        },
+        {
+            "kind": "ANIME",
+            "query": "名侦探柯南",
+            "returnedIds": 42,
+            "totalMatches": 42,
+            "truncated": false,
+            "p50Millis": 0.003583,
+            "p95Millis": 0.003958
+        },
+        {
+            "kind": "ANIME",
+            "query": "進擊的巨人",
+            "returnedIds": 18,
+            "totalMatches": 18,
+            "truncated": false,
+            "p50Millis": 0.00475,
+            "p95Millis": 0.005291
+        },
+        {
+            "kind": "ANIME",
+            "query": "【我推的孩子】",
+            "returnedIds": 4,
+            "totalMatches": 4,
+            "truncated": false,
+            "p50Millis": 0.001416,
+            "p95Millis": 0.001542
+        },
+        {
+            "kind": "ANIME",
+            "query": "孤独摇滚",
+            "returnedIds": 3,
+            "totalMatches": 3,
+            "truncated": false,
+            "p50Millis": 0.001208,
+            "p95Millis": 0.001334
+        },
+        {
+            "kind": "ANIME",
+            "query": "链锯人",
+            "returnedIds": 2,
+            "totalMatches": 2,
+            "truncated": false,
+            "p50Millis": 3.75E-4,
+            "p95Millis": 5.42E-4
+        },
+        {
+            "kind": "ANIME",
+            "query": "重启",
+            "returnedIds": 7,
+            "totalMatches": 7,
+            "truncated": false,
+            "p50Millis": 0.001916,
+            "p95Millis": 0.002125
+        },
+        {
+            "kind": "ANIME",
+            "query": "咲良",
+            "returnedIds": 1,
+            "totalMatches": 1,
+            "truncated": false,
+            "p50Millis": 0.001417,
+            "p95Millis": 0.001625
+        },
+        {
+            "kind": "ANIME",
+            "query": "Re:Zero",
+            "returnedIds": 2,
+            "totalMatches": 2,
+            "truncated": false,
+            "p50Millis": 0.022542,
+            "p95Millis": 0.023291
+        },
+        {
+            "kind": "ANIME",
+            "query": "葬送的芙莉莲",
+            "returnedIds": 6,
+            "totalMatches": 6,
+            "truncated": false,
+            "p50Millis": 7.5E-4,
+            "p95Millis": 9.17E-4
+        },
+        {
+            "kind": "MANGA",
+            "query": "葬送的芙莉莲",
+            "returnedIds": 5,
+            "totalMatches": 5,
+            "truncated": false,
+            "p50Millis": 6.25E-4,
+            "p95Millis": 7.09E-4
+        },
+        {
+            "kind": "MANGA",
+            "query": "火影",
+            "returnedIds": 2,
+            "totalMatches": 2,
+            "truncated": false,
+            "p50Millis": 6.25E-4,
+            "p95Millis": 7.92E-4
+        },
+        {
+            "kind": "ANIME",
+            "query": "not-a-catalog-title-8247301",
+            "returnedIds": 0,
+            "totalMatches": 0,
+            "truncated": false,
+            "p50Millis": 0.002458,
+            "p95Millis": 0.002584
+        }
+    ]
+}

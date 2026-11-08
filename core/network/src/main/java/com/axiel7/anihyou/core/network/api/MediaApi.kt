@@ -72,12 +72,18 @@ class MediaApi(
         sourceIn: List<MediaSource>?,
         page: Int,
         perPage: Int,
-    ) = client
-        .query(
+        mediaIds: List<Int>? = null,
+    ): com.apollographql.apollo.ApolloCall<SearchMediaQuery.Data> {
+        val candidateIds = mediaIds?.distinct()
+        require(candidateIds == null || (candidateIds.isNotEmpty() && candidateIds.size <= 10_000 && candidateIds.all { it > 0 })) {
+            "Media candidates must contain between 1 and 10000 positive IDs"
+        }
+        return client.query(
             SearchMediaQuery(
                 page = Optional.present(page),
                 perPage = Optional.present(perPage),
-                search = if (query.isNotBlank()) Optional.present(query) else Optional.absent(),
+                search = if (candidateIds == null && query.isNotBlank()) Optional.present(query) else Optional.absent(),
+                id_in = Optional.presentIfNotNull(candidateIds),
                 type = Optional.present(mediaType),
                 sort = Optional.present(sort),
                 genre_in = if (genreIn.isNullOrEmpty()) Optional.absent()
@@ -120,6 +126,7 @@ class MediaApi(
                 else Optional.present(sourceIn),
             )
         )
+    }
 
     fun genreTagCollectionQuery() = client.query(GenreTagCollectionQuery())
 

@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.wear.ui.screens.usermedialist.edit
 
+import com.axiel7.anihyou.wear.ui.screens.main.wearMediaTitle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -88,7 +89,7 @@ fun EditMediaContent(
                     contentColor = MaterialTheme.colorScheme.onSurface
                 ) {
                     Text(
-                        text = entry.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                        text = wearMediaTitle(entry.mediaId, entry.media?.basicMediaDetails?.title?.userPreferred.orEmpty()),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 4,

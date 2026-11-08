@@ -24,8 +24,13 @@ android {
 }
 
 dependencies {
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
     implementation(project(":feature:worker"))
+    implementation(project(":core:localization"))
 
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.work.runtime)
     implementation(libs.accompanist.permissions)
 }

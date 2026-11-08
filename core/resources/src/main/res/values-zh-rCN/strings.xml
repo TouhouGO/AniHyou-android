@@ -677,5 +677,25 @@
     <string name="allow_start_notification">允许开播通知</string>
     <string name="allow_airing_notification">允许正在播出通知</string>
     <string name="allow_end_notification">允许播出结束通知</string>
+    <string name="chinese_titles">中文标题</string>
+    <string name="chinese_titles_description">显示目录中已有的动画与漫画中文标题，覆盖范围有限。</string>
+    <string name="local_title_search_notice">从本地词库的 %1$d 个标题候选中搜索。词库覆盖不完整，仍应用 AniList 筛选条件。</string>
+    <string name="local_title_search_truncated">本次仅包含前 500 个候选。请使用更具体的标题查找其他结果。</string>
+    <string name="local_title_search_sort_notice">本地标题匹配在选择相关度时暂按热度排序。</string>
+    <string name="localization_preferences">中文本地化</string>
+    <string name="chinese_people">中文人物名</string>
+    <string name="chinese_people_description">显示已有的角色与工作人员中文名，覆盖范围有限。</string>
+    <string name="chinese_tags">中文标签</string>
+    <string name="chinese_tags_description">显示已有的 AniList 标签中文名；筛选条件仍使用原始标签名。</string>
+    <string name="localization_data_sources">本地化数据来源</string>
+    <string name="localization_data_sources_description">目录数据来源包括 Wikidata、bangumi-data 以及内置目录中记录的其他来源。</string>
+    <string name="chinese_descriptions">中文简介</string>
+    <string name="chinese_descriptions_description">在线获取 Bangumi 简介；不可用时显示 AniList 原文。无需登录。</string>
+    <string name="description_source">简介来源：Bangumi</string>
+    <string name="description_loading">正在加载 Bangumi 简介…</string>
+    <string name="description_unavailable">暂无 Bangumi 简介</string>
+    <string name="description_failed">Bangumi 简介加载失败</string>
+    <string name="description_retry">重试</string>
+    <string name="description_retry_after">%1$d 秒后可重试</string>
     <string name="image_download_title">图片</string>
 </resources>

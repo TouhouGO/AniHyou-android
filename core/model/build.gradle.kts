@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.androidx.material3)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }

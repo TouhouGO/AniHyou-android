@@ -5,6 +5,15 @@ import com.axiel7.anihyou.core.network.NotificationsQuery
 import com.axiel7.anihyou.core.network.type.NotificationType
 import com.axiel7.anihyou.core.resources.R
 
+data class MediaNotificationText(
+    val title: String?,
+    val prefix: String = "",
+    val suffix: String = "",
+    val episode: Int? = null,
+) {
+    fun render(displayTitle: String? = title): String = prefix + displayTitle.orEmpty() + suffix
+}
+
 data class GenericNotification(
     val id: Int,
     val text: String,
@@ -16,6 +25,7 @@ data class GenericNotification(
     val createdAt: Int?,
     val isUnread: Boolean = false,
     val isAdultMedia: Boolean = false,
+    val mediaText: MediaNotificationText? = null,
 ) {
     val isMedia
         get() = when (type) {
@@ -28,13 +38,13 @@ data class GenericNotification(
             else -> false
         }
 
-    fun mediaTitle(): String? = if (type == NotificationType.AIRING) {
+    fun mediaTitle(): String? = mediaText?.title ?: if (type == NotificationType.AIRING) {
         "of(.+)aired".toRegex().find(text)?.run {
             return groupValues.getOrNull(1)?.trim()
         }
     } else null
 
-    fun numEpisode(): Int? = if (type == NotificationType.AIRING) {
+    fun numEpisode(): Int? = mediaText?.episode ?: if (type == NotificationType.AIRING) {
         "Episode (\\d+)".toRegex().find(text)?.run {
             return groupValues.getOrNull(1)?.toIntOrNull()
         }
@@ -49,7 +59,7 @@ data class GenericNotification(
                     val ofString = noti.contexts?.get(1).orEmpty()
                     val airedString = noti.contexts?.get(2).orEmpty()
                     val text =
-                        "$episodeString${noti.episode}$ofString${noti.media?.title?.userPreferred}$airedString"
+                        "$episodeString${noti.episode}$ofString${noti.media?.title?.userPreferred.orEmpty()}$airedString"
                     tempList.add(
                         GenericNotification(
                             id = noti.id,
@@ -60,6 +70,7 @@ data class GenericNotification(
                             type = noti.type,
                             createdAt = noti.createdAt,
                             isAdultMedia = noti.media?.isAdult == true,
+                            mediaText = MediaNotificationText(noti.media?.title?.userPreferred, "$episodeString${noti.episode}$ofString", airedString, noti.episode),
                         )
                     )
                 }
@@ -222,13 +233,14 @@ data class GenericNotification(
                     tempList.add(
                         GenericNotification(
                             id = noti.id,
-                            text = "${noti.media?.title?.userPreferred}${noti.context}",
+                            text = "${noti.media?.title?.userPreferred.orEmpty()}${noti.context}",
                             imageUrl = noti.media?.coverImage?.medium,
                             largeImageUrl = noti.media?.coverImage?.large,
                             contentId = noti.mediaId,
                             type = noti.type,
                             createdAt = noti.createdAt,
                             isAdultMedia = noti.media?.isAdult == true,
+                            mediaText = MediaNotificationText(noti.media?.title?.userPreferred, suffix = "${noti.context}"),
                         )
                     )
                 }
@@ -236,13 +248,14 @@ data class GenericNotification(
                     tempList.add(
                         GenericNotification(
                             id = noti.id,
-                            text = "${noti.media?.title?.userPreferred}${noti.context}\n${noti.reason}",
+                            text = "${noti.media?.title?.userPreferred.orEmpty()}${noti.context}\n${noti.reason}",
                             imageUrl = noti.media?.coverImage?.medium,
                             largeImageUrl = noti.media?.coverImage?.large,
                             contentId = noti.mediaId,
                             type = noti.type,
                             createdAt = noti.createdAt,
                             isAdultMedia = noti.media?.isAdult == true,
+                            mediaText = MediaNotificationText(noti.media?.title?.userPreferred, suffix = "${noti.context}\n${noti.reason}"),
                         )
                     )
                 }
@@ -250,13 +263,14 @@ data class GenericNotification(
                     tempList.add(
                         GenericNotification(
                             id = noti.id,
-                            text = "${noti.media?.title?.userPreferred}${noti.context}",
+                            text = "${noti.media?.title?.userPreferred.orEmpty()}${noti.context}",
                             imageUrl = noti.media?.coverImage?.medium,
                             largeImageUrl = noti.media?.coverImage?.large,
                             contentId = noti.mediaId,
                             type = noti.type,
                             createdAt = noti.createdAt,
                             isAdultMedia = noti.media?.isAdult == true,
+                            mediaText = MediaNotificationText(noti.media?.title?.userPreferred, suffix = "${noti.context}"),
                         )
                     )
                 }
@@ -264,7 +278,7 @@ data class GenericNotification(
                     tempList.add(
                         GenericNotification(
                             id = noti.id,
-                            text = "${noti.deletedMediaTitle}${noti.context}",
+                            text = "${noti.deletedMediaTitle.orEmpty()}${noti.context}",
                             imageUrl = null,
                             contentId = 0,
                             type = noti.type,
@@ -332,10 +346,11 @@ data class GenericNotification(
             airingNotification: Boolean = true,
             endNotification: Boolean = false,
             episodeCount: Int? = null,
+            displayTitle: String? = mediaText?.title,
         ): String? = when (type) {
             NotificationType.AIRING -> {
                 val episode = numEpisode() ?: 0
-                val title = mediaTitle().orEmpty()
+                val title = (displayTitle ?: mediaTitle()).orEmpty()
                 if (episode == 1 && startNotification) {
                     resources.getString(
                         R.string.notification_start_episode_aired,
@@ -398,13 +413,20 @@ data class GenericNotification(
             }
 
             NotificationType.RELATED_MEDIA_ADDITION -> {
-                mediaAddedRegex.find(text)?.let {
+                val title = displayTitle ?: mediaText?.title.orEmpty()
+                if (mediaText != null && mediaText.suffix == " was recently added to the site." && title.isNotEmpty()) {
+                    resources.getString(R.string.notification_media_added, title)
+                } else if (mediaText != null) mediaText.render(title) else mediaAddedRegex.find(text)?.let {
                     resources.getString(R.string.notification_media_added, it.groupValues[1])
                 } ?: text
             }
 
             NotificationType.MEDIA_DATA_CHANGE, NotificationType.MEDIA_MERGE -> {
-                mediaChangedRegex.find(text)?.let {
+                val title = displayTitle ?: mediaText?.title.orEmpty()
+                if (mediaText != null && mediaText.suffix.startsWith(" received site data changes") && title.isNotEmpty()) {
+                    resources.getString(R.string.notification_media_changed, title) +
+                        mediaText.suffix.removePrefix(" received site data changes")
+                } else if (mediaText != null) mediaText.render(title) else mediaChangedRegex.find(text)?.let {
                     resources.getString(R.string.notification_media_changed, it.groupValues[1])
                 } ?: text
             }

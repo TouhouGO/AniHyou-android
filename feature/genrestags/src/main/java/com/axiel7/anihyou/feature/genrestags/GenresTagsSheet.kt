@@ -53,6 +53,8 @@ import com.axiel7.anihyou.core.ui.composables.PercentageSlider
 import com.axiel7.anihyou.core.ui.composables.common.ErrorTextButton
 import com.axiel7.anihyou.core.ui.composables.common.TextTriCheckbox
 import com.axiel7.anihyou.core.ui.composables.sheet.ModalBottomSheet
+import com.axiel7.anihyou.core.ui.localization.LocalLocalizationDisplay
+import com.axiel7.anihyou.core.ui.localization.displayTagName
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,6 +90,7 @@ private fun GenresTagsSheetContent(
     bottomPadding: Dp = 0.dp,
     onDismiss: () -> Unit,
 ) {
+    val localizationDisplay = LocalLocalizationDisplay.current
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
 
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
@@ -205,9 +208,9 @@ private fun GenresTagsSheetContent(
                                 onValueChange = { event?.onMinTagPercentageUpdated(it) }
                             )
                         }
-                        items(uiState.displayTags) { item ->
+                        items(uiState.filteredTags(localizationDisplay::tagMatches)) { item ->
                             TextTriCheckbox(
-                                text = item.name,
+                                text = displayTagName(item.name),
                                 state = item.state.toggleableState,
                                 onStateChange = {
                                     event?.onTagUpdated(item.setState(it))

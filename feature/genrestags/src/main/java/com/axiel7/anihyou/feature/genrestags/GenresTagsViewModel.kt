@@ -184,7 +184,6 @@ class GenresTagsViewModel(
                         uiState.copy(
                             isLoading = false,
                             displayGenres = uiState.genres,
-                            displayTags = uiState.tags,
                         )
                     } else {
                         uiState.copy(
@@ -212,16 +211,9 @@ class GenresTagsViewModel(
                         uiState.genres
                     }
 
-                    val tagsFiltered = if (uiState.filter.isNotBlank()) {
-                        uiState.tags.filter { it.name.contains(uiState.filter, ignoreCase = true) }
-                    } else {
-                        uiState.tags
-                    }
-
                     mutableUiState.update {
                         it.copy(
                             displayGenres = genresFiltered.toMutableStateList(),
-                            displayTags = tagsFiltered.toMutableStateList()
                         )
                     }
                 }

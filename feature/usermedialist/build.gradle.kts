@@ -9,6 +9,11 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:localization"))
     implementation(project(":feature:editmedia"))
     implementation(project(":feature:genrestags"))
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
 }

@@ -1,5 +1,8 @@
 package com.axiel7.anihyou.core.domain.repository
 
+import com.apollographql.apollo.api.Error
+import com.axiel7.anihyou.core.base.PagedResult
+import com.axiel7.anihyou.core.network.SearchMediaQuery
 import com.axiel7.anihyou.core.model.genre.GenresAndTags
 import com.axiel7.anihyou.core.model.genre.SelectableGenre
 import com.axiel7.anihyou.core.model.media.CountryOfOrigin
@@ -14,6 +17,10 @@ import com.axiel7.anihyou.core.network.type.MediaSort
 import com.axiel7.anihyou.core.network.type.MediaSource
 import com.axiel7.anihyou.core.network.type.MediaStatus
 import com.axiel7.anihyou.core.network.type.MediaType
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.mapLatest
 
 class SearchRepository(
     private val mediaApi: MediaApi,
@@ -24,6 +31,7 @@ class SearchRepository(
     defaultPreferencesRepository: DefaultPreferencesRepository,
 ) : BaseNetworkRepository(defaultPreferencesRepository) {
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun searchMedia(
         mediaType: MediaType,
         query: String,
@@ -55,7 +63,12 @@ class SearchRepository(
         sourceIn: List<MediaSource>? = null,
         page: Int,
         perPage: Int = 25,
-    ) = mediaApi
+        mediaIds: List<Int>? = null,
+    ): Flow<PagedResult<SearchMediaQuery.Medium>> {
+        if (mediaIds != null && mediaIds.isEmpty()) {
+            return flowOf(PagedResult.Success(emptyList(), page, false))
+        }
+        return mediaApi
         .searchMediaQuery(
             mediaType,
             query,
@@ -86,12 +99,27 @@ class SearchRepository(
             country?.toDto(),
             sourceIn,
             page,
-            perPage
+            perPage,
+            mediaIds,
         )
         .toFlow()
+        .mapLatest { response ->
+            val incomplete = response.data != null && !response.hasErrors() &&
+                response.data.completeSearchMediaPage(page) == null
+            if (!response.hasErrors() && !incomplete) response
+            else response.newBuilder()
+                .data(null)
+                .errors(
+                    response.errors.orEmpty() + if (incomplete) {
+                        listOf(Error.Builder("Search did not return a complete page").build())
+                    } else emptyList()
+                )
+                .build()
+        }
         .asPagedResult(page = { it.Page?.pageInfo?.commonPage }) {
             it.Page?.media?.filterNotNull().orEmpty()
         }
+    }
 
     fun searchCharacter(
         query: String,
@@ -148,4 +176,17 @@ class SearchRepository(
                     .map { SelectableGenre(it) }
             )
         }
+}
+
+/** Search is paginated by a caller-owned cursor, so partial fields are errors, not empty pages. */
+internal fun SearchMediaQuery.Data?.completeSearchMediaPage(
+    expectedPage: Int,
+): PagedResult.Success<SearchMediaQuery.Medium>? {
+    val page = this?.Page ?: return null
+    val media = page.media ?: return null
+    val info = page.pageInfo?.commonPage ?: return null
+    val currentPage = info.currentPage ?: return null
+    val hasNextPage = info.hasNextPage ?: return null
+    if (currentPage != expectedPage) return null
+    return PagedResult.Success(media.filterNotNull(), currentPage, hasNextPage)
 }

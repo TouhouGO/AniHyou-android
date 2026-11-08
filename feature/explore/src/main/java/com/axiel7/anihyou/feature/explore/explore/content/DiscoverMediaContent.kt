@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.explore.explore.content
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -45,7 +46,7 @@ fun DiscoverMediaContent(
             contentType = { it }
         ) { item ->
             MediaItemVertical(
-                title = item.basicMediaDetails.title?.userPreferred.orEmpty(),
+                title = displayMediaTitle(item.basicMediaDetails.id, item.basicMediaDetails.title?.userPreferred.orEmpty()),
                 imageUrl = item.coverImage?.large,
                 blurImage = blurAdult && item.basicMediaDetails.isAdult == true,
                 modifier = Modifier

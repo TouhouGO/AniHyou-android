@@ -19,12 +19,17 @@ kotlin {
 
 dependencies {
     implementation(project(":core:base"))
+    implementation(project(":core:localization"))
+    testImplementation(libs.kotlinx.coroutines.test)
 
     implementation(libs.apollo.runtime)
     implementation(libs.apollo.normalized.cache)
     api(libs.apollo.api)
 
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.coroutines.core)
+
+    testImplementation(libs.junit)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.annotations)

@@ -7,6 +7,7 @@ import com.axiel7.anihyou.core.base.extensions.firstBlocking
 import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.LoginRepository
+import com.axiel7.anihyou.core.domain.repository.LocalizationCatalogRepository
 import com.axiel7.anihyou.core.network.NetworkVariables
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -17,9 +18,12 @@ class MainViewModel(
     private val networkVariables: NetworkVariables,
     private val defaultPreferencesRepository: DefaultPreferencesRepository,
     private val loginRepository: LoginRepository,
+    private val catalog: LocalizationCatalogRepository,
 ) : UiStateViewModel<MainUiState>(), MainEvent {
 
     override val initialState = MainUiState()
+    val titleCatalog = catalog.snapshot
+    val chineseTitles = defaultPreferencesRepository.chineseTitles
 
     override fun onIntentDataReceived(data: Uri?) {
         viewModelScope.launch {
@@ -38,6 +42,7 @@ class MainViewModel(
     }
 
     init {
+        viewModelScope.launch { catalog.load() }
         defaultPreferencesRepository.accessToken
             .onEach { value ->
                 networkVariables.accessToken = value

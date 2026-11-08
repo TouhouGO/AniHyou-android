@@ -1,0 +1,169 @@
+{
+    "measurement": "host JVM; no network; no result cache; not Android device latency",
+    "javaVersion": "21.0.10",
+    "os": "Mac OS X",
+    "architecture": "aarch64",
+    "catalogVersion": "2026.11.07",
+    "catalogBytes": 5715616,
+    "catalogSha256": "191846dc28e72dccbdbf3110a97c6203bb2e2de8e9ec6cfac638c7096df27309",
+    "firstDecodeAndIndexMillis": 416.7075,
+    "warmedDecodeAndIndexP50Millis": 137.106916,
+    "samplesPerQuery": 150,
+    "resultDigest": "efa10cdcc12eed0464cac4dc5190c99eede68207e86a54f1eb55a10bbb8622d4",
+    "consumed": 5146930260,
+    "queries": [
+        {
+            "kind": "ANIME",
+            "query": "星",
+            "returnedIds": 293,
+            "totalMatches": 293,
+            "truncated": false,
+            "p50Millis": 0.866917,
+            "p95Millis": 0.973
+        },
+        {
+            "kind": "ANIME",
+            "query": "之",
+            "returnedIds": 500,
+            "totalMatches": 965,
+            "truncated": true,
+            "p50Millis": 0.87175,
+            "p95Millis": 0.965583
+        },
+        {
+            "kind": "ANIME",
+            "query": "火影",
+            "returnedIds": 16,
+            "totalMatches": 16,
+            "truncated": false,
+            "p50Millis": 0.886375,
+            "p95Millis": 0.9545
+        },
+        {
+            "kind": "ANIME",
+            "query": "物语",
+            "returnedIds": 117,
+            "totalMatches": 117,
+            "truncated": false,
+            "p50Millis": 0.873583,
+            "p95Millis": 0.959708
+        },
+        {
+            "kind": "ANIME",
+            "query": "火影忍者",
+            "returnedIds": 16,
+            "totalMatches": 16,
+            "truncated": false,
+            "p50Millis": 0.867,
+            "p95Millis": 0.977625
+        },
+        {
+            "kind": "ANIME",
+            "query": "名侦探柯南",
+            "returnedIds": 38,
+            "totalMatches": 38,
+            "truncated": false,
+            "p50Millis": 0.849208,
+            "p95Millis": 0.937417
+        },
+        {
+            "kind": "ANIME",
+            "query": "進擊的巨人",
+            "returnedIds": 12,
+            "totalMatches": 12,
+            "truncated": false,
+            "p50Millis": 0.8365,
+            "p95Millis": 0.922333
+        },
+        {
+            "kind": "ANIME",
+            "query": "【我推的孩子】",
+            "returnedIds": 3,
+            "totalMatches": 3,
+            "truncated": false,
+            "p50Millis": 0.850916,
+            "p95Millis": 0.950333
+        },
+        {
+            "kind": "ANIME",
+            "query": "孤独摇滚",
+            "returnedIds": 2,
+            "totalMatches": 2,
+            "truncated": false,
+            "p50Millis": 0.860542,
+            "p95Millis": 0.947166
+        },
+        {
+            "kind": "ANIME",
+            "query": "链锯人",
+            "returnedIds": 2,
+            "totalMatches": 2,
+            "truncated": false,
+            "p50Millis": 0.870666,
+            "p95Millis": 0.967583
+        },
+        {
+            "kind": "ANIME",
+            "query": "重启",
+            "returnedIds": 5,
+            "totalMatches": 5,
+            "truncated": false,
+            "p50Millis": 0.900542,
+            "p95Millis": 0.959083
+        },
+        {
+            "kind": "ANIME",
+            "query": "咲良",
+            "returnedIds": 1,
+            "totalMatches": 1,
+            "truncated": false,
+            "p50Millis": 0.880583,
+            "p95Millis": 0.956459
+        },
+        {
+            "kind": "ANIME",
+            "query": "Re:Zero",
+            "returnedIds": 2,
+            "totalMatches": 2,
+            "truncated": false,
+            "p50Millis": 0.921792,
+            "p95Millis": 0.996875
+        },
+        {
+            "kind": "ANIME",
+            "query": "葬送的芙莉莲",
+            "returnedIds": 2,
+            "totalMatches": 2,
+            "truncated": false,
+            "p50Millis": 0.827625,
+            "p95Millis": 0.89675
+        },
+        {
+            "kind": "MANGA",
+            "query": "葬送的芙莉莲",
+            "returnedIds": 1,
+            "totalMatches": 1,
+            "truncated": false,
+            "p50Millis": 0.119125,
+            "p95Millis": 0.139958
+        },
+        {
+            "kind": "MANGA",
+            "query": "火影",
+            "returnedIds": 1,
+            "totalMatches": 1,
+            "truncated": false,
+            "p50Millis": 0.126958,
+            "p95Millis": 0.136208
+        },
+        {
+            "kind": "ANIME",
+            "query": "not-a-catalog-title-8247301",
+            "returnedIds": 0,
+            "totalMatches": 0,
+            "truncated": false,
+            "p50Millis": 0.502083,
+            "p95Millis": 0.560042
+        }
+    ]
+}

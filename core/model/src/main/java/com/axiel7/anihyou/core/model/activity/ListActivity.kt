@@ -20,9 +20,11 @@ private const val droppedStatus = "dropped"
 private const val pausedWatchingStatus = "paused watching"
 private const val pausedReadingStatus = "paused reading"
 
+internal fun unknownActivityText(status: String?, progress: String?, title: String): String =
+    if (progress != null && progress != "0") "$status $progress of $title" else "$status $title"
+
 @Composable
-fun ListActivityFragment.text(): String {
-    val mediaTitle = media?.title?.userPreferred.orEmpty()
+fun ListActivityFragment.text(mediaTitle: String = media?.title?.userPreferred.orEmpty()): String {
     return if (progress != null && progress != "0") {
         when (status) {
             watchedStatus -> stringResource(R.string.watched_episode_of, progress!!, mediaTitle)
@@ -31,7 +33,7 @@ fun ListActivityFragment.text(): String {
             readStatus -> stringResource(R.string.read_chapter_of, progress!!, mediaTitle)
             rereadChapterStatus -> stringResource(R.string.reread_chapter_of, progress!!, mediaTitle)
             rereadStatus -> stringResource(R.string.reread_media, mediaTitle)
-            else -> "${status?.capitalize(Locale.current)} $progress of $mediaTitle"
+            else -> unknownActivityText(status?.capitalize(Locale.current), progress, mediaTitle)
         }
     } else {
         when (status) {
@@ -40,7 +42,7 @@ fun ListActivityFragment.text(): String {
             completedStatus -> stringResource(R.string.completed_media, mediaTitle)
             droppedStatus -> stringResource(R.string.dropped_media, mediaTitle)
             pausedWatchingStatus, pausedReadingStatus -> stringResource(R.string.paused_media, mediaTitle)
-            else -> "${status?.capitalize(Locale.current)} $mediaTitle"
+            else -> unknownActivityText(status?.capitalize(Locale.current), null, mediaTitle)
         }
     }
 }

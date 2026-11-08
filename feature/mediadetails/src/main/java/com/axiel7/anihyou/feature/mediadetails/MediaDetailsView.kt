@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.mediadetails
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import android.content.Intent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -76,8 +77,8 @@ import com.axiel7.anihyou.core.common.utils.ContextUtils.openActionView
 import com.axiel7.anihyou.core.common.utils.ContextUtils.openShareSheet
 import com.axiel7.anihyou.core.common.utils.NumberUtils.format
 import com.axiel7.anihyou.core.common.utils.NumberUtils.isGreaterThanZero
-import com.axiel7.anihyou.core.common.utils.StringUtils.htmlStripped
 import com.axiel7.anihyou.core.common.utils.StringUtils.orUnknown
+import com.axiel7.anihyou.core.domain.localization.DescriptionState
 import com.axiel7.anihyou.core.domain.model.CustomLink
 import com.axiel7.anihyou.core.model.Theme
 import com.axiel7.anihyou.core.model.genre.SelectableGenre.Companion.genreTagLocalized
@@ -122,6 +123,7 @@ import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.secondsToLegibleText
 import com.axiel7.anihyou.core.ui.utils.StringUtils.htmlDecoded
 import com.axiel7.anihyou.core.ui.utils.StringUtils.toAnnotatedString
 import com.axiel7.anihyou.feature.editmedia.EditMediaSheet
+import com.axiel7.anihyou.feature.mediadetails.composables.DescriptionSourceStatus
 import com.axiel7.anihyou.feature.mediadetails.composables.MediaCharacterStaffView
 import com.axiel7.anihyou.feature.mediadetails.composables.MediaInformationView
 import com.axiel7.anihyou.feature.mediadetails.composables.MediaRelationsView
@@ -275,7 +277,7 @@ private fun MediaDetailsContent(
                         exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(),
                     ) {
                         Text(
-                            text = uiState.details?.title?.userPreferred.orEmpty(),
+                            text = displayMediaTitle(uiState.details?.id, uiState.details?.title?.userPreferred.orEmpty()),
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1,
                         )
@@ -396,8 +398,8 @@ private fun MediaDetailsContent(
                 )
                 Column {
                     Text(
-                        text = uiState.details?.title?.userPreferred
-                            ?: stringResource(R.string.unknown),
+                        text = displayMediaTitle(uiState.details?.id, uiState.details?.title?.userPreferred
+                            ?: stringResource(R.string.unknown)),
                         modifier = Modifier
                             .padding(bottom = 8.dp, end = 8.dp)
                             .defaultPlaceholder(visible = uiState.isLoading)
@@ -536,19 +538,16 @@ private fun MediaDetailsContent(
             }
 
             // Synopsis
+            val synopsis = selectSynopsis(uiState.chineseDescription, uiState.details?.description)
+            val renderedSynopsis = if (uiState.isLoading) null else synopsis.render {
+                it.htmlDecoded().toAnnotatedString()
+            }
+            val displayedSynopsis = renderedSynopsis ?: buildAnnotatedString {
+                append(stringResource(if (uiState.isLoading) R.string.lorem_ipsun else R.string.no_description))
+            }
             SelectionContainer {
                 Text(
-                    text = when {
-                        uiState.isLoading -> buildAnnotatedString {
-                            append(stringResource(R.string.lorem_ipsun))
-                        }
-
-                        uiState.details?.description.isNullOrBlank() -> buildAnnotatedString {
-                            append(stringResource(R.string.no_description))
-                        }
-
-                        else -> uiState.details.description!!.htmlDecoded().toAnnotatedString()
-                    },
+                    text = displayedSynopsis,
                     modifier = Modifier
                         .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 4.dp)
                         .clip(MaterialTheme.shapes.extraSmall)
@@ -562,6 +561,7 @@ private fun MediaDetailsContent(
                     maxLines = maxLinesSynopsis
                 )
             }
+            DescriptionSourceStatus(if (uiState.isLoading || uiState.details == null) DescriptionState.Disabled else uiState.chineseDescription, event?.let { { it.retryChineseDescription() } })
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -569,9 +569,9 @@ private fun MediaDetailsContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (!isCurrentLanguageEn) {
+                if (synopsis.shouldOfferTranslation(isCurrentLanguageEn)) {
                     TranslateIconButton(
-                        text = uiState.details?.description?.htmlStripped(),
+                        text = renderedSynopsis?.text,
                         app = uiState.translatorApp,
                     )
                 } else {

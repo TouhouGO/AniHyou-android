@@ -38,6 +38,7 @@ import com.axiel7.anihyou.core.ui.composables.person.PERSON_IMAGE_SIZE_BIG
 import com.axiel7.anihyou.core.ui.composables.person.PersonImage
 import com.axiel7.anihyou.core.ui.composables.spoilerPlaceholder
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.formatted
+import com.axiel7.anihyou.core.ui.localization.displayCharacterName
 import com.axiel7.anihyou.feature.characterdetails.CharacterDetailsUiState
 
 @Composable
@@ -48,6 +49,10 @@ fun CharacterInfoView(
     navigateToFullscreenImage: (String) -> Unit,
 ) {
     val context = LocalContext.current
+    val displayName = displayCharacterName(
+        uiState.character?.id,
+        uiState.character?.name?.userPreferred ?: "Loading",
+    )
     var showSpoiler by remember { mutableStateOf(false) }
     val isCurrentLanguageEn = LocalIsLanguageEn.current
 
@@ -77,7 +82,7 @@ fun CharacterInfoView(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = uiState.character?.name?.userPreferred ?: "Loading",
+                        text = displayName,
                         modifier = Modifier
                             .padding(8.dp)
                             .defaultPlaceholder(visible = uiState.isLoading)

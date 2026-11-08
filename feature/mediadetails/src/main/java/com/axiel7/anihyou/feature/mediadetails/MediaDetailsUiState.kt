@@ -1,6 +1,7 @@
 package com.axiel7.anihyou.feature.mediadetails
 
 import androidx.compose.runtime.Immutable
+import com.axiel7.anihyou.core.domain.localization.DescriptionState
 import com.axiel7.anihyou.core.model.media.AnimeThemes
 import com.axiel7.anihyou.core.model.media.MediaRelationsAndRecommendations
 import com.axiel7.anihyou.core.model.stats.Stat
@@ -33,6 +34,7 @@ data class MediaDetailsUiState(
     val coloredMedia: Boolean = true,
 
     val details: MediaDetailsQuery.Media? = null,
+    val chineseDescription: DescriptionState = DescriptionState.Disabled,
     val openings: List<AnimeThemes.Theme>? = null,
     val endings: List<AnimeThemes.Theme>? = null,
     val customLinks: List<CustomLink> = emptyList(),

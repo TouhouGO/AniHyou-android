@@ -49,6 +49,7 @@ import com.axiel7.anihyou.core.ui.composables.common.singleClick
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemHorizontal
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemHorizontalPlaceholder
 import com.axiel7.anihyou.core.ui.composables.sheet.ModalBottomSheet
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import kotlinx.collections.immutable.toImmutableList
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -162,7 +163,7 @@ private fun SearchContent(
                         items = uiState.searchResult,
                     ) { media ->
                         MediaItemHorizontal(
-                            title = media.basicMediaDetails.title?.userPreferred.orEmpty(),
+                            title = displayMediaTitle(media.basicMediaDetails.id, media.basicMediaDetails.title?.userPreferred.orEmpty()),
                             imageUrl = media.coverImage?.large,
                             blurImage = blurAdult && media.basicMediaDetails.isAdult == true,
                             score = media.weightedScore ?: 0,

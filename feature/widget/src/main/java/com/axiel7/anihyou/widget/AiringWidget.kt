@@ -2,6 +2,8 @@ package com.axiel7.anihyou.widget
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,6 +59,9 @@ import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.MediaRepository
 import com.axiel7.anihyou.core.model.DeepLink
 import com.axiel7.anihyou.core.model.media.exampleAiringWidgetEntry
+import com.axiel7.anihyou.core.domain.repository.LocalizationCatalogRepository
+import com.axiel7.anihyou.core.ui.localization.LocalizationDisplayContext
+import com.axiel7.anihyou.core.localization.LocalizationSnapshot
 import com.axiel7.anihyou.core.network.AiringWidgetQuery
 import com.axiel7.anihyou.core.network.NetworkVariables
 import com.axiel7.anihyou.core.resources.ColorUtils.colorFromHex
@@ -76,10 +81,12 @@ class AiringWidget : GlanceAppWidget(), KoinComponent {
     private val networkVariables: NetworkVariables by inject()
     private val defaultPreferencesRepository: DefaultPreferencesRepository by inject()
     private val mediaRepository: MediaRepository by inject()
+    private val catalog: LocalizationCatalogRepository by inject()
 
     override val stateDefinition = PreferencesGlanceStateDefinition
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        catalog.load()
         networkVariables.accessToken = defaultPreferencesRepository.accessToken.first()
 
         val result = mediaRepository.getAiringWidgetData(page = 1, perPage = 50)
@@ -88,8 +95,11 @@ class AiringWidget : GlanceAppWidget(), KoinComponent {
             val prefs = currentState<Preferences>()
             val isColored = prefs[IS_COLORED_KEY] ?: true
 
+            val snapshot by catalog.snapshot.collectAsState()
+            val enabled by defaultPreferencesRepository.chineseTitles.collectAsState(initial = false)
             GlanceTheme(colors = DynamicThemeColorProviders) {
                 Content(
+                    display = LocalizationDisplayContext(snapshot, enabled, false, false),
                     result = result,
                     isColored = isColored,
                     onRefresh = { scope.launch { update(context, id) } },
@@ -99,6 +109,7 @@ class AiringWidget : GlanceAppWidget(), KoinComponent {
     }
 
     override suspend fun providePreview(context: Context, widgetCategory: Int) {
+        catalog.load()
         networkVariables.accessToken = defaultPreferencesRepository.accessToken.first()
 
         val result = mediaRepository.getAiringWidgetData(page = 1, perPage = 50)
@@ -113,8 +124,11 @@ class AiringWidget : GlanceAppWidget(), KoinComponent {
             )
 
         provideContent {
+            val snapshot by catalog.snapshot.collectAsState()
+            val enabled by defaultPreferencesRepository.chineseTitles.collectAsState(initial = false)
             GlanceTheme(colors = DynamicThemeColorProviders) {
                 Content(
+                    display = LocalizationDisplayContext(snapshot, enabled, false, false),
                     result = result,
                     isColored = true,
                     onRefresh = {},
@@ -128,6 +142,7 @@ class AiringWidget : GlanceAppWidget(), KoinComponent {
         result: DataResult<List<AiringWidgetQuery.Medium>>,
         isColored: Boolean,
         onRefresh: () -> Unit,
+        display: LocalizationDisplayContext = LocalizationDisplayContext(LocalizationSnapshot.EMPTY, false, false, false),
     ) {
         val todayString = (System.currentTimeMillis() / 1000).timestampToDateString("yyyy-MM-dd")
 
@@ -161,7 +176,8 @@ class AiringWidget : GlanceAppWidget(), KoinComponent {
                             item = item,
                             showDate = showDate,
                             isToday = isToday,
-                            isColored = isColored
+                            isColored = isColored,
+                            display = display,
                         )
                     }
                 } else {
@@ -238,7 +254,8 @@ class AiringWidget : GlanceAppWidget(), KoinComponent {
         item: AiringWidgetQuery.Medium,
         showDate: Boolean,
         isToday: Boolean,
-        isColored: Boolean
+        isColored: Boolean,
+        display: LocalizationDisplayContext,
     ) {
         val timestamp = item.nextAiringEpisode?.airingAt?.toLong()
         val dayOfWeek = timestamp?.timestampToDateString("E").orEmpty()
@@ -359,7 +376,7 @@ class AiringWidget : GlanceAppWidget(), KoinComponent {
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = item.title?.userPreferred.orEmpty(),
+                        text = display.mediaTitle(item.id, item.title?.userPreferred.orEmpty()),
                         style = TextStyle(
                             color = textColor,
                             fontSize = 14.sp,

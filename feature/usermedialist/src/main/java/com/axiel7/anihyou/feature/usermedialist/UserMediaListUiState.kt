@@ -22,6 +22,7 @@ import com.axiel7.anihyou.core.network.type.ScoreFormat
 data class UserMediaListUiState(
     val mediaType: MediaType,
     val lists: MutableMap<String, List<CommonMediaListEntry>> = mutableMapOf(),
+    val standardListNames: Set<String> = emptySet(),
     val orderedListNames: List<String> = emptyList(),
     val selectedListName: String? = null,
     val entries: SnapshotStateList<CommonMediaListEntry> = mutableStateListOf(),

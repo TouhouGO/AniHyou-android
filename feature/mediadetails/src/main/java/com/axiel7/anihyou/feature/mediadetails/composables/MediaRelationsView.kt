@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.mediadetails.composables
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -71,7 +72,10 @@ fun MediaRelationsView(
                     contentType = { it }
                 ) { item ->
                     MediaItemVertical(
-                        title = item.mediaRelated.node?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                        title = displayMediaTitle(
+                            item.mediaRelated.node?.basicMediaDetails?.id,
+                            item.mediaRelated.node?.basicMediaDetails?.title?.userPreferred.orEmpty()
+                        ),
                         imageUrl = item.mediaRelated.node?.coverImage?.large,
                         blurImage = blurAdult && item.mediaRelated.node?.basicMediaDetails?.isAdult == true,
                         modifier = Modifier.padding(horizontal = 8.dp),
@@ -129,8 +133,10 @@ fun MediaRelationsView(
 
 
                 MediaItemVertical(
-                    title = item.mediaRecommended.mediaRecommendation?.basicMediaDetails
-                        ?.title?.userPreferred.orEmpty(),
+                    title = displayMediaTitle(
+                        item.mediaRecommended.mediaRecommendation?.basicMediaDetails?.id,
+                        item.mediaRecommended.mediaRecommendation?.basicMediaDetails?.title?.userPreferred.orEmpty()
+                    ),
                     imageUrl = item.mediaRecommended.mediaRecommendation?.coverImage?.large,
                     blurImage = blurAdult
                             && item.mediaRecommended.mediaRecommendation?.basicMediaDetails?.isAdult == true,

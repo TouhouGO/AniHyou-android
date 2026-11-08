@@ -21,6 +21,8 @@ import com.axiel7.anihyou.core.ui.composables.common.TriFilterChip
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemHorizontalPlaceholder
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemHorizontal
+import com.axiel7.anihyou.core.ui.localization.displayCharacterName
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 
 @Composable
 fun StaffCharacterView(
@@ -59,12 +61,12 @@ fun StaffCharacterView(
         ) { item ->
             item.characters?.forEach { character ->
                 PersonItemHorizontal(
-                    title = character?.name?.userPreferred.orEmpty(),
+                    title = displayCharacterName(character?.id, character?.name?.userPreferred.orEmpty()),
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .fillMaxWidth(),
                     imageUrl = character?.image?.large,
-                    subtitle = item.node?.title?.userPreferred.orEmpty(),
+                    subtitle = displayMediaTitle(item.node?.id, item.node?.title?.userPreferred.orEmpty()),
                     onClick = {
                         character?.id?.let(navigateToCharacterDetails)
                     }

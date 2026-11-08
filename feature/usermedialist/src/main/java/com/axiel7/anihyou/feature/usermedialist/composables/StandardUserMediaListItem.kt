@@ -42,6 +42,7 @@ import com.axiel7.anihyou.core.ui.composables.media.MediaProgressIndicator
 import com.axiel7.anihyou.core.ui.composables.media.PriorityIndicator
 import com.axiel7.anihyou.core.ui.composables.scores.BadgeScoreIndicator
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 
 @Composable
 fun StandardUserMediaListItem(
@@ -122,7 +123,7 @@ fun StandardUserMediaListItem(
             ) {
                 Column {
                     Text(
-                        text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                        text = displayMediaTitle(item.media?.basicMediaDetails?.id, item.media?.basicMediaDetails?.title?.userPreferred.orEmpty()),
                         modifier = Modifier
                             .padding(bottom = 8.dp),
                         color = MaterialTheme.colorScheme.onSurface,

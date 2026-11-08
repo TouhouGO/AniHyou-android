@@ -18,6 +18,7 @@ import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.LocalNavActionManager
 import com.axiel7.anihyou.core.ui.composables.InfoTitle
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.localization.displayStaffName
 import com.axiel7.anihyou.feature.profile.stats.UserStatsEvent
 import com.axiel7.anihyou.feature.profile.stats.UserStatsUiState
 import com.axiel7.anihyou.feature.profile.stats.composables.DistributionTypeChips
@@ -61,7 +62,7 @@ fun VoiceActorsStatsView(
             contentType = { _, stat -> stat }
         ) { index, stat ->
             PositionalStatItemView(
-                name = stat.voiceActor?.name?.userPreferred ?: stringResource(R.string.unknown),
+                name = displayStaffName(stat.voiceActor?.id, stat.voiceActor?.name?.userPreferred ?: stringResource(R.string.unknown)),
                 position = index + 1,
                 count = stat.count,
                 meanScore = stat.meanScore,

@@ -21,6 +21,7 @@ import com.axiel7.anihyou.core.base.APP_PACKAGE_NAME
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.domain.repository.AnimeNotificationsRepository
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
+import com.axiel7.anihyou.core.domain.repository.LocalizationCatalogRepository
 import com.axiel7.anihyou.core.domain.repository.NotificationRepository
 import com.axiel7.anihyou.core.domain.repository.UserRepository
 import com.axiel7.anihyou.core.model.notification.GenericNotification.Companion.localizedText
@@ -30,6 +31,7 @@ import com.axiel7.anihyou.core.model.notification.NotificationTypeGroup.Companio
 import com.axiel7.anihyou.core.model.notification.NotificationTypeGroup.Companion.asGroup
 import com.axiel7.anihyou.core.network.NetworkVariables
 import com.axiel7.anihyou.core.resources.R
+import com.axiel7.anihyou.core.ui.localization.LocalizationDisplayContext
 import com.axiel7.anihyou.core.ui.utils.ImageUtils.getBitmapFromUrl
 import com.axiel7.anihyou.core.ui.utils.NotificationUtils.createNotificationChannel
 import com.axiel7.anihyou.core.ui.utils.NotificationUtils.showNotification
@@ -46,6 +48,7 @@ class NotificationWorker(
     private val defaultPreferencesRepository: DefaultPreferencesRepository,
     private val animeNotificationsRepository: AnimeNotificationsRepository,
     private val networkVariables: NetworkVariables,
+    private val localizationCatalogRepository: LocalizationCatalogRepository,
 ) : CoroutineWorker(context, params) {
 
     // AniList API does not have a socket for notifications, so we schedule a work with an interval
@@ -63,6 +66,8 @@ class NotificationWorker(
                 ?: return Result.failure()
             if (unreadCount <= 0) return Result.success()
 
+            localizationCatalogRepository.load()
+            val display = LocalizationDisplayContext(localizationCatalogRepository.snapshot.value, defaultPreferencesRepository.chineseTitles.firstOrNull() == true, false, false)
             val result = notificationsRepository.getNewNotifications(unreadCount)
 
             return (result as? DataResult.Success)?.data?.let { data ->
@@ -84,6 +89,10 @@ class NotificationWorker(
                     val allowedNotifications = notifications.mapNotNull { notification ->
                         val notificationAllowances = animeNotificationsRepository.getAnimeNotificationById(notification.contentId)
 
+                        val displayTitle = notification.mediaText?.let {
+                            display.mediaTitle(notification.contentId, it.title.orEmpty())
+                        }
+
                         // get the notification depending on if it's an AIRING notification or not
                         val localizedText = if (type?.asGroup() == NotificationTypeGroup.AIRING) {
                             val allowStartAiring = notificationAllowances?.allowStartAiring ?: true
@@ -101,11 +110,12 @@ class NotificationWorker(
                                     airingNotification = allowNewAiring,
                                     endNotification = allowFinishAiring,
                                     episodeCount = 3,
+                                    displayTitle = displayTitle,
                                 )
                             }.getOrDefault(notification.text)
                         } else {
                             runCatching {
-                                notification.localizedText(applicationContext.resources)
+                                notification.localizedText(applicationContext.resources, displayTitle = displayTitle)
                             }.getOrDefault(notification.text)
                         } ?: return@mapNotNull null
 

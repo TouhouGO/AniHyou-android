@@ -1,0 +1,5 @@
+SELECT ?item ?id WHERE {
+  hint:Query hint:optimizer "None" .
+  ?item wdt:P8731 ?id .
+}
+LIMIT 100000

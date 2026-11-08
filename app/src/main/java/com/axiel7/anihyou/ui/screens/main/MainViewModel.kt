@@ -2,6 +2,8 @@ package com.axiel7.anihyou.ui.screens.main
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
+import androidx.glance.appwidget.updateAll
 import androidx.core.net.toUri
 import androidx.core.performance.DevicePerformance
 import androidx.lifecycle.ViewModel
@@ -13,8 +15,10 @@ import com.axiel7.anihyou.core.base.ANIHYOU_WEAR_CALLBACK_URL
 import com.axiel7.anihyou.core.common.utils.ContextUtils.showToast
 import com.axiel7.anihyou.core.common.utils.DeviceUtils
 import com.axiel7.anihyou.core.domain.model.CustomLink
+import com.axiel7.anihyou.core.domain.repository.CatalogUpdateMonitor
 import com.axiel7.anihyou.core.domain.repository.CustomLinksRepository
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
+import com.axiel7.anihyou.core.domain.repository.LocalizationCatalogRepository
 import com.axiel7.anihyou.core.domain.repository.LoginRepository
 import com.axiel7.anihyou.core.domain.repository.NotificationRepository
 import com.axiel7.anihyou.core.model.DefaultTab
@@ -23,7 +27,13 @@ import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.network.type.ScoreFormat
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.startRemoteActivity
+import com.axiel7.anihyou.widget.AiringWidget
 import com.materialkolor.PaletteStyle
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
@@ -32,6 +42,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class MainViewModel(
+    private val localizationCatalogRepository: LocalizationCatalogRepository,
+    private val catalogMonitor: CatalogUpdateMonitor,
     private val networkVariables: NetworkVariables,
     private val loginRepository: LoginRepository,
     private val notificationRepository: NotificationRepository,
@@ -39,6 +51,44 @@ class MainViewModel(
     private val customLinksRepository: CustomLinksRepository,
     private val devicePerformance: DevicePerformance,
 ) : ViewModel(), MainEvent {
+
+    val catalogMonitorState = catalogMonitor.state
+    fun checkCatalogOnForeground() {
+        viewModelScope.launch {
+            try { catalogMonitor.check(manual = false) }
+            catch (e: CancellationException) { throw e }
+            catch (_: Exception) { /* The typed failure remains available in monitor state. */ }
+        }
+    }
+    val titleCatalog = localizationCatalogRepository.snapshot
+    val chineseTitles = defaultPreferencesRepository.chineseTitles
+    val chinesePeople = defaultPreferencesRepository.chinesePeople
+    val chineseTags = defaultPreferencesRepository.chineseTags
+
+    init { viewModelScope.launch { localizationCatalogRepository.load() } }
+
+    private var widgetRefreshStarted = false
+
+    @OptIn(FlowPreview::class)
+    fun observeWidgetTitles(context: Context) {
+        if (widgetRefreshStarted) return
+        widgetRefreshStarted = true
+        val appContext = context.applicationContext
+        viewModelScope.launch {
+            combine(titleCatalog, chineseTitles) { snapshot, enabled -> snapshot to enabled }
+                .distinctUntilChanged()
+                .debounce(500)
+                .collect {
+                    try {
+                        AiringWidget().updateAll(appContext)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.w("MainViewModel", "Widget title refresh failed", e)
+                    }
+                }
+        }
+    }
 
     val accessToken = defaultPreferencesRepository.accessToken
 

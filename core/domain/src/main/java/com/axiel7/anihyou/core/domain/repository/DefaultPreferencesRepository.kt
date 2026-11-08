@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
@@ -32,11 +33,25 @@ import com.axiel7.anihyou.core.resources.ColorUtils.colorFromHex
 import com.axiel7.anihyou.core.resources.ColorUtils.hexToString
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class DefaultPreferencesRepository(
     private val dataStore: DataStore<Preferences>
-) {
+) : CatalogCheckPreferencePort {
+    override suspend fun read(): CatalogCheckPreferences {
+        val p = dataStore.data.first()
+        return CatalogCheckPreferences(p[CATALOG_AUTO] ?: true, p[CATALOG_LAST], p[CATALOG_NEXT] ?: 0, p[CATALOG_OFFER], p[CATALOG_BASE_VERSION], p[CATALOG_BASE_HASH])
+    }
+    override suspend fun write(value: CatalogCheckPreferences) {
+        dataStore.edit { p ->
+            p[CATALOG_AUTO] = value.enabled
+            p[CATALOG_NEXT] = value.nextAttempt
+            fun <T> put(key: Preferences.Key<T>, v: T?) { if (v == null) p.remove(key) else p[key] = v }
+            put(CATALOG_LAST, value.lastAttempt); put(CATALOG_OFFER, value.offerVersion)
+            put(CATALOG_BASE_VERSION, value.catalogVersion); put(CATALOG_BASE_HASH, value.catalogHash)
+        }
+    }
 
     // user credentials
     val accessToken = dataStore.getValue(ACCESS_TOKEN_KEY)
@@ -371,6 +386,17 @@ class DefaultPreferencesRepository(
         dataStore.setValue(HIDE_SCORES_KEY, value)
     }
 
+    val chineseDescriptions = dataStore.getValue(CHINESE_DESCRIPTIONS_KEY, default = true)
+    suspend fun setChineseDescriptions(value: Boolean) { dataStore.setValue(CHINESE_DESCRIPTIONS_KEY, value) }
+
+    val chineseTitles = dataStore.getValue(CHINESE_TITLES_KEY, default = true)
+    suspend fun setChineseTitles(value: Boolean) { dataStore.setValue(CHINESE_TITLES_KEY, value) }
+
+    val chinesePeople = dataStore.getValue(CHINESE_PEOPLE_KEY, default = true)
+    suspend fun setChinesePeople(value: Boolean) { dataStore.setValue(CHINESE_PEOPLE_KEY, value) }
+    val chineseTags = dataStore.getValue(CHINESE_TAGS_KEY, default = true)
+    suspend fun setChineseTags(value: Boolean) { dataStore.setValue(CHINESE_TAGS_KEY, value) }
+
     // search
 
     val useFuzzySearch = dataStore.getValue(USE_FUZZY_SEARCH_KEY)
@@ -404,9 +430,19 @@ class DefaultPreferencesRepository(
     }
 
     companion object {
+        private val CATALOG_AUTO = booleanPreferencesKey("catalog_auto_check")
+        private val CATALOG_LAST = longPreferencesKey("catalog_last_attempt")
+        private val CATALOG_NEXT = longPreferencesKey("catalog_next_attempt")
+        private val CATALOG_OFFER = stringPreferencesKey("catalog_offer")
+        private val CATALOG_BASE_VERSION = stringPreferencesKey("catalog_base_version")
+        private val CATALOG_BASE_HASH = stringPreferencesKey("catalog_base_hash")
         private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
         private val USER_ID_KEY = intPreferencesKey("user_id")
 
+        private val CHINESE_PEOPLE_KEY = booleanPreferencesKey("chinese_people")
+        private val CHINESE_TAGS_KEY = booleanPreferencesKey("chinese_tags")
+        private val CHINESE_DESCRIPTIONS_KEY = booleanPreferencesKey("chinese_descriptions")
+        private val CHINESE_TITLES_KEY = booleanPreferencesKey("chinese_titles")
         private val TITLE_LANGUAGE_KEY = stringPreferencesKey("title_language")
         private val DISPLAY_ADULT_KEY = booleanPreferencesKey("display_adult")
         private val BLUR_ADULT_KEY = booleanPreferencesKey("blur_adult")

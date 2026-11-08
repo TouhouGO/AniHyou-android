@@ -28,6 +28,7 @@ import com.axiel7.anihyou.core.ui.composables.common.TriFilterChip
 import com.axiel7.anihyou.core.ui.composables.list.OnBottomReached
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemHorizontal
 import com.axiel7.anihyou.core.ui.composables.media.MediaItemHorizontalPlaceholder
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 
 @Composable
 fun StaffMediaView(
@@ -82,7 +83,7 @@ fun StaffMediaView(
             contentType = { it.second }
         ) { item ->
             MediaItemHorizontal(
-                title = item.second.value.node?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                title = displayMediaTitle(item.second.value.node?.basicMediaDetails?.id, item.second.value.node?.basicMediaDetails?.title?.userPreferred.orEmpty()),
                 imageUrl = item.second.value.node?.coverImage?.large,
                 blurImage = blurAdult && item.second.value.node?.basicMediaDetails?.isAdult == true,
                 subtitle1 = {

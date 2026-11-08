@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.collection.intSetOf
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -18,6 +19,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -26,6 +30,8 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import com.axiel7.anihyou.core.ui.localization.LocalLocalizationDisplay
+import com.axiel7.anihyou.core.ui.localization.LocalizationDisplayContext
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -78,6 +84,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        viewModel.observeWidgetTitles(applicationContext)
 
         val deepLink = findDeepLink()
 
@@ -103,6 +110,11 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val windowSizeClass = calculateWindowSizeClass(this)
+            val catalogMonitor by viewModel.catalogMonitorState.collectAsStateWithLifecycle()
+            val titleCatalog by viewModel.titleCatalog.collectAsStateWithLifecycle()
+            val chineseTitles by viewModel.chineseTitles.collectAsStateWithLifecycle(false)
+            val chinesePeople by viewModel.chinesePeople.collectAsStateWithLifecycle(false)
+            val chineseTags by viewModel.chineseTags.collectAsStateWithLifecycle(false)
             val theme by viewModel.theme.collectAsStateWithLifecycle(initialTheme)
             val isDark = if (theme == Theme.FOLLOW_SYSTEM) isSystemInDarkTheme()
             else theme == Theme.DARK
@@ -145,11 +157,13 @@ class MainActivity : AppCompatActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     CompositionLocalProvider(
+                        LocalLocalizationDisplay provides LocalizationDisplayContext(titleCatalog, chineseTitles, chinesePeople, chineseTags),
                         LocalBlurAdult provides blurAdultContent,
                         LocalScoreFormat provides scoreFormat,
                         LocalHideScores provides hideScores,
                     ) {
                         MainView(
+                            catalogOfferVersion = catalogMonitor.offerVersion,
                             windowSizeClass = windowSizeClass,
                             isLoggedIn = isLoggedIn,
                             tabToOpen = startTab,
@@ -171,6 +185,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        viewModel.checkCatalogOnForeground()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -233,6 +252,7 @@ class MainActivity : AppCompatActivity() {
 
 @Composable
 fun MainView(
+    catalogOfferVersion: String? = null,
     windowSizeClass: WindowSizeClass,
     isLoggedIn: Boolean,
     tabToOpen: Int,
@@ -281,12 +301,19 @@ fun MainView(
     CompositionLocalProvider(LocalNavActionManager provides navActionManager) {
         Scaffold(
             bottomBar = {
+                Column {
+                if (catalogOfferVersion != null && navigationState.getCurrentRoute() != Route.Settings) {
+                    TextButton(onClick = { navigator.navigate(Route.Settings) }) {
+                        Text(stringResource(com.axiel7.anihyou.core.resources.R.string.catalog_update_notice, catalogOfferVersion))
+                    }
+                }
                 if (isCompactScreen) {
                     MainBottomNavBar(
                         currentTopRoute = navigator.state.topLevelRoute,
                         isVisible = isBottomDestination,
                         onItemSelected = { event?.saveLastTab(it) }
                     )
+                }
                 }
             },
             contentWindowInsets = if (isCompactScreen) WindowInsets.systemBars

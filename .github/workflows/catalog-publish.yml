@@ -1,0 +1,41 @@
+name: Publish catalog
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'data/localization/**'
+      - 'core/localization/src/main/resources/localization/catalog.json'
+      - 'scripts/localization/**'
+      - 'docs/localization/catalog-report.json'
+      - '.github/workflows/catalog-publish.yml'
+permissions: {}
+concurrency:
+  group: catalog-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'TouhouGO/AniHyou-android' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Rebuild and validate exact catalog
+        run: |
+          python3 -m unittest discover -s scripts/localization -p 'test_*.py'
+          mkdir -p /tmp/catalog-check
+          python3 scripts/localization/rebuild_catalog.py --output /tmp/catalog-check/catalog.json --report /tmp/catalog-check/report.json
+          cmp /tmp/catalog-check/catalog.json core/localization/src/main/resources/localization/catalog.json
+          cmp /tmp/catalog-check/report.json docs/localization/catalog-report.json
+          ./gradlew :core:localization:test
+      - name: Publish verified catalog
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/localization/publish_catalog.py core/localization/src/main/resources/localization/catalog.json

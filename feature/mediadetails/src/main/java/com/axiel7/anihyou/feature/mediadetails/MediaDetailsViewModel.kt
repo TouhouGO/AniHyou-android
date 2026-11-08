@@ -4,6 +4,11 @@ import androidx.lifecycle.viewModelScope
 import com.axiel7.anihyou.core.base.DataResult
 import com.axiel7.anihyou.core.base.PagedResult
 import com.axiel7.anihyou.core.common.viewmodel.UiStateViewModel
+import com.axiel7.anihyou.core.domain.localization.ChineseDescriptionRepository
+import com.axiel7.anihyou.core.domain.localization.DescriptionState
+import com.axiel7.anihyou.core.domain.repository.LocalizationCatalogRepository
+import com.axiel7.anihyou.core.localization.MediaIdentity
+import com.axiel7.anihyou.core.localization.MediaKind
 import com.axiel7.anihyou.core.domain.repository.AnimeNotificationsRepository
 import com.axiel7.anihyou.core.domain.repository.CustomLinksRepository
 import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
@@ -22,8 +27,13 @@ import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.navigation.Route
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
@@ -39,7 +49,16 @@ class MediaDetailsViewModel(
     private val mediaRepository: MediaRepository,
     private val favoriteRepository: FavoriteRepository,
     private val animeNotificationsRepository: AnimeNotificationsRepository,
+    chineseDescriptionRepository: ChineseDescriptionRepository,
+    localizationCatalogRepository: LocalizationCatalogRepository,
 ) : UiStateViewModel<MediaDetailsUiState>(), MediaDetailsEvent {
+
+    private val descriptionIdentity = MutableStateFlow<MediaIdentity?>(null)
+    private val descriptionRetryGeneration = MutableStateFlow(0L)
+
+    override fun retryChineseDescription() {
+        descriptionRetryGeneration.update { it + 1 }
+    }
 
     override val initialState = MediaDetailsUiState(isLoggedIn = arguments.isLoggedIn)
 
@@ -329,6 +348,17 @@ class MediaDetailsViewModel(
     }
 
     init {
+        val descriptionsEnabled = defaultPreferencesRepository.chineseDescriptions
+            .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+        viewModelScope.launch { localizationCatalogRepository.load() }
+        chineseDescriptionRepository.observe(
+            descriptionIdentity,
+            descriptionsEnabled,
+            localizationCatalogRepository.snapshot,
+            descriptionRetryGeneration.drop(1).map { Unit },
+        ).onEach { value -> mutableUiState.update { it.copy(chineseDescription = value) } }
+            .launchIn(viewModelScope)
+
         defaultPreferencesRepository.coloredMedia
             .onEach { value ->
                 mutableUiState.update { it.copy(coloredMedia = value) }
@@ -337,6 +367,18 @@ class MediaDetailsViewModel(
 
         mediaRepository.getMediaDetails(mediaId = arguments.id)
             .onEach { result ->
+                val details = (result as? DataResult.Success)?.data
+                val kind = when (details?.basicMediaDetails?.type) {
+                    MediaType.ANIME -> MediaKind.ANIME
+                    MediaType.MANGA -> MediaKind.MANGA
+                    else -> null
+                }
+                val identity = if (kind != null && details != null && details.id > 0)
+                    MediaIdentity(kind, details.id) else null
+                if (descriptionIdentity.value != identity) {
+                    mutableUiState.update { it.copy(chineseDescription = DescriptionState.Disabled) }
+                    descriptionIdentity.value = identity
+                }
                 mutableUiState.updateAndGet {
                     if (result is DataResult.Success) {
                         it.copy(

@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.axiel7.anihyou.core.network.fragment.CommonVoiceActor
 import com.axiel7.anihyou.core.ui.composables.person.PersonItemHorizontal
 import com.axiel7.anihyou.core.ui.composables.sheet.ModalBottomSheet
+import com.axiel7.anihyou.core.ui.localization.displayStaffName
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.CoroutineScope
 
@@ -39,7 +40,7 @@ fun CharacterVoiceActorsSheet(
                 contentType = { it }
             ) {
                 PersonItemHorizontal(
-                    title = it.name?.userPreferred.orEmpty(),
+                    title = displayStaffName(it.id, it.name?.userPreferred.orEmpty()),
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .fillMaxWidth(),

@@ -40,6 +40,7 @@ import com.axiel7.anihyou.core.ui.composables.media.MediaProgressIndicator
 import com.axiel7.anihyou.core.ui.composables.media.PriorityIndicator
 import com.axiel7.anihyou.core.ui.composables.scores.BadgeScoreIndicator
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 
 @Composable
 fun GridUserMediaListItem(
@@ -128,7 +129,7 @@ fun GridUserMediaListItem(
             }//:Box
 
             Text(
-                text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                text = displayMediaTitle(item.media?.basicMediaDetails?.id, item.media?.basicMediaDetails?.title?.userPreferred.orEmpty()),
                 modifier = Modifier.padding(start = 8.dp, top = 8.dp, end = 8.dp),
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,

@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.notifications
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.PaddingValues
@@ -151,7 +152,12 @@ private fun NotificationsContent(
                     contentType = { it }
                 ) { item ->
                     NotificationItem(
-                        title = item.localizedText(LocalResources.current) ?: item.text,
+                        title = item.localizedText(
+                            LocalResources.current,
+                            displayTitle = item.mediaText?.let {
+                                displayMediaTitle(item.contentId, it.title.orEmpty())
+                            },
+                        ) ?: item.text,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                         blurImage = blurAdult && item.isAdultMedia,
                         imageUrl = item.imageUrl,

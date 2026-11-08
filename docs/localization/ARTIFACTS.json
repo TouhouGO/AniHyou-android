@@ -1,0 +1,67 @@
+{
+  "formatVersion": 1,
+  "buildDate": "2026-11-07",
+  "scope": "local phone FOSS debug and Wear debug; debug signed; never installed or launched",
+  "published": false,
+  "resources": {
+    "localization/catalog.json": {
+      "bytes": 7471994,
+      "sha256": "be12dfeaad442016528d5a83ed648266c04c7cccbcb763dc260070a85e398a9a"
+    },
+    "localization/opencc/ts-characters.bin": {
+      "bytes": 32908,
+      "sha256": "fc5d1632be9a3bbc7d779b12a973ad61fdb4c9afeb7c70955e889204d904233c"
+    },
+    "localization/opencc/LICENSE": {
+      "bytes": 9165,
+      "sha256": "b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308"
+    },
+    "localization/NOTICE": {
+      "bytes": 1740,
+      "sha256": "526f3e4a73cf7852b639ca01a709b0b62728029ec14b2387f0b7ae173f28b5db"
+    },
+    "localization/soruly-MIT-LICENSE": {
+      "bytes": 1063,
+      "sha256": "b62ccc4946ef59cf15d3977431c04a710162c79f88c7be9dcfb686a22e3f39da"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "app/build/outputs/apk/foss/debug/anihyou-1.7.0-foss-arm64-v8a-debug.apk",
+      "bytes": 27634018,
+      "sha256": "d38325559bc059bba8dcfb77dab15ca6310334cd6de455da652daf7dd3f86917",
+      "resourcesVerified": true
+    },
+    {
+      "path": "app/build/outputs/apk/foss/debug/anihyou-1.7.0-foss-armeabi-v7a-debug.apk",
+      "bytes": 27629510,
+      "sha256": "a3b4a42bc377dd07b5a87b9d1e989b2b911342ea134aad2c651d84ac75c03112",
+      "resourcesVerified": true
+    },
+    {
+      "path": "app/build/outputs/apk/foss/debug/anihyou-1.7.0-foss-universal-debug.apk",
+      "bytes": 27729890,
+      "sha256": "cd2c88c6a5be01ab8cefeadf4a687bfc9a115d42334886b7c77f0806934dd038",
+      "resourcesVerified": true
+    },
+    {
+      "path": "app/build/outputs/apk/foss/debug/anihyou-1.7.0-foss-x86-debug.apk",
+      "bytes": 27630054,
+      "sha256": "95610bb8526ad5e8a438dd2990066fc92f337c3cde190c70546ed3fc504dfa01",
+      "resourcesVerified": true
+    },
+    {
+      "path": "app/build/outputs/apk/foss/debug/anihyou-1.7.0-foss-x86_64-debug.apk",
+      "bytes": 27631060,
+      "sha256": "3edaeae33d9d2811e71477705387a223ceed9155a41244b11b593edf3aad4728",
+      "resourcesVerified": true
+    },
+    {
+      "path": "wearos/build/outputs/apk/debug/wearos-debug.apk",
+      "bytes": 24630973,
+      "sha256": "8f03dc4925c646a6fd7fc61718596714767839837e486fbc8e85772ad6fa57cf",
+      "resourcesVerified": true
+    }
+  ],
+  "evidenceStatus": "Historical unpublished validation only; not a build of current source."
+}

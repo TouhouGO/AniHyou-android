@@ -16,6 +16,15 @@ import com.materialkolor.PaletteStyle
 
 @Immutable
 data class SettingsUiState(
+    val catalogAutoLoaded: Boolean = false,
+    val catalogAutoEnabled: Boolean = false,
+    val catalogLastAttempt: Long? = null,
+    val catalogVersion: String = "",
+    val catalogRecordCount: Int = 0,
+    val catalogInstalled: Boolean = false,
+    val catalogBusy: Boolean = false,
+    val catalogMessage: String? = null,
+    val catalogOfferVersion: String? = null,
     val theme: Theme? = null,
     val useBlackColors: Boolean = false,
     val appColorMode: AppColorMode? = null,
@@ -36,6 +45,10 @@ data class SettingsUiState(
     val userSettings: UserSettings? = null,
     val translatorApp: TranslatorApp = TranslatorApp.DEFAULT,
     val hideScores: Boolean = false,
+    val chineseDescriptions: Boolean = false,
+    val chineseTitles: Boolean = false,
+    val chinesePeople: Boolean = false,
+    val chineseTags: Boolean = false,
     val useFuzzySearch: Boolean = false,
     val separateNovelsAndManga: Boolean = false,
     val isLoggedIn: Boolean = false,

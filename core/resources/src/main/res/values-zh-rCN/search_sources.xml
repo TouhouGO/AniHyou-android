@@ -1,0 +1,16 @@
+<resources>
+    <string name="local_title_search_partitioned">候选超过 5,000 个，将分组加载。继续滚动可查找所有分组，所选排序在各组内生效。</string>
+    <string name="search_retry_page">重试本页</string>
+    <string name="search_primary_more">加载更多主要结果</string>
+    <string name="search_supplement_title">补充结果</string>
+    <string name="search_supplement_notice">通过 AniList 原文搜索和 Bangumi 原名建议继续查找。结果陆续追加，排序在各来源内生效，覆盖可能不完整。</string>
+    <string name="search_supplement_popularity_fallback">纯 ID 请求无法使用 AniList 相关度排序，Bangumi 映射结果已按人气排序。</string>
+    <string name="search_supplement_loading">正在查找更多结果…</string>
+    <string name="search_supplement_failed">部分来源暂时无法完成，已找到的结果会保留。</string>
+    <string name="search_supplement_finished">已查找当前可用来源。</string>
+    <string name="search_supplement_more">继续查找</string>
+    <string name="search_supplement_retry">重试剩余来源</string>
+    <string name="search_supplement_retry_delay">来源要求暂停 %1$d 秒，请等待后重试。</string>
+    <string name="search_supplement_depth_limit">一个原文搜索已达到服务分页上限，可使用更具体的关键词继续查找。</string>
+    <string name="search_supplement_unresolved">%1$d 个建议缺少已知关联或原始标题，暂时无法检索。</string>
+</resources>

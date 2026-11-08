@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.explore.explore.content
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,7 +45,7 @@ fun AiringContent(
                     contentType = { it }
                 ) { item ->
                     AiringAnimeHorizontalItem(
-                        title = item.basicMediaDetails.title?.userPreferred.orEmpty(),
+                        title = displayMediaTitle(item.basicMediaDetails.id, item.basicMediaDetails.title?.userPreferred.orEmpty()),
                         subtitle = item.nextAiringEpisode?.let { nextAiringEpisode ->
                             stringResource(
                                 R.string.episode_in_time,
@@ -84,7 +85,7 @@ fun AiringContent(
                     contentType = { it }
                 ) { item ->
                     AiringAnimeHorizontalItem(
-                        title = item.basicMediaDetails.title?.userPreferred.orEmpty(),
+                        title = displayMediaTitle(item.basicMediaDetails.id, item.basicMediaDetails.title?.userPreferred.orEmpty()),
                         subtitle = item.nextAiringEpisode?.let { nextAiringEpisode ->
                             stringResource(
                                 R.string.episode_in_time,

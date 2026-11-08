@@ -1,0 +1,71 @@
+{
+  "formatVersion": 1,
+  "buildDate": "2026-11-08",
+  "scope": "Phone FOSS Debug and Wear Debug; never installed or launched",
+  "resources": {
+    "localization/soruly-MIT-LICENSE": {
+      "bytes": 1063,
+      "sha256": "b62ccc4946ef59cf15d3977431c04a710162c79f88c7be9dcfb686a22e3f39da"
+    },
+    "localization/NOTICE": {
+      "bytes": 1740,
+      "sha256": "526f3e4a73cf7852b639ca01a709b0b62728029ec14b2387f0b7ae173f28b5db"
+    },
+    "localization/catalog.json": {
+      "bytes": 7471994,
+      "sha256": "be12dfeaad442016528d5a83ed648266c04c7cccbcb763dc260070a85e398a9a"
+    },
+    "localization/opencc/ts-characters.bin": {
+      "bytes": 32908,
+      "sha256": "fc5d1632be9a3bbc7d779b12a973ad61fdb4c9afeb7c70955e889204d904233c"
+    },
+    "localization/opencc/LICENSE": {
+      "bytes": 9165,
+      "sha256": "b534e465949558eec2597b04f5092b5e161236a68dfbfd04d547592ac3964308"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "app/build/outputs/apk/foss/debug/anihyou-1.8.0-foss-arm64-v8a-debug.apk",
+      "bytes": 26912116,
+      "sha256": "848a555ff7d5a041d6affb85c0325322bfc116d51f959697ffe5cc26853467c6",
+      "resourcesVerified": true
+    },
+    {
+      "path": "app/build/outputs/apk/foss/debug/anihyou-1.8.0-foss-armeabi-v7a-debug.apk",
+      "bytes": 26907608,
+      "sha256": "5a0fc018db55775165dadc7769dd1a6168d6273ce84f359d247744e1764c0786",
+      "resourcesVerified": true
+    },
+    {
+      "path": "app/build/outputs/apk/foss/debug/anihyou-1.8.0-foss-universal-debug.apk",
+      "bytes": 27007988,
+      "sha256": "8d55edd8dbd4b3debf73fa623a958f99290892a054aa9772f7b2dc384191d8b7",
+      "resourcesVerified": true
+    },
+    {
+      "path": "app/build/outputs/apk/foss/debug/anihyou-1.8.0-foss-x86-debug.apk",
+      "bytes": 26908152,
+      "sha256": "3462a7bd115405753b38d0bac86627d3070b1f43468f28e10f97958db84ea668",
+      "resourcesVerified": true
+    },
+    {
+      "path": "app/build/outputs/apk/foss/debug/anihyou-1.8.0-foss-x86_64-debug.apk",
+      "bytes": 26909158,
+      "sha256": "5cc9304abc8ebf32138d977f485d88e5611a38536f484fd2500baa301b806cea",
+      "resourcesVerified": true
+    },
+    {
+      "path": "wearos/build/outputs/apk/debug/wearos-debug.apk",
+      "bytes": 24650421,
+      "sha256": "df55f3307216e31a05580e5af161a68c8b403222ef73bbc497dd2d11222f5a58",
+      "resourcesVerified": true
+    }
+  ],
+  "hostTests": 173,
+  "pythonTests": 73,
+  "openccTests": 2,
+  "assemblyDryRunTasks": 692,
+  "published": false,
+  "evidenceStatus": "Historical unpublished validation only; not a build of current source."
+}

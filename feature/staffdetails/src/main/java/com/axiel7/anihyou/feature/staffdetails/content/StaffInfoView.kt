@@ -35,6 +35,7 @@ import com.axiel7.anihyou.core.ui.composables.person.PERSON_IMAGE_SIZE_BIG
 import com.axiel7.anihyou.core.ui.composables.person.PersonImage
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.formatted
 import com.axiel7.anihyou.feature.staffdetails.StaffDetailsUiState
+import com.axiel7.anihyou.core.ui.localization.displayStaffName
 
 @Composable
 fun StaffInfoView(
@@ -44,6 +45,10 @@ fun StaffInfoView(
     navigateToFullscreenImage: (String) -> Unit,
 ) {
     val context = LocalContext.current
+    val displayName = displayStaffName(
+        uiState.details?.id,
+        uiState.details?.name?.userPreferred ?: "Loading",
+    )
     val isCurrentLanguageEn = LocalIsLanguageEn.current
 
     Column(
@@ -71,7 +76,7 @@ fun StaffInfoView(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = uiState.details?.name?.userPreferred ?: "Loading",
+                    text = displayName,
                     modifier = Modifier
                         .padding(8.dp)
                         .defaultPlaceholder(visible = uiState.isLoading)

@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.explore.recommendations.composables
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -52,7 +53,7 @@ fun RecommendationItem(
         Column {
             if (media != null && mediaRecommended != null) {
                 MediaItemHorizontal(
-                    title = media.basicMediaDetails.title?.userPreferred.orEmpty(),
+                    title = displayMediaTitle(media.basicMediaDetails.id, media.basicMediaDetails.title?.userPreferred.orEmpty()),
                     imageUrl = media.coverImage?.large,
                     blurImage = blurAdult && media.basicMediaDetails.isAdult == true,
                     score = media.weightedScore ?: 0,
@@ -75,7 +76,7 @@ fun RecommendationItem(
 
                 Spacer(modifier = Modifier.height(4.dp))
                 MediaItemHorizontal(
-                    title = mediaRecommended.basicMediaDetails.title?.userPreferred.orEmpty(),
+                    title = displayMediaTitle(mediaRecommended.basicMediaDetails.id, mediaRecommended.basicMediaDetails.title?.userPreferred.orEmpty()),
                     imageUrl = mediaRecommended.coverImage?.large,
                     blurImage = blurAdult && mediaRecommended.basicMediaDetails.isAdult == true,
                     score = mediaRecommended.weightedScore ?: 0,

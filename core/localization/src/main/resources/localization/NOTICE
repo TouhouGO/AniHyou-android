@@ -1,0 +1,36 @@
+AniHyou Chinese localization data
+
+bangumi-data contributors
+Source revision: 94ea82be75d9e617c7970bb0fd0670ae5c60e53d
+https://github.com/bangumi-data/bangumi-data
+Source declares Creative Commons Attribution 4.0 International:
+https://creativecommons.org/licenses/by/4.0/
+Changes: selected explicit AniList identifiers and Chinese display labels;
+retained aliases; excluded ambiguous identities; converted to the AniHyou catalog.
+No endorsement is implied.
+
+Wikidata contributors
+https://www.wikidata.org/wiki/Wikidata:Licensing
+Structured label and identifier data declares CC0-1.0.
+Changes: selected explicit language labels and typed AniList properties, checked
+independent identifier claims, excluded ambiguous identities, converted schema.
+
+soruly/anilist-chinese
+Copyright (c) 2018 soruly
+Source revision: 913bb1dcd8f65aac18199d8ee6819f703596658a
+https://github.com/soruly/anilist-chinese
+MIT License (full notice in localization/soruly-MIT-LICENSE).
+Changes: title and synonyms retained as search-only aliases; known identity
+conflicts excluded; source media kind remains unknown without typed evidence.
+
+OpenCC contributors
+https://github.com/BYVoid/OpenCC
+Source revision: 556ed22496d650bd0b13b6c163be9814637970ae
+Apache License 2.0 (full text in localization/opencc/LICENSE).
+Changes: generated deterministic single-code-point search equivalence from the
+first TSCharacters targets and resolved canonical chains. Display values unchanged.
+
+AniHyou tag display labels are independently authored under the project license.
+Source declarations and conversions do not certify each upstream content right,
+identity assertion or translation. Full provenance is in the catalog sources and
+the repository's docs/localization/SOURCES.md.

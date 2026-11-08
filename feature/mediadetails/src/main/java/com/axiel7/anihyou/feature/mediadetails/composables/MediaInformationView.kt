@@ -50,6 +50,7 @@ import com.axiel7.anihyou.core.ui.composables.common.SpoilerTagChip
 import com.axiel7.anihyou.core.ui.composables.common.TagChip
 import com.axiel7.anihyou.core.ui.composables.defaultPlaceholder
 import com.axiel7.anihyou.core.ui.composables.media.VideoThumbnailItem
+import com.axiel7.anihyou.core.ui.localization.displayTagName
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.formatted
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.minutesToLegibleText
@@ -196,7 +197,7 @@ fun MediaInformationView(
                 if (tag != null) {
                     if (tag.isMediaSpoiler == false) {
                         TagChip(
-                            name = tag.name,
+                            name = displayTagName(tag.name),
                             description = tag.description,
                             rank = tag.rank,
                             onClick = {
@@ -207,7 +208,7 @@ fun MediaInformationView(
                         )
                     } else {
                         SpoilerTagChip(
-                            name = tag.name,
+                            name = displayTagName(tag.name),
                             description = tag.description,
                             rank = tag.rank,
                             visible = showSpoiler,

@@ -1,5 +1,6 @@
 package com.axiel7.anihyou.feature.profile.activity
 
+import com.axiel7.anihyou.core.ui.localization.displayMediaTitle
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -79,7 +80,7 @@ fun UserActivityView(
                 item.onListActivity?.listActivityFragment?.let { activity ->
                     ActivityItem(
                         type = ActivityType.MEDIA_LIST,
-                        text = activity.text(),
+                        text = activity.text(displayMediaTitle(activity.media?.id, activity.media?.title?.userPreferred.orEmpty())),
                         createdAt = activity.createdAt,
                         replyCount = activity.replyCount,
                         likeCount = activity.likeCount,

@@ -19,6 +19,8 @@ import com.axiel7.anihyou.core.network.type.MediaSort
 interface SearchEvent : UiEvent, PagedEvent {
     fun setQuery(value: String)
     fun setSearchType(value: SearchType)
+    fun retryMediaPage()
+    fun loadMoreSupplemental()
     fun setMediaSort(value: MediaSort)
     fun setMediaFormats(values: List<MediaFormatLocalizable>)
     fun setMediaStatuses(values: List<MediaStatusLocalizable>)
