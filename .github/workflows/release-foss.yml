@@ -1,0 +1,89 @@
+name: Publish FOSS release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version in version.properties (for example 1.8.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as a prerelease'
+        default: false
+        type: boolean
+
+permissions: {}
+concurrency:
+  group: foss-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'TouhouGO/AniHyou-android' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Validate version and signing configuration
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 scripts/release/release_foss.py validate --version "$RELEASE_VERSION" --head "$GITHUB_SHA"
+          for name in KEYSTORE_B64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then
+              echo '::error::Missing release signing configuration'
+              exit 1
+            fi
+          done
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Prepare verified Gradle distribution
+        run: python3 scripts/ci/prepare_gradle.py
+      - name: Inspect task graph and assemble unsigned APKs
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/release/release_foss.py build --version "$RELEASE_VERSION" --head "$GITHUB_SHA"
+      - name: Sign and verify APKs
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+          keystore=$(mktemp "$RUNNER_TEMP/release-keystore.XXXXXX")
+          trap 'rm -f "$keystore"' EXIT
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$keystore"
+          unset KEYSTORE_B64
+          python3 scripts/release/release_foss.py sign --input-dir app/build/outputs/apk/foss/release --output-dir "$RUNNER_TEMP/release-artifacts" --keystore "$keystore"
+      - name: Publish verified draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          set -euo pipefail
+          args=(--artifacts "$RUNNER_TEMP/release-artifacts" --head "$GITHUB_SHA" --version "$RELEASE_VERSION")
+          if [[ "$PRERELEASE" == true ]]; then
+            args+=(--prerelease)
+          fi
+          python3 scripts/release/release_foss.py publish "${args[@]}"
