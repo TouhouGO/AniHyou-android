@@ -74,7 +74,7 @@ def build(version, head, root=ROOT):
     validate(version, head, root)
     repository(root)
     checkout_tree = run(["git", "rev-parse", "HEAD^{tree}"], cwd=root)
-    command = ["bash", "scripts/ci/gradle-with-network-retry.sh", ":app:assembleFossRelease",
+    command = ["bash", str(ROOT / "scripts/ci/gradle-with-network-retry.sh"), ":app:assembleFossRelease",
                "--no-configuration-cache", "--no-daemon", "--console=plain", "--max-workers=2"]
     build_env = {key: value for key, value in os.environ.items()
                  if key not in {"KEYSTORE_B64", "KEYSTORE_PASSWORD", "KEY_ALIAS", "KEY_PASSWORD", "GH_TOKEN", "GITHUB_TOKEN"}}
@@ -208,32 +208,36 @@ def main():
     check = commands.add_parser("validate")
     check.add_argument("--version", required=True)
     check.add_argument("--head", required=True)
+    check.add_argument("--source-root", type=Path, default=ROOT)
     graph = commands.add_parser("graph")
     graph.add_argument("--file", type=Path, required=True)
     assemble = commands.add_parser("build")
     assemble.add_argument("--version", required=True)
     assemble.add_argument("--head", required=True)
+    assemble.add_argument("--source-root", type=Path, default=ROOT)
     sign = commands.add_parser("sign")
     sign.add_argument("--input-dir", type=Path, required=True)
     sign.add_argument("--output-dir", type=Path, required=True)
     sign.add_argument("--keystore", type=Path, required=True)
+    sign.add_argument("--source-root", type=Path, default=ROOT)
     release = commands.add_parser("publish")
     release.add_argument("--artifacts", type=Path, required=True)
     release.add_argument("--head", required=True)
     release.add_argument("--version", required=True)
     release.add_argument("--prerelease", action="store_true")
+    release.add_argument("--source-root", type=Path, default=ROOT)
     args = parser.parse_args()
     if args.command == "validate":
-        validate(args.version, args.head)
+        validate(args.version, args.head, args.source_root)
     elif args.command == "graph":
         print(f"Verified {validate_graph(args.file.read_text())} host-only release tasks")
     elif args.command == "build":
-        build(args.version, args.head)
+        build(args.version, args.head, args.source_root)
     elif args.command == "sign":
-        sign_and_verify(args.input_dir, args.output_dir, args.keystore, ROOT)
+        sign_and_verify(args.input_dir, args.output_dir, args.keystore, args.source_root)
         print("All release APKs signed and verified")
     elif args.command == "publish":
-        publish(args.artifacts, args.head, args.version, args.prerelease)
+        publish(args.artifacts, args.head, args.version, args.prerelease, args.source_root)
 
 
 if __name__ == "__main__":

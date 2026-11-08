@@ -9,8 +9,6 @@ on:
       - 'scripts/localization/**'
       - 'docs/localization/catalog-report.json'
       - '.github/workflows/catalog-publish.yml'
-      - 'gradle/wrapper/**'
-      - 'scripts/ci/**'
 permissions: {}
 concurrency:
   group: catalog-publication
@@ -31,7 +29,9 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
       - name: Prepare verified Gradle distribution
-        run: python3 scripts/ci/prepare_gradle.py
+        run: |
+          python3 scripts/ci/prepare_gradle.py
+          python3 scripts/ci/prepare_kotlin_compiler.py
       - name: Rebuild and validate exact catalog
         run: |
           python3 -m unittest discover -s scripts/localization -p 'test_*.py'

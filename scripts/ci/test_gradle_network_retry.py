@@ -44,6 +44,15 @@ sys.exit(code)
         result, calls, _ = self.run_fixture([(7, network)])
         self.assertEqual((result.returncode, calls), (7, 3))
 
+    def test_dependency_read_timeout_is_bounded(self):
+        output = "Could not download kotlin-compiler-embeddable.jar\nCould not GET 'https://example.org/file.jar'\nRead timed out"
+        result, calls, _ = self.run_fixture([(7, output)])
+        self.assertEqual((result.returncode, calls), (7, 3))
+
+    def test_unrelated_timeout_does_not_retry(self):
+        result, calls, _ = self.run_fixture([(1, "Task timed out\nRead timed out")])
+        self.assertEqual((result.returncode, calls), (1, 1))
+
     def test_test_failure_does_not_retry_even_with_network_error(self):
         output = "Could not download dependency\nReceived status code 503 from server\nThere were failing tests"
         result, calls, _ = self.run_fixture([(1, output)])

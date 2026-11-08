@@ -2,6 +2,7 @@ name: Crowdin Sync
 
 on:
   push:
+    branches: [master]
     paths:
       - 'core/resources/src/main/res/values/strings.xml'
   workflow_dispatch:

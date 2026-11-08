@@ -3,6 +3,11 @@
 手动运行 `Publish FOSS release`，输入与 `version.properties` 完全一致的版本。
 工作流固定当前主分支提交，使用 JDK 21 和已校验的 Gradle 分发包。
 
+要重建已发布的同一版本，可填写 `source_commit` 的完整提交 SHA，并启用
+`artifacts_only`。工作流工具来自本次主分支提交，应用源码来自指定提交，两者会在
+运行摘要中分别记录。签名 APK 和校验清单先保存为 Actions artifact，不直接覆盖
+现有 Release。维护者核验 run、源码提交、签名和新旧清单哈希后，才替换公开附件。
+
 ## 签名配置
 
 仓库 Actions Secrets 需要四项：
@@ -49,4 +54,5 @@ python3 scripts/release/release_foss.py build \
 补齐签名环境后调用 `sign`，再用 `publish` 发布。运行脚本的 `--help` 查看参数。
 本地路径不应写入发布说明，keystore 和密码不得随 APK 上传。
 
-当前仅完成主机构建和发布工具验证；实际签名与 v1.8.0 发布需要可用的原签名配置。
+签名配置已恢复。现有 v1.8.0 首次由本机构建，Actions 重建的状态应以 Release 中
+链接的运行记录和附件清单为准，不能仅凭工作流存在就声称附件来自 Actions。

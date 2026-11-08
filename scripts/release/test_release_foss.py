@@ -99,8 +99,10 @@ class BuildTests(unittest.TestCase):
             self.assertIn('--dry-run', calls[0][0])
             self.assertNotIn('--dry-run', calls[1][0])
             for _, kwargs in calls:
+                self.assertEqual(kwargs['cwd'], root)
                 self.assertNotIn('KEY_PASSWORD', kwargs['env'])
                 self.assertNotIn('GH_TOKEN', kwargs['env'])
+            self.assertEqual(calls[0][0][1], str(r.ROOT / 'scripts/ci/gradle-with-network-retry.sh'))
             record.assert_called_once_with(root / 'app/build/outputs/apk/foss/release', root)
 
     def test_unsafe_graph_stops_before_build_or_receipt(self):

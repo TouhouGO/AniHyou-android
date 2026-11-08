@@ -45,7 +45,9 @@ jobs:
         if: steps.integration.outputs.changed == 'true'
       - name: Prepare verified Gradle distribution
         if: steps.integration.outputs.changed == 'true'
-        run: python3 scripts/ci/prepare_gradle.py
+        run: |
+          python3 scripts/ci/prepare_gradle.py
+          python3 scripts/ci/prepare_kotlin_compiler.py
 
       - name: Verify Python sources and offline catalog reproducibility
         if: steps.integration.outputs.changed == 'true'

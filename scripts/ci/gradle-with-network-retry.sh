@@ -19,6 +19,8 @@ for attempt in 1 2 3; do
     fi
     if ! { grep -Eiq '(HTTP response code: (502|503|504)|Received status code (502|503|504) from server)' "$log" &&
            grep -Eiq '(Downloading https?://|Could not (download|GET|get resource)|for URL: https?://)' "$log"; } &&
+       ! { grep -Eiq 'Could not (download|GET|get resource)' "$log" &&
+           grep -Eiq '(Read timed out|Connect timed out|connection timed out)' "$log"; } &&
        ! { grep -Eiq 'Downloading https?://[^ ]*/distributions/' "$log" &&
            grep -Eiq '(Read timed out|Connect timed out|connection timed out)' "$log"; }; then
         exit "$status"
