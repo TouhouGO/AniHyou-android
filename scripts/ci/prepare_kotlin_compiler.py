@@ -7,6 +7,7 @@ import tempfile
 import urllib.request
 
 from prepare_gradle import check_wrapper
+from network_retry import describe, run
 
 VERSION = "2.4.10"
 NAME = f"kotlin-compiler-embeddable-{VERSION}.jar"
@@ -32,6 +33,25 @@ def matches(path):
     return sha1.hexdigest() == SHA1 and sha256.hexdigest() == SHA256
 
 
+def download(candidate):
+    candidate.unlink(missing_ok=True)
+    sha1, sha256 = hashlib.sha1(), hashlib.sha256()
+    total = 0
+    request = urllib.request.Request(URL, headers={"User-Agent": "anihyou-ci-bootstrap"})
+    with urllib.request.urlopen(request, timeout=60) as response, candidate.open("wb") as output:
+        while True:
+            block = response.read(1024 * 1024)
+            if not block:
+                break
+            total += len(block)
+            if total > SIZE:
+                raise ValueError("Kotlin compiler exceeds expected size")
+            sha1.update(block)
+            sha256.update(block)
+            output.write(block)
+    if total != SIZE or sha1.hexdigest() != SHA1 or sha256.hexdigest() != SHA256:
+        raise ValueError("Kotlin compiler size or digest mismatch")
+
 def prepare(home):
     check_wrapper(Path(__file__).resolve().parents[2] / "gradle/wrapper/gradle-wrapper.properties")
     target = destination(home)
@@ -41,22 +61,7 @@ def prepare(home):
     target.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=target.parent) as temp:
         candidate = Path(temp) / NAME
-        sha1, sha256 = hashlib.sha1(), hashlib.sha256()
-        total = 0
-        request = urllib.request.Request(URL, headers={"User-Agent": "anihyou-ci-bootstrap"})
-        with urllib.request.urlopen(request, timeout=60) as response, candidate.open("wb") as output:
-            while True:
-                block = response.read(1024 * 1024)
-                if not block:
-                    break
-                total += len(block)
-                if total > SIZE:
-                    raise ValueError("Kotlin compiler exceeds expected size")
-                sha1.update(block)
-                sha256.update(block)
-                output.write(block)
-        if total != SIZE or sha1.hexdigest() != SHA1 or sha256.hexdigest() != SHA256:
-            raise ValueError("Kotlin compiler size or digest mismatch")
+        run(lambda: download(candidate), "Kotlin compiler")
         os.replace(candidate, target)
     print("Verified Kotlin compiler artifact placed in Gradle cache")
 
@@ -65,4 +70,4 @@ if __name__ == "__main__":
     try:
         prepare(os.environ.get("GRADLE_USER_HOME", str(Path.home() / ".gradle")))
     except (OSError, ValueError) as error:
-        raise SystemExit(f"Unable to prepare Kotlin compiler artifact: {type(error).__name__}")
+        raise SystemExit(f"Unable to prepare Kotlin compiler artifact: {describe(error)}")

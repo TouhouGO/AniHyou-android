@@ -8,6 +8,8 @@ import tempfile
 import urllib.error
 import urllib.request
 
+from network_retry import describe, run
+
 VERSION = "9.8.2"
 NAME = f"gradle-{VERSION}-bin.zip"
 URL = f"https://services.gradle.org/distributions/{NAME}"
@@ -39,7 +41,7 @@ def request(url, accept="application/octet-stream"):
         "Accept": accept, "User-Agent": "anihyou-gradle-bootstrap"}), timeout=60)
 
 
-def asset_url():
+def read_asset_url():
     with request(RELEASE_API, "application/vnd.github+json") as response:
         data = response.read(1024 * 1024 + 1)
     if len(data) > 1024 * 1024:
@@ -55,6 +57,10 @@ def asset_url():
     return f"https://api.github.com/repos/gradle/gradle-distributions/releases/assets/{asset_id}"
 
 
+def asset_url():
+    return run(read_asset_url, "Release metadata")
+
+
 def verified(path):
     if not path.is_file() or path.stat().st_size != SIZE:
         return False
@@ -66,6 +72,7 @@ def verified(path):
 
 
 def download(url, destination):
+    destination.unlink(missing_ok=True)
     digest = hashlib.sha256()
     total = 0
     with request(url) as response, destination.open("wb") as target:
@@ -96,10 +103,11 @@ def prepare(home):
         target = Path(temp) / NAME
         try:
             print("Fetching official Gradle distribution")
-            download(URL, target)
-        except (OSError, ValueError):
-            print("Official distribution download failed; trying official release asset")
-            download(asset_url(), target)
+            run(lambda: download(URL, target), "Gradle distribution")
+        except OSError as error:
+            print(f"Official distribution failed ({describe(error)}); trying official release asset")
+            release_url = asset_url()
+            run(lambda: download(release_url, target), "Gradle release asset")
         os.replace(target, archive)
     print("Verified Gradle distribution placed in wrapper cache")
 
@@ -109,4 +117,4 @@ if __name__ == "__main__":
         check_wrapper(Path(__file__).resolve().parents[2] / "gradle/wrapper/gradle-wrapper.properties")
         prepare(os.environ.get("GRADLE_USER_HOME", str(Path.home() / ".gradle")))
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:
-        raise SystemExit(f"Unable to prepare Gradle distribution: {type(error).__name__}")
+        raise SystemExit(f"Unable to prepare Gradle distribution: {describe(error)}")

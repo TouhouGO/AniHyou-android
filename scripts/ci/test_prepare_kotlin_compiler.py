@@ -48,5 +48,36 @@ class CompilerTest(unittest.TestCase):
             self.assertFalse(module.destination(home).exists())
 
 
+class DownloadRetryTest(unittest.TestCase):
+    def test_body_timeout_discards_partial_and_recovers(self):
+        class Interrupted(io.BytesIO):
+            def read(self, size=-1):
+                if self.tell():
+                    raise TimeoutError('private URL')
+                return super().read(1)
+
+        with tempfile.TemporaryDirectory() as home, patch.object(module, 'SIZE', 3), \
+                patch.object(module, 'SHA1', hashlib.sha1(b'jar').hexdigest()), \
+                patch.object(module, 'SHA256', hashlib.sha256(b'jar').hexdigest()), \
+                patch.object(module.urllib.request, 'urlopen', side_effect=[Interrupted(b'bad'), io.BytesIO(b'jar')]) as request, \
+                patch('network_retry.time.sleep'):
+            module.prepare(home)
+            self.assertEqual(request.call_count, 2)
+            self.assertEqual(module.destination(home).read_bytes(), b'jar')
+
+    def test_bad_digest_after_timeout_never_activates(self):
+        class Interrupted(io.BytesIO):
+            def read(self, size=-1):
+                raise TimeoutError()
+
+        with tempfile.TemporaryDirectory() as home, patch.object(module, 'SIZE', 3), \
+                patch.object(module.urllib.request, 'urlopen', side_effect=[Interrupted(), io.BytesIO(b'bad')]) as request, \
+                patch('network_retry.time.sleep'):
+            with self.assertRaises(ValueError):
+                module.prepare(home)
+            self.assertEqual(request.call_count, 2)
+            self.assertFalse(module.destination(home).exists())
+
+
 if __name__ == '__main__':
     unittest.main()
