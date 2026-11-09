@@ -1,31 +1,31 @@
 {
-  "version": "2026.11.07",
+  "version": "2026.11.09",
   "component_versions": [
-    "bangumi-data-94ea82be75d9",
-    "soruly-913bb1dcd8f6",
-    "wikidata-p11227-ec7de43b3e22",
-    "wikidata-p11736-7a79c3e35ede",
-    "wikidata-p8731-a255f54cd797"
+    "bangumi-data-d5f56180c0c7",
+    "soruly-c707f56c7058",
+    "wikidata-p11227-d611246b555c",
+    "wikidata-p11736-dccd2b9a754f",
+    "wikidata-p8731-bd4e8436c414"
   ],
   "source_count": 6,
-  "record_count": 13277,
+  "record_count": 13293,
   "records_by_kind": {
-    "CHARACTER": 799,
-    "ANIME": 7785,
-    "MANGA": 1590,
-    "STAFF": 3103
+    "CHARACTER": 801,
+    "ANIME": 7786,
+    "MANGA": 1602,
+    "STAFF": 3104
   },
   "tag_count": 426,
-  "link_count": 8169,
+  "link_count": 8171,
   "search_alias_count": 8683,
-  "catalog_sha256": "be12dfeaad442016528d5a83ed648266c04c7cccbcb763dc260070a85e398a9a",
+  "catalog_sha256": "ef8858456ff21e9ee015f0988d8c431305b3b2fbc14c85d776014308d941b72f",
   "source_reports": {
     "bangumi-data": {
-      "source_revision": "94ea82be75d9e617c7970bb0fd0670ae5c60e53d",
-      "source_sha256": "c21466156d528eea24f2b32c7b36c9ec11273801037efdc698eccf3a475a893f",
-      "input_items": 8925,
-      "without_anilist_id": 597,
-      "without_simplified_title": 406,
+      "source_revision": "d5f56180c0c71fbeb24bd1914eb04c75f2f358fa",
+      "source_sha256": "f8f02b81690d7545e4ef9a7f9ace7eb05407c8bbc0a4f32e2aa63d10217feb85",
+      "input_items": 8928,
+      "without_anilist_id": 598,
+      "without_simplified_title": 407,
       "conflicting_ids": [
         21,
         93,
@@ -81,10 +81,10 @@
         189046
       ],
       "ambiguous_item_ids": [],
-      "accepted_records": 7785,
+      "accepted_records": 7786,
       "links": {
-        "accepted_links": 8169,
-        "input_items": 8925,
+        "accepted_links": 8171,
+        "input_items": 8928,
         "shared_anilist_ids": [
           21,
           93,
@@ -158,12 +158,12 @@
     },
     "P11227": {
       "property": "P11227",
-      "fetched_at": "2026-11-05T01:58:00.471973+00:00",
-      "source_sha256": "ec7de43b3e22773fad90b6653edda1624962ca6bc89a17ca960401ba48627d61",
+      "fetched_at": "2026-11-09T11:32:32.728553+00:00",
+      "source_sha256": "d611246b555c2d2dc33689fa6c1615f7e43e26ba5bed01f1b556200dfea428cb",
       "query_limit": 50000,
-      "input_rows": 4227,
-      "identity_rows": 15276,
-      "accepted_records": 3103,
+      "input_rows": 4228,
+      "identity_rows": 15286,
+      "accepted_records": 3104,
       "conflicting_ids": [],
       "identity_conflicting_ids": [],
       "ambiguous_ids": [
@@ -13956,6 +13956,12 @@
             "zh-cn"
           ]
         },
+        "121821": {
+          "qid": "Q29479266",
+          "languages": [
+            "zh-hans"
+          ]
+        },
         "121823": {
           "qid": "Q26045109",
           "languages": [
@@ -19925,18 +19931,18 @@
           ]
         }
       },
-      "identity_sha256": "6a240dc0c480ea94c4f0a701a28f23fe5c3481679f393eb6af189e4de47ac9e8",
+      "identity_sha256": "c7f9758ec15d410a0f98621f96e434215680a890cfeb0d0b85f438487a34a792",
       "query_sha256": "165e6ab57a4399ec0664f1c30bc4d48108912387c1a8fb9cf0a0736a6f53a81a",
       "identity_query_sha256": "95021c2807c6d5f18f47d02ccea01283e73a130ac1f91dacdf8f8f8f9e57c739"
     },
     "P11736": {
       "property": "P11736",
-      "fetched_at": "2026-11-05T01:59:31.780107+00:00",
-      "source_sha256": "7a79c3e35ede479b780c235a4e8f6f6a7f5d6a3ea991225e04d175ee52e63e73",
+      "fetched_at": "2026-11-09T11:32:32.728553+00:00",
+      "source_sha256": "dccd2b9a754f83d585261a9fc09036178b2195d0fac30a573558953fabee52d4",
       "query_limit": 50000,
-      "input_rows": 931,
-      "identity_rows": 6165,
-      "accepted_records": 799,
+      "input_rows": 938,
+      "identity_rows": 6169,
+      "accepted_records": 801,
       "conflicting_ids": [],
       "identity_conflicting_ids": [
         89224
@@ -21433,13 +21439,15 @@
         "3585": {
           "qid": "Q3879134",
           "languages": [
-            "zh-cn"
+            "zh-cn",
+            "zh-hans"
           ]
         },
         "3586": {
           "qid": "Q3935893",
           "languages": [
-            "zh-cn"
+            "zh-cn",
+            "zh-hans"
           ]
         },
         "3694": {
@@ -21598,10 +21606,18 @@
             "zh-hans"
           ]
         },
+        "4830": {
+          "qid": "Q4006332",
+          "languages": [
+            "zh-cn",
+            "zh-hans"
+          ]
+        },
         "4832": {
           "qid": "Q3816281",
           "languages": [
-            "zh-cn"
+            "zh-cn",
+            "zh-hans"
           ]
         },
         "4839": {
@@ -21614,7 +21630,8 @@
         "4840": {
           "qid": "Q3812970",
           "languages": [
-            "zh-cn"
+            "zh-cn",
+            "zh-hans"
           ]
         },
         "4883": {
@@ -24033,6 +24050,12 @@
             "zh-cn"
           ]
         },
+        "276358": {
+          "qid": "Q142083870",
+          "languages": [
+            "zh-hans"
+          ]
+        },
         "279505": {
           "qid": "Q113090125",
           "languages": [
@@ -24898,18 +24921,18 @@
           ]
         }
       },
-      "identity_sha256": "b65304704dd10874eb3db6ec68b28a41b049bce8f1520f2b7e887b68ddda9ae6",
+      "identity_sha256": "c6a995a4205279e59d34dbae054c0c80a5222893fa9edc5d654ebc9f4d2f40d1",
       "query_sha256": "206955519e71d824a6139732007d4a7718b811a2f69a3fed745366088aa73286",
       "identity_query_sha256": "034203ab8f4496c2dcc247e52445c9cf782148aecf3dc67d84304187c3424704"
     },
     "P8731": {
       "property": "P8731",
-      "fetched_at": "2026-11-05T02:01:03.367135+00:00",
-      "source_sha256": "a255f54cd7973a4cc4a35a8dc892ae09b03ac841505bec7bb96a0117c9239ce0",
+      "fetched_at": "2026-11-09T11:32:32.728553+00:00",
+      "source_sha256": "bd4e8436c414aceb864674c44f9be3ecf5dc1802a1bc4e6b074e94ccc0eca46c",
       "query_limit": 50000,
-      "input_rows": 1963,
-      "identity_rows": 9121,
-      "accepted_records": 1590,
+      "input_rows": 1979,
+      "identity_rows": 9218,
+      "accepted_records": 1602,
       "conflicting_ids": [],
       "identity_conflicting_ids": [
         121033,
@@ -24954,9 +24977,11 @@
         110949,
         112062,
         114019,
+        114527,
         114914,
         118333,
         120863,
+        122192,
         124187,
         126764,
         130195,
@@ -28781,6 +28806,12 @@
             "zh-hans"
           ]
         },
+        "52290": {
+          "qid": "Q4403395",
+          "languages": [
+            "zh-hans"
+          ]
+        },
         "52504": {
           "qid": "Q1316315",
           "languages": [
@@ -30389,6 +30420,12 @@
             "zh-hans"
           ]
         },
+        "89773": {
+          "qid": "Q11280595",
+          "languages": [
+            "zh-hans"
+          ]
+        },
         "90130": {
           "qid": "Q492683",
           "languages": [
@@ -31022,6 +31059,12 @@
             "zh-cn"
           ]
         },
+        "101255": {
+          "qid": "Q98961729",
+          "languages": [
+            "zh-hans"
+          ]
+        },
         "101315": {
           "qid": "Q106647363",
           "languages": [
@@ -31245,6 +31288,13 @@
         "103845": {
           "qid": "Q108444655",
           "languages": [
+            "zh-hans"
+          ]
+        },
+        "103995": {
+          "qid": "Q97236326",
+          "languages": [
+            "zh-cn",
             "zh-hans"
           ]
         },
@@ -31889,6 +31939,12 @@
             "zh-hans"
           ]
         },
+        "111711": {
+          "qid": "Q120402151",
+          "languages": [
+            "zh-hans"
+          ]
+        },
         "111764": {
           "qid": "Q134711807",
           "languages": [
@@ -31993,6 +32049,12 @@
           "qid": "Q106316762",
           "languages": [
             "zh-cn",
+            "zh-hans"
+          ]
+        },
+        "113399": {
+          "qid": "Q97590203",
+          "languages": [
             "zh-hans"
           ]
         },
@@ -32436,6 +32498,12 @@
             "zh-hans"
           ]
         },
+        "120980": {
+          "qid": "Q140329629",
+          "languages": [
+            "zh-hans"
+          ]
+        },
         "121460": {
           "qid": "Q98681622",
           "languages": [
@@ -32482,12 +32550,6 @@
         },
         "122117": {
           "qid": "Q111948550",
-          "languages": [
-            "zh-hans"
-          ]
-        },
-        "122192": {
-          "qid": "Q104709894",
           "languages": [
             "zh-hans"
           ]
@@ -32770,6 +32832,12 @@
         },
         "126849": {
           "qid": "Q106656188",
+          "languages": [
+            "zh-hans"
+          ]
+        },
+        "127010": {
+          "qid": "Q120336511",
           "languages": [
             "zh-hans"
           ]
@@ -33233,6 +33301,12 @@
             "zh-hans"
           ]
         },
+        "136498": {
+          "qid": "Q120336473",
+          "languages": [
+            "zh-hans"
+          ]
+        },
         "136508": {
           "qid": "Q114612973",
           "languages": [
@@ -33465,6 +33539,13 @@
         },
         "139977": {
           "qid": "Q128790836",
+          "languages": [
+            "zh-cn",
+            "zh-hans"
+          ]
+        },
+        "140006": {
+          "qid": "Q11326810",
           "languages": [
             "zh-cn",
             "zh-hans"
@@ -34435,6 +34516,12 @@
             "zh-hans"
           ]
         },
+        "169148": {
+          "qid": "Q142071486",
+          "languages": [
+            "zh-hans"
+          ]
+        },
         "169272": {
           "qid": "Q124496857",
           "languages": [
@@ -34774,6 +34861,12 @@
             "zh-hans"
           ]
         },
+        "188155": {
+          "qid": "Q142071568",
+          "languages": [
+            "zh-hans"
+          ]
+        },
         "188216": {
           "qid": "Q140358622",
           "languages": [
@@ -34831,6 +34924,12 @@
         },
         "197550": {
           "qid": "Q140360696",
+          "languages": [
+            "zh-hans"
+          ]
+        },
+        "198459": {
+          "qid": "Q142071494",
           "languages": [
             "zh-hans"
           ]
@@ -34893,15 +34992,15 @@
           ]
         }
       },
-      "identity_sha256": "5f2af0a59c7c3d6cd785e2dcd7c4b31172f36039b22700e3ea8027071704efb5",
+      "identity_sha256": "f2a7739e679e30dcc6252a55661758d22534ce8124d86569d95b08e0aa741cc6",
       "query_sha256": "0a5da1278f8c126a0bd5f694f14516ac341739586f692715284eb8bb500b94aa",
       "identity_query_sha256": "cd40917a0e901b6cfc12e168b63c30fc00e9ccb1aa15bbe8713f6a2d9d975e2a"
     },
     "soruly": {
       "accepted_aliases": 8683,
-      "new_searchable_ids": 3117,
-      "known_types": 5649,
-      "unknown_types": 3034,
+      "new_searchable_ids": 3116,
+      "known_types": 5651,
+      "unknown_types": 3032,
       "excluded_ids": [
         21,
         93,
